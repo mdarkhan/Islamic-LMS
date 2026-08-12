@@ -1,0 +1,182 @@
+# SECURITY.md — Masud Alimi Platform
+
+This document records what was found in the legacy system, what must be done about it, and the
+rules the new application enforces. It contains **no credentials** and never will.
+
+---
+
+## 0. Immediate action required
+
+### A. Rotate the database password — do this first
+
+`quiz-api.php` (lines 16–19) hard-codes the live MySQL host, database name, username and password
+in plaintext, in a file inside the public web root. The file is in this project folder, has been
+copied around, and must be assumed exposed.
+
+**Rotate the MySQL user's password in cPanel now**, before any further work. Do not reuse it.
+The new value goes only into `.env` on the server, which is never committed.
+
+Until rotation is done, treat the current database as compromised: anyone who obtained that file
+could read and write `quiz_submissions` directly.
+
+### B. Make both Google Sheets private
+
+The student sheet is publicly readable and contains **every student's plaintext password**
+(finding L2). Anyone who has ever had the link — or found it in the page source — can download the
+full credential list. Restrict both sheets to specific accounts.
+
+### C. Force a password reset for every student
+
+Because of B, every legacy password must be considered public. All imported accounts are created
+with `force_password_change = 1` (`MIGRATION.md` §1).
+
+---
+
+## 1. Findings in the legacy system
+
+| # | Severity | Finding | Fix |
+|---|---|---|---|
+| L1 | **Critical** | DB credentials hard-coded in a web-root PHP file | Rotate; `.env` only; gitignored |
+| L2 | **Critical** | Student roll/name/guardian/**plaintext password** served from a public sheet to every browser | Sheet made private; credentials hashed in MySQL; forced reset |
+| L3 | **Critical** | Answer key (`correctIndices`) shipped to the browser during the live exam | Key never serialised while an official attempt is open |
+| L4 | **Critical** | Score computed in JS and POSTed; the API stores whatever it receives | Server-side scoring only; client scores rejected outright |
+| L5 | High | No auth, no CSRF, `Access-Control-Allow-Origin: *` on a write endpoint | Session auth + CSRF + no wildcard CORS |
+| L6 | High | Raw `PDOException` messages returned to the client | Generic error responses; detail to logs only |
+| L7 | High | No duplicate-submission protection of any kind | Unique key + row lock + idempotent submit |
+| L8 | Medium | Quiz password and leaderboard password stored in a public sheet | Both discarded; replaced by session auth and role checks |
+| L9 | Medium | Identity self-asserted — client posts `roll`/`name`/`guardian` | Identity from the session; never from the request body |
+| L10 | Medium | `quiz_id` written inconsistently, so results cannot be reliably grouped | Explicit reviewed mapping (`MIGRATION.md` §4.4) |
+| L11 | Low | Connection used 3-byte `charset=utf8` | `utf8mb4` throughout |
+
+### Consequence
+
+L3 and L4 together mean any student could read the answers and submit any score for any name.
+L2 means anyone could do so **as another student**. The legacy leaderboard is therefore not
+trustworthy competition data, and migrated results are flagged accordingly
+(`PROJECT_PLAN.md` §5.3).
+
+---
+
+## 2. Rules for the new application
+
+### 2.1 Secrets
+
+- All credentials come from `.env`. `.env` is gitignored; `.env.example` contains placeholders only.
+- No credential appears in source, documentation, comments, logs, error output or audit records.
+- The legacy `quiz-api.php` credentials are **never** copied into the new configuration. The
+  rotated ones are entered directly on the server.
+- `APP_DEBUG=false` in production. `APP_KEY` generated per environment, never shared.
+
+### 2.2 Passwords
+
+- Hashed with bcrypt (or argon2id) via Laravel's `Hash` facade. No plaintext column exists.
+- The legacy importer hashes on read; the plaintext is never persisted or logged
+  (`MIGRATION.md` §1).
+- Login is rate-limited per roll **and** per IP. Failures are logged without the attempted password.
+- `force_password_change` intercepts every authenticated route until the password is changed.
+- Password reset tokens are single-use and expire.
+
+### 2.3 Examination integrity — the core rule
+
+**While an official attempt is open, the response payload contains no information about
+correctness.**
+
+Permitted in the question payload:
+
+```
+question id · question body · display order · option ids · option bodies
+```
+
+Forbidden until the attempt is graded *and* results are released:
+
+```
+is_correct · correct option ids · correct indices · marks per question · explanation
+```
+
+Per-question marks are withheld during a live official exam so students are not steered toward
+mega questions — this reproduces deliberate legacy behaviour (`PROJECT_PLAN.md` §2.3).
+
+Practice mode may reveal correctness immediately, because it is unranked and costs no points.
+
+### 2.4 Trust boundary
+
+The server never accepts any of these from the client:
+
+```
+user_id · roll · score · correctness · marks · point balance
+quiz eligibility · attempt expiry · submission time
+```
+
+Each is derived server-side from the session, the database and the server clock. An attempt is
+addressed by its id and then re-authorised against `auth()->id()` on every request — an attempt id
+belonging to another student is a 403, never a silent read.
+
+### 2.5 Time
+
+The server clock is authoritative. `starts_at`, `expires_at`, `ends_at` and `result_release_at` are
+re-checked server-side on every write. A write arriving after `expires_at` is rejected regardless of
+what the browser's timer displayed. The client timer is presentation only.
+
+### 2.6 Transactions and idempotency
+
+- Point debit + attempt creation: one transaction, `SELECT … FOR UPDATE` on the user row.
+- Resuming an attempt never debits again — guarded by `quiz_attempts.point_transaction_id`.
+- Autosave is an upsert on `(attempt_id, question_id)`, so retries cannot duplicate.
+- Submit is idempotent: submitting an already-submitted attempt returns the existing result rather
+  than rescoring or re-charging.
+- A failure anywhere in the chain rolls back both the point movement and the attempt.
+
+### 2.7 Standard protections
+
+CSRF on all state-changing requests · Eloquent/prepared statements everywhere (no string-built SQL)
+· Blade auto-escaping, with `{!! !!}` permitted only for admin-authored content that has been
+sanitised · mass-assignment guarded via explicit `$fillable` · authorisation via policies and
+middleware, not inline checks · rate limiting on login, password reset and Ask Ustaz · generic
+error pages, details to logs · security headers (`X-Content-Type-Options`, `X-Frame-Options`,
+`Referrer-Policy`, HSTS where TLS terminates correctly) · session cookies `HttpOnly`, `Secure`,
+`SameSite=Lax`, regenerated on login and invalidated on logout and on suspension.
+
+### 2.8 Ask Ustaz
+
+Validated, honeypot-checked, rate-limited, **emailed, and not stored**. No table, no retained queue
+payload, no logging of the question body. Recipient from `USTAZ_EMAIL` via config — never
+hard-coded. See `PROJECT_PLAN.md` §6 and `DATABASE_SCHEMA.md` §8.
+
+### 2.9 Audit logging
+
+Sensitive admin actions are recorded with actor, action, entity, before/after and timestamp. A
+redaction allow-list keeps password hashes, plaintext passwords and tokens out of `before`/`after`;
+a test asserts this.
+
+---
+
+## 3. Files that must never be committed
+
+```
+.env
+quiz-api.php                 # contains the exposed credentials
+legacy/quiz-api.php          # verbatim copy, same credentials
+legacy/db/                   # database exports
+storage/, vendor/, node_modules/, public/build/
+```
+
+`.gitignore` covers these. `legacy/quiz-api.reference.php` — a redacted copy safe to commit — is
+provided so the legacy logic stays reviewable in version control without the secrets.
+
+This repository is **not currently a git repository**. Run `git init` only after confirming
+`.gitignore` is in place, so the credential-bearing files are never captured in the first commit.
+
+---
+
+## 4. Deployment checklist
+
+- [ ] MySQL password rotated; old one invalid
+- [ ] Both Google Sheets set to private
+- [ ] `.env` present on server, outside the document root, permissions `600`
+- [ ] `APP_DEBUG=false`, `APP_ENV=production`, `APP_KEY` generated
+- [ ] Document root points at `public/`, so `.env`, `storage/` and `vendor/` are unreachable
+- [ ] HTTPS enforced; HSTS enabled
+- [ ] `storage/` and `bootstrap/cache/` writable; nothing else world-writable
+- [ ] Legacy `quiz-api.php` write path removed or the file taken offline
+- [ ] Every imported student has `force_password_change = 1`
+- [ ] Database backup taken and a restore verified

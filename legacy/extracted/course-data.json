@@ -1,0 +1,736 @@
+{
+  "extracted_at": "2026-08-12T22:29:35.808Z",
+  "source_file": "legacy/masudalimi.html",
+  "global_notice": "📢 সীরাত কুইজ পরীক্ষার হাদিয়া নিজ উদ্যোগে দিয়ে দিবো আমরা ইনশাআল্লাহ্‌।",
+  "counts": {
+    "total": 42,
+    "by_category": {
+      "seerat": 25,
+      "halakah": 14,
+      "jummah": 3
+    }
+  },
+  "lessons": [
+    {
+      "legacy_id": 1,
+      "category": "seerat",
+      "date_label": "০২ জানুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ১৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/10ec8WS0aDemwlLFaavuA1_fTyV1m6x3j/view?usp=sharing",
+      "title": "সীরাত-০১",
+      "description": "আমাদের দৈনন্দিন জীবন ও আখিরাতে সীরাত পাঠের গুরুত্ব ও পদ্ধতি সম্পর্কে আলোচনা করা হয়েছে।",
+      "summary": [],
+      "syllabus": "দারসের আলোচনা আর \"সীরাত পাঠ\" বইয়ের ১৫ থেকে ৪৫ পৃষ্ঠার মধ্যে পরবর্তী পরীক্ষা হবে ইনশা আল্লাহু তা'আলা।",
+      "resources": [
+        {
+          "label": "বইঃ সীরাত পাঠ - গুরুত্ব, পদ্ধতি ও প্রায়োগিক রুপ<br />(লেখকঃ মাওলানা খালিদ সাইফুল্লাহ রহমানী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-1"
+    },
+    {
+      "legacy_id": 2,
+      "category": "seerat",
+      "date_label": "০৯ জানুয়ারি ২০২৬",
+      "duration_label": "১ ঘণ্টা ৫৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1ZDWo-M7Ai0EFPyO2sF19OV7X38yDWDOk/view?usp=sharing",
+      "title": "সীরাত-০২",
+      "description": "সীরাত সংরক্ষণের বৈজ্ঞানিক পদ্ধতি, আরবের ভৌগোলিক গুরুত্ব এবং ইব্রাহিম (আ.) ও ইসমাইল (আ.)-এর ইতিহাস।",
+      "summary": [
+        "সীরাত সংরক্ষণের ইতিহাস ও নির্ভরযোগ্যতা",
+        "আরব উপদ্বীপের ভৌগোলিক ও কৌশলগত গুরুত্ব",
+        "আরব জাতির শ্রেণিবিভাগ",
+        "ইব্রাহিম (আ.) ও ইসমাইল (আ.)-এর মক্কায় আগমন",
+        "আরবে মূর্তিপূজার সূচনা"
+      ],
+      "syllabus": "পরীক্ষা দারস ও \"সীরাতে খাতামুল আম্বিয়া\" বইয়ের ২১ থেকে ২৬ নম্বর পৃষ্ঠা পর্যন্ত এর উপর হবে।",
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": true,
+      "quiz_slug": "seerat-2"
+    },
+    {
+      "legacy_id": 3,
+      "category": "seerat",
+      "date_label": "১৬ জানুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ১২ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1kZ_1tZbT5hPbaCVFbEmeX2TbGRcE_zy-/view?usp=sharing",
+      "title": "সীরাত-০৩",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [
+        "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।"
+      ],
+      "syllabus": "পরীক্ষা দারস ও \"সীরাতে খাতামুল আম্বিয়া\" বইয়ের ২৬ থেকে ৪২ নম্বর পৃষ্ঠা পর্যন্ত এর উপর হবে।",
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-3"
+    },
+    {
+      "legacy_id": 4,
+      "category": "seerat",
+      "date_label": "২৩ জানুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ৩১ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1-f2y26WqHG81gh4vQANjlgQQ9saxJn1r/view?usp=sharing",
+      "title": "সীরাত-০৪",
+      "description": "নবুওয়ত লাভ এবং মক্কী জীবনের প্রারম্ভিক দাওয়াত ও সংঘাত।",
+      "summary": [],
+      "syllabus": "পরীক্ষা দারস ও \"সীরাতে খাতামুল আম্বিয়া\" বইয়ের ৪২ থেকে ৫০ নম্বর পৃষ্ঠা পর্যন্ত এর উপর হবে।",
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-4"
+    },
+    {
+      "legacy_id": 5,
+      "category": "seerat",
+      "date_label": "৩০ জানুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ২৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/13Csszc6M7y8gNIiAty4DuizylpNgV_cc/view?usp=sharing",
+      "title": "সীরাত-০৫",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": "পরীক্ষা দারস, একাধিক বিয়ের শীট ও \"সীরাতে খাতামুল আম্বিয়া\" বইয়ের ৫১ থেকে ৫৪ নম্বর পৃষ্ঠা পর্যন্ত এর উপর হবে।",
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-5"
+    },
+    {
+      "legacy_id": 6,
+      "category": "seerat",
+      "date_label": "০৬ ফেব্রুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ২৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/11n7Vnt_P5U4TLmWFX656WJDvATrHkPaT/view?usp=sharing",
+      "title": "সীরাত-০৬",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": "পরীক্ষা দারস ও \"সীরাতে খাতামুল আম্বিয়া\" বইয়ের ৫৫ থেকে ৬৮ নম্বর পৃষ্ঠা পর্যন্ত এর উপর হবে।",
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-6"
+    },
+    {
+      "legacy_id": 7,
+      "category": "seerat",
+      "date_label": "১৩ ফেব্রুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ১৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1X8wQ7XGO-nlVfBnuVf-hKg1Y6TgJcHoT/view?usp=sharing",
+      "title": "সীরাত-০৭",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": "পরীক্ষা দারস ও \"সীরাতে খাতামুল আম্বিয়া\" বইয়ের ৬৮ থেকে ৭১ নম্বর পৃষ্ঠা পর্যন্ত এর উপর হবে।",
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-7"
+    },
+    {
+      "legacy_id": 8,
+      "category": "seerat",
+      "date_label": "২০ ফেব্রুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ০৯ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1FjGPjcWu3DNOgiktJ2gyEsrdRs413Z9f/view?usp=sharing",
+      "title": "সীরাত-০৮",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-8"
+    },
+    {
+      "legacy_id": 9,
+      "category": "seerat",
+      "date_label": "২৭ ফেব্রুয়ারি ২০২৬",
+      "duration_label": "২ ঘণ্টা ০৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1JDjE1LCe0NdQY1Vq_5VdBQwX4OxUR_41/view?usp=sharing",
+      "title": "সীরাত-০৯",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-9"
+    },
+    {
+      "legacy_id": 10,
+      "category": "seerat",
+      "date_label": "০৬ মার্চ ২০২৬",
+      "duration_label": "২ ঘণ্টা ০৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1ZFF_2uY7U4FSryEJZZzAhwBud2i9B3tS/view?usp=sharing",
+      "title": "সীরাত-১০",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-10"
+    },
+    {
+      "legacy_id": 11,
+      "category": "seerat",
+      "date_label": "১৩ মার্চ ২০২৬",
+      "duration_label": "২ ঘণ্টা ১৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1w6vQnKX1mcLmFX0iwQmkOxKuplkC7Fmo/view?usp=sharing",
+      "title": "সীরাত-১১",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-11"
+    },
+    {
+      "legacy_id": 12,
+      "category": "seerat",
+      "date_label": "২৭ মার্চ ২০২৬",
+      "duration_label": "২ ঘণ্টা ২৭ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1JV7Sg4aT7lxF_zySVfT2h1IetMYLE4dr/view?usp=sharing",
+      "title": "সীরাত-১২",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-12"
+    },
+    {
+      "legacy_id": 13,
+      "category": "seerat",
+      "date_label": "০৩ এপ্রিল ২০২৬",
+      "duration_label": "২ ঘণ্টা ৫০ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1pGTABJHPOIydN62_yrSQFOfXP_lHiqO1/view?usp=sharing",
+      "title": "সীরাত-১৩",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-13"
+    },
+    {
+      "legacy_id": 14,
+      "category": "seerat",
+      "date_label": "১০ এপ্রিল ২০২৬",
+      "duration_label": "২ ঘণ্টা ৫৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1qa0_LLo5I61Xj0rzsA7qYcdxwn9f04lB/view?usp=sharing",
+      "title": "সীরাত-১৪",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-14"
+    },
+    {
+      "legacy_id": 15,
+      "category": "seerat",
+      "date_label": "১৭ এপ্রিল ২০২৬",
+      "duration_label": "২ ঘণ্টা ২২ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1pu1322_M9-aB9vRZ-LGZ2kDBAQFSn1Bt/view?usp=sharing",
+      "title": "সীরাত-১৫",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-15"
+    },
+    {
+      "legacy_id": 16,
+      "category": "seerat",
+      "date_label": "২৪ এপ্রিল ২০২৬",
+      "duration_label": "২ ঘণ্টা ৫০ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1WvQ_i1lOdsA2O8KJTaau9NWwSzWvAiH1/view?usp=sharing",
+      "title": "সীরাত-১৬",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-16"
+    },
+    {
+      "legacy_id": 17,
+      "category": "seerat",
+      "date_label": "০১ মে ২০২৬",
+      "duration_label": "৩ ঘণ্টা ৪২ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1okwiMh7marfZiYfOZOT5CHHOQQcz-ltt/view?usp=sharing",
+      "title": "সীরাত-১৭",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-17"
+    },
+    {
+      "legacy_id": 18,
+      "category": "seerat",
+      "date_label": "০৮ মে ২০২৬",
+      "duration_label": "২ ঘণ্টা ২১ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1r4wi_YQaqjGs-sw1xg-OlpNktmpPGvWN/view?usp=sharing",
+      "title": "সীরাত-১৮",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-18"
+    },
+    {
+      "legacy_id": 19,
+      "category": "seerat",
+      "date_label": "১৫ মে ২০২৬",
+      "duration_label": "২ ঘণ্টা ২৭ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1wrBqqPcou89a7y2AiwCdNRJgF7iOBCEx/view?usp=sharing",
+      "title": "সীরাত-১৯",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-19"
+    },
+    {
+      "legacy_id": 20,
+      "category": "seerat",
+      "date_label": "২২ মে ২০২৬",
+      "duration_label": "২ ঘণ্টা ২৪ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1J0OTZ-rCh8_CkjILAXDdJKCfG1xbr3nq/view?usp=sharing",
+      "title": "সীরাত-২০",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-20"
+    },
+    {
+      "legacy_id": 21,
+      "category": "seerat",
+      "date_label": "১৯ জুন ২০২৬",
+      "duration_label": "১ ঘণ্টা ৪১ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1U2LDSbnfCOa8aNBfGKURS8n8uyz5wYrn/view?usp=sharing",
+      "title": "সীরাত-২১",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-21"
+    },
+    {
+      "legacy_id": 22,
+      "category": "seerat",
+      "date_label": "২৬ জুন ২০২৬",
+      "duration_label": "২ ঘণ্টা ১৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1XifckqgPeY-bsYTa55BqwxLCGxTjdKyJ/view?usp=sharing",
+      "title": "সীরাত-২২",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-22"
+    },
+    {
+      "legacy_id": 23,
+      "category": "seerat",
+      "date_label": "০৩ জুলাই ২০২৬",
+      "duration_label": "২ ঘণ্টা ০৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1l2-OHOwybaPPK9YeSHrPlyjitXxvb-t2/view?usp=sharing",
+      "title": "সীরাত-২৩",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-23"
+    },
+    {
+      "legacy_id": 24,
+      "category": "seerat",
+      "date_label": "১০ জুলাই ২০২৬",
+      "duration_label": "১ ঘণ্টা ৪১ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1NhsqOh0ev7C9HEoIpZDe4aDtWDA91tj7/view?usp=sharing",
+      "title": "সীরাত-২৪",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-24"
+    },
+    {
+      "legacy_id": 25,
+      "category": "seerat",
+      "date_label": "১৭ জুলাই ২০২৬",
+      "duration_label": "১ ঘণ্টা ৫৭ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/17yDYQ0Ogad0WVWH6Uc07Cb2TQf5GYJnp/view?usp=sharing",
+      "title": "সীরাত-২৫",
+      "description": "এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।",
+      "summary": [],
+      "syllabus": null,
+      "resources": [
+        {
+          "label": "বইঃ \"সীরাতে খাতামুল আম্বিয়া\"<br />(লেখকঃ মুফতী মুহাম্মদ শফী)",
+          "url": "#"
+        }
+      ],
+      "has_family_tree": false,
+      "quiz_slug": "seerat-25"
+    },
+    {
+      "legacy_id": 101,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৮ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1TsM9B0GElMMMo-8Qj_rO_Sv3QaNhv9Oe/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০১",
+      "description": "নামাজ",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-1"
+    },
+    {
+      "legacy_id": 102,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৬ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1KAfzoRaNAJrq0JioJuyN6-xZOGejBuEs/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০২",
+      "description": "ইলমের গুরুত্ব ও ফজিলত",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-2"
+    },
+    {
+      "legacy_id": 103,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1ijQkY8gQz7Z3rMH-8hxDNoyaQcodoiRs/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০৩",
+      "description": "মুখের হেফাজত",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-3"
+    },
+    {
+      "legacy_id": 104,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৮ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1fR73OwMi86biSGcQigLAhwbi_Mi9KTo9/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০৪",
+      "description": "আদর্শ পরিবার ০১",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-4"
+    },
+    {
+      "legacy_id": 105,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "১ ঘণ্টা ৮ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1fa_Izojw3E3t3UmSIba0H2LC8s5cfIr6/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০৫",
+      "description": "আদর্শ পরিবার ২",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-5"
+    },
+    {
+      "legacy_id": 106,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "১ ঘণ্টা",
+      "drive_link": "https://drive.google.com/file/d/1UYihVWlwr_rVLRcdk9F6UvFD6pb6XgZ7/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০৭",
+      "description": "আদর্শ পরিবার ৩",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-7"
+    },
+    {
+      "legacy_id": 107,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "১ ঘণ্টা ১০ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1r8IUAgt1mG8fANf1e5GAQCG99wWnWmof/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০৮",
+      "description": "পরকীয়া",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-8"
+    },
+    {
+      "legacy_id": 108,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1cqm0Uaf2JkMz_qsVDLt-VTMz4jfwp7pI/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-০৯",
+      "description": "নেক সন্তান ০১",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-9"
+    },
+    {
+      "legacy_id": 109,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "১ ঘণ্টা",
+      "drive_link": "https://drive.google.com/file/d/1jb-Jf1lS8aOB3F4fbSDKXlC99GQ-1ekJ/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-১০",
+      "description": "নেক সন্তান ০২",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-10"
+    },
+    {
+      "legacy_id": 110,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৩ ঘণ্টা ২ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1uOqu_iUwDnV0dHgBuut9YQyGZwb-BSID/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-১১",
+      "description": "নেক সন্তান ৩",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-11"
+    },
+    {
+      "legacy_id": 111,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৮ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1o3TeLFQU07c4rT4FB-QtlPh8CPwvJTee/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-১২",
+      "description": "নেক সন্তান ৪",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-12"
+    },
+    {
+      "legacy_id": 112,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৯ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1JUY0vC5cj8UEuHQ4UBTv5fJLk7s4d6gM/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-১৩",
+      "description": "নেক সন্তান ৫",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-13"
+    },
+    {
+      "legacy_id": 113,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৫৮ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1lHEMz8rh4OFi51mE9jdk22PJ4VKAEy21/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-১৪",
+      "description": "নেক সন্তান ০৬",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-14"
+    },
+    {
+      "legacy_id": 114,
+      "category": "halakah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "১ ঘণ্টা",
+      "drive_link": "https://drive.google.com/file/d/1RpGNTMKseJLBzSZnwLUkHop5hvSZPAwr/view?usp=sharing",
+      "title": "মহিলাদের হালাকাহ-১৫",
+      "description": "ফরজে আইন-১",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "halakah-15"
+    },
+    {
+      "legacy_id": 501,
+      "category": "jummah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৪৫ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/17eFtnC_P9fKRF6vCkMUFMWgy6XVAa7vR/view?usp=sharing",
+      "title": "জুমার বয়ান-০১",
+      "description": "নেকাব পড়ার বিধান ১",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "jummah-1"
+    },
+    {
+      "legacy_id": 502,
+      "category": "jummah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৪৭ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1W-9xults84dr-ZgM1poBLLGjotSgJutE/view?usp=sharing",
+      "title": "জুমার বয়ান-০২",
+      "description": "মেরাজ ও ইসরা-১",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "jummah-2"
+    },
+    {
+      "legacy_id": 503,
+      "category": "jummah",
+      "date_label": "সংগৃহীত",
+      "duration_label": "৪৩ মিনিট",
+      "drive_link": "https://drive.google.com/file/d/1ZiTFzaf-63AGaujGVud8OBbwkLcKAzZG/view?usp=sharing",
+      "title": "জুমার বয়ান-০৩",
+      "description": "মেরাজ ও ইসরা-২",
+      "summary": [],
+      "syllabus": null,
+      "resources": [],
+      "has_family_tree": false,
+      "quiz_slug": "jummah-3"
+    }
+  ]
+}

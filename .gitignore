@@ -1,0 +1,38 @@
+# ─── Secrets ──────────────────────────────────────────────────────────────────
+# quiz-api.php hard-codes live MySQL credentials (SECURITY.md L1). Neither the
+# original nor its legacy/ copy may ever enter version control. A redacted,
+# reviewable version is committed as legacy/quiz-api.reference.php instead.
+/quiz-api.php
+/legacy/quiz-api.php
+
+.env
+.env.*
+!.env.example
+
+# Database exports used for the legacy migration
+/legacy/db/
+
+# ─── Laravel ──────────────────────────────────────────────────────────────────
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/**/.gitignore
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+.phpunit.result.cache
+.phpunit.cache/
+
+# ─── Tooling / OS ─────────────────────────────────────────────────────────────
+/.idea/
+/.vscode/
+*.log
+Thumbs.db
+Desktop.ini
+.DS_Store
