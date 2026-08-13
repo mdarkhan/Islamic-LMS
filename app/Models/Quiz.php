@@ -128,6 +128,23 @@ class Quiz extends Model
         return $total;
     }
 
+    /**
+     * Whether any official attempt exists. Once one does, scoring-sensitive fields
+     * (questions, options, correct answers, marks, type) are locked in the builder —
+     * changing them would leave stored scores stale. Corrections then go through the
+     * dedicated Regrade workflow (a later phase), not casual edits.
+     */
+    public function hasOfficialAttempts(): bool
+    {
+        return $this->attempts()->where('kind', QuizAttempt::KIND_OFFICIAL)->exists();
+    }
+
+    /** Alias that reads well at call sites guarding destructive scoring changes. */
+    public function scoringLocked(): bool
+    {
+        return $this->hasOfficialAttempts();
+    }
+
     /** @return HasMany<QuizQuestion, $this> */
     public function questions(): HasMany
     {

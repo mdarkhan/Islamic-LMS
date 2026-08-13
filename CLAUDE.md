@@ -39,6 +39,57 @@ accident. Full reasoning lives in `PROJECT_PLAN.md`, `DATABASE_SCHEMA.md`,
 
 ---
 
+## Quiz lifecycle & builder
+
+- **Lifecycle** (`Quiz::isOpenAt`, `officialState`): `draft` is admin-only and never
+  visible. `scheduled` and `published` are **both** window-governed — a quiz opens at
+  `starts_at` and closes at `ends_at` with **no status mutation and no cron**. `archived`
+  never allows a new official attempt but may offer practice when `practice_enabled`.
+  Server clock is authoritative; times are Asia/Dhaka.
+- **Scoring lock** (`Quiz::scoringLocked()` = has official attempts): once any official
+  attempt exists, the builder freezes the answer key, marks, type and question set —
+  add/edit/delete/duplicate of questions is refused with a Bengali message and
+  corrections go through the (future) Regrade flow. Reordering stays allowed (it does
+  not affect scores). Non-scoring metadata (title, description, schedule) stays editable.
+- **Question types are explicit.** `single` requires exactly one correct option;
+  `multiple` allows one or more. Never infer the type from the correct count — a
+  multiple-choice question may intentionally have a single correct option.
+- **Marks are canonical.** The legacy "Mega Question" is just `marks` (≥1); there is no
+  separate mega engine. `Quiz::recalculateTotalMarks()` runs after every question change.
+- Imported quizzes always land as `draft` for review before publishing.
+
+## Quiz import (CSV / XLSX)
+
+- Legacy workbook layout, 0-indexed: A(0) Question · B–M(1–12) Options · N(13) Correct
+  Answer · O(14) Timer seconds · P(15) Password *(ignored)* · Q/R(16/17) Start date/time
+  · S/T(18/19) End date/time · U(20) Exam Name → title · V(21) Leaderboard Password
+  *(ignored)* · W(22) Mega Question → marks.
+- **The config row is also the first question** — never skip it. Correct answers accept
+  Latin and Bengali numerals (`1`, `১, ২`). `>1` correct ⇒ `multiple`.
+- **Legacy password columns (P, V) are never imported or stored** — a non-blocking note
+  is shown. **Google Sheets is never a runtime dependency**: admins download XLSX and
+  import. Uploaded files are answer-key-sensitive → `ImportFileStore` (private, random
+  name, TTL sweep, deleted on commit). The importer is fully transactional.
+- Confirm **re-parses from the file** — question/answer data is never trusted from the
+  posted preview. Course/lesson are suggested by `QuizCourseMatcher` (case-insensitive
+  category prefix); a missing lesson links the course only and never fabricates a lesson.
+
+## Slugs
+
+Use `App\Support\Slug` (not `Str::slug`, which strips Bengali to nothing). It NFC-
+normalises, lowercases Latin, preserves Bengali/Arabic letters + matras + numerals, and
+`Slug::unique(...)` appends `-2`, `-3` on collision. Courses, Lessons and Quizzes use it.
+Existing migrated slugs are never regenerated (slug is set on create only).
+
+## Import files & credentials
+
+- All import uploads go through `ImportFileStore` (`imports/{kind}/`, 60-min TTL).
+- Student import issues a fresh temp password per account (**never the legacy sheet
+  password**) and hands the admin a one-time `CredentialExport` CSV (private,
+  download-once, 30-min TTL, gitignored, never logged).
+- Cleanup: `imports:cleanup` (hourly via the scheduler) + opportunistic prune on preview.
+  No long-running worker. cPanel needs the one `schedule:run` cron (see DEPLOYMENT.md).
+
 ## Local toolchain
 
 XAMPP's PHP is 8.0 and cannot run this app. A side-by-side PHP 8.3 lives at
@@ -200,6 +251,9 @@ anything done that has not been run. If a feature is incomplete, say so there
 rather than leaving a button that pretends to work.
 
 Unbuilt sections show a disabled "পরবর্তী ধাপ" (later phase) nav item — do not wire
-a fake page behind them. Not yet built: quiz builder, Sheet quiz importer, live exam
-UI, results/answer sheets, leaderboards, regrade UI, blog, Ask Ustaz, Zakat
-calculator, Hijri calendar, and the student/legacy-result migrations.
+a fake page behind them. Not yet built: **live exam UI** (start/resume/autosave/submit
+screens), results/answer sheets, leaderboards, regrade UI, manual mark adjustment UI,
+blog, Ask Ustaz, Zakat calculator, Hijri calendar, and the student/legacy-result
+migrations. The Quiz Builder, quiz import (CSV/XLSX) and the student `/exams` listing
+foundation ARE built (Phase 6). `/exams` is informational only — it never starts or
+debits an attempt; `QuizAttemptService` remains the only authority for that.

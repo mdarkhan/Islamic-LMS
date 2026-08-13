@@ -109,8 +109,10 @@ Nothing else should be group- or world-writable.
 
 ## 7. Scheduler
 
-Required for expiring abandoned attempts and scheduled result release. cPanel →
-Cron Jobs, every minute:
+Required for the hourly `imports:cleanup` sweep (abandoned quiz/student import uploads
+and expired credential exports) and, later, expiring abandoned attempts and scheduled
+result release. This single cron entry drives everything — no long-running worker.
+cPanel → Cron Jobs, every minute:
 
 ```
 * * * * * cd /home/<account>/masudalimi && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
@@ -118,6 +120,9 @@ Cron Jobs, every minute:
 
 Confirm the PHP binary path in cPanel — it is often version-specific, e.g.
 `/opt/cpanel/ea-php83/root/usr/bin/php`.
+
+Import files are also pruned opportunistically on each import preview, so cleanup still
+happens even if the cron is briefly misconfigured — but the cron is the reliable path.
 
 ---
 

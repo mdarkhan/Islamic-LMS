@@ -4,7 +4,7 @@
     $nav = [
         ['label' => 'ড্যাশবোর্ড', 'href' => route('student.dashboard'), 'icon' => 'dashboard', 'active' => request()->routeIs('student.dashboard')],
         ['label' => 'কোর্স', 'href' => route('student.courses.index'), 'icon' => 'book', 'active' => request()->routeIs('student.courses.*')],
-        ['label' => 'পরীক্ষা', 'icon' => 'exam', 'disabled' => true],
+        ['label' => 'পরীক্ষা', 'href' => route('student.exams.index'), 'icon' => 'exam', 'active' => request()->routeIs('student.exams.*')],
         ['label' => 'ফলাফল', 'icon' => 'results', 'disabled' => true],
         ['label' => 'অনুশীলন', 'icon' => 'practice', 'disabled' => true],
         ['label' => 'মেধাতালিকা', 'icon' => 'leaderboard', 'disabled' => true],

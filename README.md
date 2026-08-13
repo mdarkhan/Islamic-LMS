@@ -5,12 +5,14 @@ scheduled online examinations with server-side scoring, a points system, course
 archive, leaderboards, and an admin panel that removes the need to edit source
 code to manage content.
 
-> **Status: application layer, phase 2.** The hardened domain layer, authentication,
-> the design system, and the student & admin management interfaces (students, points,
-> courses, lessons, import, audit) are built and tested. The quiz builder, exam UI,
-> results, leaderboards and public modules are not yet built. See
-> [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current status — nothing is
-> listed there as done unless it has been run.
+> **Status: quiz builder & import, phase 6.** On top of the hardened domain layer,
+> authentication, design system and student/admin management, this phase adds the
+> **quiz administration system** (index, config, question builder, scheduling/publish,
+> preview, duplicate), the **CSV/XLSX legacy quiz importer** (worksheet select, preview,
+> validation), and the student **`/exams` listing foundation**. The **live exam-taking
+> UI**, results, leaderboards, regrade, and public modules (blog/Ask Ustaz/Zakat/Hijri)
+> are not yet built. See [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current
+> status — nothing is listed there as done unless it has been run.
 
 ---
 

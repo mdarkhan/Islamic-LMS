@@ -1,9 +1,9 @@
 # PROJECT_PLAN.md — Masud Alimi Islamic Learning & Examination Platform
 
-**Status:** Steps A–E complete, plus the first application-layer phase. Domain hardening,
-authentication, the design system, and the student & admin management interfaces (students,
-points, courses, lessons, import, audit) are built and tested (**133 passing tests**). The quiz
-builder, exam engine UI, results, leaderboards and public content modules have not started.
+**Status:** Through Phase 6. Domain hardening, authentication, the design system, the student &
+admin management interfaces, and now the **quiz builder + CSV/XLSX importer + student exams
+listing** are built and tested (**211 passing tests**). The live exam-taking UI, results,
+leaderboards, regrade and public content modules have not started (Phase 7+).
 
 **Last updated:** 2026-08-13
 
@@ -310,8 +310,8 @@ Critical paths that must be green before any module is called complete:
 | 3 | Auth, student accounts, admin student manager | **Done** (login, forced password change, roles/permissions, student CRUD + CSV/XLSX import) |
 | 4 | Point ledger + admin point manager | **Done** (grant / deduct / bulk, ledger views) |
 | 5 | Courses / lessons + catalogue UI + course seeder from extracted JSON | **Done** (student archive + admin course/lesson CRUD with inline resources) |
-| 6 | Quiz builder, Sheet/CSV/XLSX importer with row-level validation | Student importer **done**; quiz builder & Sheet quiz import not started |
-| 7 | Quiz engine: eligibility, transaction, autosave, resume, submit | Not started |
+| 6 | Quiz builder, CSV/XLSX importer with row-level validation | **Done** (quiz admin, question builder, scheduling/publish, preview, duplicate, legacy CSV/XLSX importer, student `/exams` listing foundation) |
+| 7 | Quiz engine UI: eligibility, transaction, autosave, resume, submit | Not started (domain services exist and are tested; the live UI is Phase 7) |
 | 8 | Results, answer sheets, leaderboards, cumulative leaderboard | Not started |
 | 9 | Regrading + manual score adjustment + audit log | Not started |
 | 10 | Practice mode | Not started |
@@ -382,13 +382,37 @@ Independent cross-check: the importer's gap report reproduced the audit's number
 (22 placeholder descriptions, 17 undated lessons, 17 without resources, 35 without syllabus,
 25 resources with no URL, `tafsir` empty), which were derived separately in §4.2.
 
+### Quiz builder & import (phase 6)
+
+- **Core cleanup:** canonical login throttle key (Bengali/Latin roll, case-folded email); student
+  import never reuses the compromised legacy password (fresh temp password + one-time credential
+  CSV); abandoned import + credential files swept by TTL (`imports:cleanup` + opportunistic);
+  bulk-point concurrency rolls back cleanly with a Bengali message; **fixed `config/app.php` to
+  honour `APP_TIMEZONE=Asia/Dhaka`** (it was silently UTC).
+- **Unicode slugs:** `App\Support\Slug` preserves Bengali/Arabic, used by Course/Lesson/Quiz.
+- **Quiz lifecycle:** `scheduled`/`published` both window-governed (no cron); `draft` hidden;
+  `archived` closed-but-practice-eligible. Documented and fully tested.
+- **Quiz admin:** index (search/filter/actions), create/edit config form, question builder (single/
+  multiple, 2–12 options, marks, explanation, active, reorder, duplicate), total-marks recalc,
+  scoring lock once official attempts exist, quiz duplicate, admin preview.
+- **Quiz import:** CSV + XLSX (worksheet selection), legacy column mapping, Bengali/Latin correct
+  indices, config-on-first-question-row handling, mega→marks, ignored password columns, robust
+  date parsing, course/lesson suggestion without fabrication, duplicate detection, transactional
+  import, hardened temp files. Google Sheets is never a runtime dependency.
+- **Student `/exams`:** grouped (open / upcoming / completed / previous) listing foundation,
+  eligibility presentation, no answer-key leakage. Informational only — no attempt is started here.
+
+**Tests: 211 passing, 540 assertions, on MySQL.** Frontend build clean. Manual browser QA covered
+the quiz index/create/edit/builder/preview, CSV import upload→preview, and the student exams page
+(desktop + 375px mobile, dark mode, no console errors, answer key absent from the HTML).
+
 ### Not built
 
-Quiz builder, Google Sheet quiz importer, live exam UI, results & answer sheets, leaderboards
+Live exam-taking UI (start/resume/autosave/submit screens), results & answer sheets, leaderboards
 (per-quiz and cumulative), regrade UI, manual score-adjustment UI, blog/Fatwa CMS, notices admin,
 Ask Ustaz, Zakat calculator, Hijri calendar service, and the student + legacy-result data
-migrations. The `AuditLogger`, `settings` and `notices` tables exist and are used where relevant,
-but their dedicated admin screens (beyond the audit log viewer) are not built.
+migrations. The quiz domain services (`QuizAttemptService`, `QuizScoringService`) exist and are
+tested, but the student-facing exam interface on top of them is Phase 7.
 
 ---
 

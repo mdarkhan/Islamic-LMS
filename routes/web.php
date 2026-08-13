@@ -34,6 +34,8 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
     Route::get('courses', [Student\CourseController::class, 'index'])->name('student.courses.index');
     Route::get('courses/{lesson:slug}', [Student\CourseController::class, 'show'])->name('student.courses.show');
 
+    Route::get('exams', [Student\ExamController::class, 'index'])->name('student.exams.index');
+
     Route::get('points', [Student\PointController::class, 'index'])->name('student.points');
 
     Route::get('profile', [Student\ProfileController::class, 'edit'])->name('student.profile.edit');
@@ -81,6 +83,35 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
     Route::middleware('perm:lessons.manage')->group(function () {
         Route::put('lessons/{lesson}/publish', [Admin\LessonController::class, 'togglePublish'])->name('lessons.publish');
         Route::resource('lessons', Admin\LessonController::class)->except(['show']);
+    });
+
+    // Quizzes — literal routes (create, import) are declared before the {quiz}
+    // wildcard so they are never captured as an id.
+    Route::get('quizzes', [Admin\QuizController::class, 'index'])->name('quizzes.index')->middleware('perm:quizzes.view');
+    Route::get('quizzes/create', [Admin\QuizController::class, 'create'])->name('quizzes.create')->middleware('perm:quizzes.create');
+    Route::post('quizzes', [Admin\QuizController::class, 'store'])->name('quizzes.store')->middleware('perm:quizzes.create');
+
+    Route::get('quizzes/import', [Admin\QuizImportController::class, 'form'])->name('quizzes.import.form')->middleware('perm:quizzes.import');
+    Route::post('quizzes/import/upload', [Admin\QuizImportController::class, 'upload'])->name('quizzes.import.upload')->middleware('perm:quizzes.import');
+    Route::post('quizzes/import/preview', [Admin\QuizImportController::class, 'preview'])->name('quizzes.import.preview')->middleware('perm:quizzes.import');
+    Route::post('quizzes/import/confirm', [Admin\QuizImportController::class, 'confirm'])->name('quizzes.import.confirm')->middleware('perm:quizzes.import');
+
+    Route::get('quizzes/{quiz}/edit', [Admin\QuizController::class, 'edit'])->name('quizzes.edit')->middleware('perm:quizzes.update');
+    Route::put('quizzes/{quiz}', [Admin\QuizController::class, 'update'])->name('quizzes.update')->middleware('perm:quizzes.update');
+    Route::delete('quizzes/{quiz}', [Admin\QuizController::class, 'destroy'])->name('quizzes.destroy')->middleware('perm:quizzes.update');
+    Route::get('quizzes/{quiz}/preview', [Admin\QuizController::class, 'preview'])->name('quizzes.preview')->middleware('perm:quizzes.view');
+    Route::post('quizzes/{quiz}/duplicate', [Admin\QuizController::class, 'duplicate'])->name('quizzes.duplicate')->middleware('perm:quizzes.create');
+    Route::put('quizzes/{quiz}/status', [Admin\QuizController::class, 'updateStatus'])->name('quizzes.status')->middleware('perm:quizzes.publish');
+
+    // Questions (nested). reorder is declared before the {question} wildcard.
+    Route::middleware('perm:quizzes.update')->group(function () {
+        Route::get('quizzes/{quiz}/questions/create', [Admin\QuizQuestionController::class, 'create'])->name('quizzes.questions.create');
+        Route::post('quizzes/{quiz}/questions', [Admin\QuizQuestionController::class, 'store'])->name('quizzes.questions.store');
+        Route::put('quizzes/{quiz}/questions/reorder', [Admin\QuizQuestionController::class, 'reorder'])->name('quizzes.questions.reorder');
+        Route::get('quizzes/{quiz}/questions/{question}/edit', [Admin\QuizQuestionController::class, 'edit'])->name('quizzes.questions.edit');
+        Route::put('quizzes/{quiz}/questions/{question}', [Admin\QuizQuestionController::class, 'update'])->name('quizzes.questions.update');
+        Route::delete('quizzes/{quiz}/questions/{question}', [Admin\QuizQuestionController::class, 'destroy'])->name('quizzes.questions.destroy');
+        Route::post('quizzes/{quiz}/questions/{question}/duplicate', [Admin\QuizQuestionController::class, 'duplicate'])->name('quizzes.questions.duplicate');
     });
 
     // Audit

@@ -66,6 +66,16 @@ compromised and rotated on first login.
 
 **Source:** one tab per quiz in workbook `15xgI5Q8…GnWY`, plus `Live`.
 
+> **Built (Phase 6).** This mapping is implemented by `QuizImportParser` +
+> `QuizImporter`, driven by the admin importer at `/admin/quizzes/import`. Workflow:
+> **download the sheet as XLSX → upload → select worksheet → preview → confirm**. The
+> running application never fetches Google Sheets. Uploaded files are treated as
+> answer-key-sensitive (`ImportFileStore`: private, random name, TTL sweep, deleted on
+> commit). Import is transactional; confirm re-parses from the file. Imported quizzes
+> land as `draft`. Course/lesson are suggested from the tab/Exam name by
+> `QuizCourseMatcher`; a missing lesson (e.g. Seerat 26/27) links the course only and
+> never fabricates a lesson. Legacy password columns P and V are detected and ignored.
+
 ### 2.1 Column mapping
 
 | Col | Idx | Target |

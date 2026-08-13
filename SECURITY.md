@@ -168,6 +168,32 @@ password-reset, point credit/deduct/bulk, course & lesson create/update/delete, 
 - **Answer-key confidentiality carried into Eloquent**: `QuizOption::is_correct` is in the model's
   `$hidden` set, so it cannot leak into a serialised response by accident.
 
+### 2.11 Phase 6 specifics (quiz builder & import)
+
+- **Legacy passwords are never reused.** The student importer treats the legacy spreadsheet
+  password as compromised (L2): it is read only to recognise the format, never used as the account
+  password, never saved, never logged. Each imported account gets a fresh random temp password and
+  a one-time `CredentialExport` CSV — private storage, unguessable name, deleted on download, 30-min
+  TTL, gitignored, never audited. A test asserts the legacy password does not authenticate.
+- **Throttle keys are canonical.** The login limiter keys on the normalised roll (Bengali↔Latin) or
+  the trimmed/lower-cased email, so one account cannot obtain multiple throttle buckets by varying
+  the spelling.
+- **Quiz import files are answer-key-sensitive.** `ImportFileStore` keeps them in private storage
+  with a random name, a 60-min TTL sweep (`imports:cleanup` + opportunistic prune), and deletes them
+  on commit. The importer is transactional (all-or-nothing). Confirm **re-parses from the file** —
+  the answer key is derived server-side, never trusted from the posted preview.
+- **Legacy quiz password columns (P, V) are ignored** — detected, noted, never stored.
+- **No runtime Google Sheets dependency.** Quizzes are imported from uploaded CSV/XLSX; the running
+  app never fetches a sheet, so exams do not depend on a sheet staying reachable or public.
+- **The student `/exams` page never carries the answer key.** It loads no options at all (only
+  counts and schedule); a test inspects the rendered HTML for `is_correct` / option bodies /
+  `correctOption` / `correctIndices` and asserts none are present.
+- **Bulk point concurrency fails safe.** A debit that becomes insufficient after the pre-check
+  (a concurrent drain) rolls the whole batch back and returns a Bengali validation message, never a
+  500 or a partial movement.
+- **Timezone integrity.** `config/app.php` now honours `APP_TIMEZONE=Asia/Dhaka` (it was silently
+  UTC), so admin-entered exam schedules are interpreted in Dhaka rather than shifted six hours.
+
 ---
 
 ## 3. Files that must never be committed
