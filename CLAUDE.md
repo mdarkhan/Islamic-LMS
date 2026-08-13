@@ -162,19 +162,23 @@ and `super_admin` bypasses `perm:` via `User::hasPermission()`.
 ## Interface language (i18n)
 
 - **The UI chrome is bilingual (bn/en); content is always Bengali.** Navigation,
-  labels, buttons, dashboards, auth, profile, exams, points and shared components are
-  translated via `__('group.key')` with files in `lang/bn/*.php` and `lang/en/*.php`
-  (groups: `nav`, `ui`, `dashboard`, `auth`, `profile`, `exams`, `points`, `courses`).
-  Lesson titles, quiz questions/options, notices and other **content stay Bengali**
-  regardless of locale — never localise content strings.
+  labels, buttons, both dashboards, auth, profile, exams, points, courses, and the
+  **entire admin CRUD surface** (students, points, courses, lessons, quizzes +
+  question builder, quiz import, audit log, shared components) are translated via
+  `__('group.key')`, with files in `lang/bn/*.php` and `lang/en/*.php` (groups: `nav`,
+  `ui`, `dashboard`, `auth`, `profile`, `exams`, `points`, `courses`, `admin`,
+  `lessons`, `quizzes`, `students`, `audit`). Lesson titles, quiz questions/options,
+  notices and other **content stay Bengali** regardless of locale — never localise
+  content strings, only chrome (a course's actual name like "সীরাত" must keep showing
+  even when the interface is set to English).
 - Default locale is `bn` (`APP_LOCALE`). `SetLocale` middleware (web group) resolves the
   language per request: authenticated `users.locale` → session → app default. The
   `x-ui.locale-toggle` (in every layout header + the profile page) posts to
   `locale.update`, which saves to the user and the session.
 - The site name **মাসউদ আলিমী** and the Arabic bismillah are never translated.
-- New user-facing chrome must use `__()` keys, not hardcoded strings. Deeper admin
-  CRUD forms (student/quiz/course/lesson management, imports) are **not yet localised**
-  and remain Bengali — migrate them incrementally with the same `__()` pattern.
+- New user-facing chrome must use `__()` keys, not hardcoded strings. `admin.php` holds
+  generic cross-entity CRUD vocabulary (order, slug, publish/unpublish, delete confirms,
+  status badge, temp-password reveal); entity-specific copy lives in its own file.
 
 ## Auth
 

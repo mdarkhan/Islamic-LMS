@@ -1,9 +1,9 @@
 @props(['status'])
 @php
     $map = [
-        'active' => ['success', 'সক্রিয়'],
-        'suspended' => ['warning', 'স্থগিত'],
-        'archived' => ['neutral', 'সংরক্ষণাগার'],
+        'active' => ['success', __('admin.status_active')],
+        'suspended' => ['warning', __('admin.status_suspended')],
+        'archived' => ['neutral', __('admin.status_archived')],
     ];
     [$color, $label] = $map[$status] ?? ['neutral', $status];
 @endphp

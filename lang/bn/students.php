@@ -1,0 +1,76 @@
+<?php
+
+return [
+    'admin_heading' => 'শিক্ষার্থী ব্যবস্থাপনা',
+    'search_placeholder' => 'নাম বা রোল দিয়ে খুঁজুন...',
+    'status_active' => 'সক্রিয়',
+    'status_suspended' => 'স্থগিত',
+    'status_archived' => 'সংরক্ষণাগার',
+    'new' => 'নতুন',
+    'no_students' => 'কোনো শিক্ষার্থী পাওয়া যায়নি।',
+
+    'name_col' => 'নাম',
+    'roll_col' => 'রোল',
+    'guardian_col' => 'অভিভাবক',
+    'points_col' => 'পয়েন্ট',
+    'status_col' => 'স্ট্যাটাস',
+    'details' => 'বিস্তারিত',
+
+    // Create
+    'new_student' => 'নতুন শিক্ষার্থী',
+    'roll_number' => 'রোল নম্বর',
+    'roll_placeholder' => 'যেমনঃ ১০১',
+    'name' => 'নাম',
+    'guardian_name' => 'পিতা/স্বামীর নাম',
+    'phone' => 'মোবাইল',
+    'email_optional' => 'ইমেইল (ঐচ্ছিক)',
+    'password_heading' => 'পাসওয়ার্ড',
+    'password_generate' => 'স্বয়ংক্রিয় অস্থায়ী পাসওয়ার্ড তৈরি করুন (প্রথম লগইনে পরিবর্তন বাধ্যতামূলক)',
+    'password_manual' => 'নিজে পাসওয়ার্ড নির্ধারণ করুন',
+    'password_min_placeholder' => 'কমপক্ষে ৬ অক্ষর',
+    'create_student' => 'শিক্ষার্থী তৈরি করুন',
+
+    // Edit
+    'edit_student' => 'শিক্ষার্থী সম্পাদনা',
+    'email' => 'ইমেইল',
+
+    // Show
+    'account_heading' => 'অ্যাকাউন্ট',
+    'suspend' => 'স্থগিত করুন',
+    'reactivate' => 'পুনরায় সক্রিয় করুন',
+    'archive_student' => 'সংরক্ষণাগারভুক্ত করুন',
+    'confirm_archive' => 'এই শিক্ষার্থীকে সংরক্ষণাগারভুক্ত করবেন? পরীক্ষার ইতিহাস অক্ষত থাকবে।',
+    'reset_password' => 'পাসওয়ার্ড রিসেট',
+    'confirm_reset_password' => 'নতুন অস্থায়ী পাসওয়ার্ড তৈরি করবেন? বর্তমান সেশন বাতিল হবে।',
+    'recent_points' => 'সাম্প্রতিক পয়েন্ট',
+    'full_ledger' => 'সম্পূর্ণ লেজার',
+    'no_point_transactions' => 'কোনো পয়েন্ট লেনদেন নেই।',
+    'exam_history' => 'পরীক্ষার ইতিহাস',
+    'no_exams_taken' => 'এখনো কোনো পরীক্ষা দেয়নি।',
+    'adjustment' => 'সমন্বয়',
+
+    // Import
+    'import_heading' => 'শিক্ষার্থী ইমপোর্ট',
+    'file_label' => 'CSV অথবা XLSX ফাইল',
+    'file_hint' => 'সর্বোচ্চ ৫ MB। প্রথম শিটটি পড়া হবে।',
+    'preview_button' => 'প্রিভিউ দেখুন',
+    'columns_heading' => 'কলাম',
+    'col_roll_required' => 'Roll No. (আবশ্যক)',
+    'col_name_required' => 'Name (আবশ্যক)',
+    'col_guardian' => "Father's/Husband's Name",
+    'import_security_note' => 'স্প্রেডশিটে পুরনো পাসওয়ার্ড থাকলেও তা নিরাপত্তার কারণে ব্যবহার করা হবে না। প্রতিটি শিক্ষার্থী নতুন অস্থায়ী পাসওয়ার্ড পাবে (প্রথম লগইনে পরিবর্তন বাধ্যতামূলক), এবং শেষে একটি CSV ফাইলে একবার ডাউনলোড করা যাবে। বিদ্যমান রোল বাদ দেওয়া হবে।',
+    'parse_error_title' => 'ফাইল পড়া যায়নি',
+
+    'preview_heading' => 'ইমপোর্ট প্রিভিউ',
+    'stat_will_import' => 'ইমপোর্ট হবে',
+    'stat_existing' => 'বিদ্যমান',
+    'stat_duplicate' => 'ডুপ্লিকেট',
+    'stat_error' => 'ত্রুটি',
+    'preview_security_note' => 'নিরাপত্তার কারণে স্প্রেডশিটের পুরনো পাসওয়ার্ড ব্যবহার করা হবে না। প্রতিটি শিক্ষার্থী নতুন অস্থায়ী পাসওয়ার্ড পাবে এবং প্রথম লগইনে তা পরিবর্তন বাধ্যতামূলক। ইমপোর্ট শেষে একটি CSV ফাইলে সব ক্রেডেনশিয়াল একবারই ডাউনলোড করা যাবে।',
+    'row_col' => 'সারি',
+    'status_will_import' => 'ইমপোর্ট হবে',
+    'status_exists' => 'বিদ্যমান — বাদ',
+    'status_duplicate' => 'ডুপ্লিকেট — বাদ',
+    'status_error' => 'ত্রুটি — বাদ',
+    'confirm_import_count' => ':count জন ইমপোর্ট নিশ্চিত করুন',
+];

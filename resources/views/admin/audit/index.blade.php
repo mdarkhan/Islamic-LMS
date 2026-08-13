@@ -1,7 +1,7 @@
-<x-layout.admin title="অডিট লগ" heading="অডিট লগ">
+<x-layout.admin :title="__('nav.audit')" :heading="__('audit.heading')">
     <form method="GET" class="mb-6 sm:w-72">
         <x-ui.select name="action" onchange="this.form.submit()">
-            <option value="">সব কার্যক্রম</option>
+            <option value="">{{ __('admin.all_activity') }}</option>
             @foreach ($actions as $a)
                 <option value="{{ $a }}" @selected($action === $a)>{{ $a }}</option>
             @endforeach
@@ -9,20 +9,20 @@
     </form>
 
     @if ($logs->isEmpty())
-        <x-ui.card><x-ui.empty title="কোনো লগ নেই।" /></x-ui.card>
+        <x-ui.card><x-ui.empty :title="__('audit.no_logs')" /></x-ui.card>
     @else
         <x-ui.table>
             <x-slot:head>
-                <th class="px-4 py-3">সময়</th>
-                <th class="px-4 py-3">কে</th>
-                <th class="px-4 py-3">কার্যক্রম</th>
-                <th class="px-4 py-3 hidden md:table-cell">অবজেক্ট</th>
-                <th class="px-4 py-3 hidden lg:table-cell">পরিবর্তন</th>
+                <th class="px-4 py-3">{{ __('admin.when') }}</th>
+                <th class="px-4 py-3">{{ __('admin.who') }}</th>
+                <th class="px-4 py-3">{{ __('quizzes.actions') }}</th>
+                <th class="px-4 py-3 hidden md:table-cell">{{ __('admin.object') }}</th>
+                <th class="px-4 py-3 hidden lg:table-cell">{{ __('admin.changes') }}</th>
             </x-slot:head>
             @foreach ($logs as $log)
                 <tr>
                     <td class="px-4 py-3 text-muted whitespace-nowrap text-xs">{{ $log->created_at->format('d/m/Y H:i') }}</td>
-                    <td class="px-4 py-3 text-ink">{{ $log->user?->name ?? 'সিস্টেম' }}</td>
+                    <td class="px-4 py-3 text-ink">{{ $log->user?->name ?? __('dashboard.system') }}</td>
                     <td class="px-4 py-3"><code class="text-xs font-mono text-brand-strong">{{ $log->action }}</code></td>
                     <td class="px-4 py-3 text-muted text-xs hidden md:table-cell">
                         {{ $log->auditable_type ? class_basename($log->auditable_type).' #'.$log->auditable_id : '—' }}

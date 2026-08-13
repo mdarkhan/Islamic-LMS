@@ -1,8 +1,8 @@
-<x-layout.admin title="ওয়ার্কশিট নির্বাচন" heading="ওয়ার্কশিট নির্বাচন">
-    <x-ui.breadcrumbs :items="['কুইজ' => route('admin.quizzes.index'), 'ইমপোর্ট' => route('admin.quizzes.import.form'), 'ওয়ার্কশিট' => null]" class="mb-5" />
+<x-layout.admin :title="__('quizzes.import_worksheet_heading')" :heading="__('quizzes.import_worksheet_heading')">
+    <x-ui.breadcrumbs :items="[__('nav.quizzes') => route('admin.quizzes.index'), __('dashboard.import') => route('admin.quizzes.import.form'), __('quizzes.import_worksheet_heading') => null]" class="mb-5" />
 
     <x-ui.card class="max-w-lg">
-        <p class="text-sm text-muted mb-4">এই ফাইলে একাধিক ওয়ার্কশিট আছে। কোনটি ইমপোর্ট করবেন?</p>
+        <p class="text-sm text-muted mb-4">{{ __('quizzes.import_worksheet_prompt') }}</p>
         <div class="space-y-2">
             @foreach ($sheets as $sheet)
                 <form method="POST" action="{{ route('admin.quizzes.import.preview') }}">

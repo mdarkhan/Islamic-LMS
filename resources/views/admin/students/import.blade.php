@@ -1,31 +1,31 @@
-<x-layout.admin title="শিক্ষার্থী ইমপোর্ট" heading="শিক্ষার্থী ইমপোর্ট">
-    <x-ui.breadcrumbs :items="['শিক্ষার্থী' => route('admin.students.index'), 'ইমপোর্ট' => null]" class="mb-5" />
+<x-layout.admin :title="__('students.import_heading')" :heading="__('students.import_heading')">
+    <x-ui.breadcrumbs :items="[__('nav.students') => route('admin.students.index'), __('dashboard.import') => null]" class="mb-5" />
 
     @isset($parseError)
-        <x-ui.alert type="error" title="ফাইল পড়া যায়নি" class="mb-6">{{ $parseError }}</x-ui.alert>
+        <x-ui.alert type="error" :title="__('students.parse_error_title')" class="mb-6">{{ $parseError }}</x-ui.alert>
     @endisset
 
     <div class="grid gap-6 lg:grid-cols-3">
         <x-ui.card class="lg:col-span-2">
             <form method="POST" action="{{ route('admin.students.import.preview') }}" enctype="multipart/form-data" class="space-y-5">
                 @csrf
-                <x-ui.field label="CSV অথবা XLSX ফাইল" name="file" hint="সর্বোচ্চ ৫ MB। প্রথম শিটটি পড়া হবে।" required>
+                <x-ui.field :label="__('students.file_label')" name="file" :hint="__('students.file_hint')" required>
                     <input type="file" name="file" accept=".csv,.xlsx,text/csv"
                            class="block w-full text-sm text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-brand file:text-brand-ink file:font-semibold hover:file:bg-brand-strong file:cursor-pointer">
                 </x-ui.field>
-                <x-ui.button type="submit"><x-ui.icon name="import" class="w-4 h-4" /> প্রিভিউ দেখুন</x-ui.button>
+                <x-ui.button type="submit"><x-ui.icon name="import" class="w-4 h-4" /> {{ __('students.preview_button') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         <x-ui.card>
-            <h3 class="font-bold text-ink mb-3">কলাম</h3>
+            <h3 class="font-bold text-ink mb-3">{{ __('students.columns_heading') }}</h3>
             <ul class="text-sm text-muted space-y-2">
-                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Roll No. (আবশ্যক)</li>
-                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Name (আবশ্যক)</li>
-                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Father's/Husband's Name</li>
+                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> {{ __('students.col_roll_required') }}</li>
+                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> {{ __('students.col_name_required') }}</li>
+                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> {{ __('students.col_guardian') }}</li>
             </ul>
             <p class="text-xs text-muted mt-4 border-t border-line pt-3 leading-relaxed">
-                স্প্রেডশিটে পুরনো পাসওয়ার্ড থাকলেও তা নিরাপত্তার কারণে ব্যবহার করা হবে না। প্রতিটি শিক্ষার্থী নতুন অস্থায়ী পাসওয়ার্ড পাবে (প্রথম লগইনে পরিবর্তন বাধ্যতামূলক), এবং শেষে একটি CSV ফাইলে একবার ডাউনলোড করা যাবে। বিদ্যমান রোল বাদ দেওয়া হবে।
+                {{ __('students.import_security_note') }}
             </p>
         </x-ui.card>
     </div>

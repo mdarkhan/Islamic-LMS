@@ -31,18 +31,18 @@
          }">
         <x-ui.card>
             <div class="space-y-5">
-                <x-ui.field label="প্রশ্ন" name="body" required>
+                <x-ui.field :label="__('quizzes.question_body')" name="body" required>
                     <x-ui.textarea name="body">{{ old('body', $question->body ?? '') }}</x-ui.textarea>
                 </x-ui.field>
                 <div class="grid sm:grid-cols-2 gap-4">
-                    <x-ui.field label="ধরন" name="type">
+                    <x-ui.field :label="__('quizzes.question_type')" name="type">
                         <select name="type" x-model="type" @change="onTypeChange()"
                                 class="w-full rounded-xl bg-surface-raised text-ink border border-line focus:border-brand px-4 py-2.5 text-sm outline-none">
-                            <option value="single">একক উত্তর</option>
-                            <option value="multiple">বহু-উত্তর</option>
+                            <option value="single">{{ __('quizzes.type_single_choice') }}</option>
+                            <option value="multiple">{{ __('quizzes.type_multiple_choice') }}</option>
                         </select>
                     </x-ui.field>
-                    <x-ui.field label="নম্বর" name="marks" required>
+                    <x-ui.field :label="__('quizzes.marks')" name="marks" required>
                         <x-ui.input type="number" name="marks" min="1" :value="old('marks', $question->marks ?? 1)" />
                     </x-ui.field>
                 </div>
@@ -51,8 +51,8 @@
 
         <x-ui.card>
             <div class="flex items-center justify-between mb-1">
-                <h3 class="font-bold text-ink">অপশন <span class="text-muted font-normal text-sm">(<span x-text="type === 'single' ? 'একটি সঠিক' : 'এক বা একাধিক সঠিক'"></span>)</span></h3>
-                <button type="button" @click="add()" x-show="options.length < 12" class="text-sm font-semibold text-brand hover:underline">+ অপশন</button>
+                <h3 class="font-bold text-ink">{{ __('quizzes.options_heading') }} <span class="text-muted font-normal text-sm">(<span x-text="type === 'single' ? '{{ __('quizzes.options_single_hint') }}' : '{{ __('quizzes.options_multiple_hint') }}'"></span>)</span></h3>
+                <button type="button" @click="add()" x-show="options.length < 12" class="text-sm font-semibold text-brand hover:underline">{{ __('quizzes.add_option') }}</button>
             </div>
             @error('options')<p class="text-xs text-rose-600 mb-2">{{ $message }}</p>@enderror
             <div class="space-y-2">
@@ -61,31 +61,31 @@
                         <button type="button" @click="setCorrect(i)"
                                 :class="row.correct ? 'bg-brand text-brand-ink border-brand' : 'bg-surface-raised border-line text-muted'"
                                 class="shrink-0 w-9 h-9 rounded-lg border grid place-items-center font-bold transition-colors"
-                                :aria-label="row.correct ? 'সঠিক উত্তর' : 'সঠিক হিসেবে চিহ্নিত করুন'">
+                                :aria-label="row.correct ? '{{ __('quizzes.mark_correct') }}' : '{{ __('quizzes.mark_as_correct') }}'">
                             <span x-text="indices[i]"></span>
                         </button>
-                        <input x-model="row.body" :name="`options[${i}][body]`" placeholder="অপশন লিখুন..."
+                        <input x-model="row.body" :name="`options[${i}][body]`" placeholder="{{ __('quizzes.option_placeholder') }}"
                                class="flex-1 rounded-xl bg-surface-raised border border-line px-3 py-2 text-sm outline-none focus:border-brand">
                         <template x-if="row.correct"><input type="hidden" :name="`options[${i}][correct]`" value="1"></template>
-                        <button type="button" @click="remove(i)" x-show="options.length > 2" class="p-2 text-muted hover:text-rose-600" aria-label="মুছুন"><x-ui.icon name="close" class="w-4 h-4" /></button>
+                        <button type="button" @click="remove(i)" x-show="options.length > 2" class="p-2 text-muted hover:text-rose-600" aria-label="{{ __('quizzes.delete') }}"><x-ui.icon name="close" class="w-4 h-4" /></button>
                     </div>
                 </template>
             </div>
-            <p class="text-xs text-muted mt-3">সঠিক উত্তর চিহ্নিত করতে অপশনের অক্ষরে ক্লিক করুন। ২–১২টি অপশন দেওয়া যাবে।</p>
+            <p class="text-xs text-muted mt-3">{{ __('quizzes.options_hint') }}</p>
         </x-ui.card>
     </div>
 
     <div class="space-y-5">
         <x-ui.card>
-            <h3 class="font-bold text-ink mb-4">অতিরিক্ত</h3>
+            <h3 class="font-bold text-ink mb-4">{{ __('quizzes.extra_heading') }}</h3>
             <div class="space-y-4">
-                <x-ui.field label="ব্যাখ্যা (ঐচ্ছিক)" name="explanation" hint="ফলাফলের সময় দেখানো হতে পারে">
+                <x-ui.field :label="__('quizzes.explanation_optional')" name="explanation" :hint="__('quizzes.explanation_hint')">
                     <x-ui.textarea name="explanation">{{ old('explanation', $question->explanation ?? '') }}</x-ui.textarea>
                 </x-ui.field>
                 <label class="flex items-center gap-2 text-sm text-ink">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $question->is_active ?? true)) class="rounded border-line text-brand focus:ring-brand">
-                    সক্রিয় (নিষ্ক্রিয় প্রশ্ন নম্বরে যোগ হয় না)
+                    {{ __('quizzes.is_active') }}
                 </label>
             </div>
         </x-ui.card>

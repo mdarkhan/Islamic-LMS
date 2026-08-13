@@ -1,0 +1,76 @@
+<?php
+
+return [
+    'admin_heading' => 'Student Management',
+    'search_placeholder' => 'Search by name or roll...',
+    'status_active' => 'Active',
+    'status_suspended' => 'Suspended',
+    'status_archived' => 'Archived',
+    'new' => 'New',
+    'no_students' => 'No students found.',
+
+    'name_col' => 'Name',
+    'roll_col' => 'Roll',
+    'guardian_col' => 'Guardian',
+    'points_col' => 'Points',
+    'status_col' => 'Status',
+    'details' => 'Details',
+
+    // Create
+    'new_student' => 'New Student',
+    'roll_number' => 'Roll number',
+    'roll_placeholder' => 'e.g. 101',
+    'name' => 'Name',
+    'guardian_name' => "Father's/Husband's name",
+    'phone' => 'Phone',
+    'email_optional' => 'Email (optional)',
+    'password_heading' => 'Password',
+    'password_generate' => 'Generate a temporary password automatically (change required at first login)',
+    'password_manual' => 'Set the password myself',
+    'password_min_placeholder' => 'At least 6 characters',
+    'create_student' => 'Create student',
+
+    // Edit
+    'edit_student' => 'Edit Student',
+    'email' => 'Email',
+
+    // Show
+    'account_heading' => 'Account',
+    'suspend' => 'Suspend',
+    'reactivate' => 'Reactivate',
+    'archive_student' => 'Archive',
+    'confirm_archive' => 'Archive this student? Their exam history stays intact.',
+    'reset_password' => 'Reset password',
+    'confirm_reset_password' => 'Generate a new temporary password? Current sessions will be logged out.',
+    'recent_points' => 'Recent points',
+    'full_ledger' => 'Full ledger',
+    'no_point_transactions' => 'No point transactions.',
+    'exam_history' => 'Exam History',
+    'no_exams_taken' => 'No exams taken yet.',
+    'adjustment' => 'Adjustment',
+
+    // Import
+    'import_heading' => 'Student Import',
+    'file_label' => 'CSV or XLSX file',
+    'file_hint' => 'Max 5 MB. The first sheet is read.',
+    'preview_button' => 'Preview',
+    'columns_heading' => 'Columns',
+    'col_roll_required' => 'Roll No. (required)',
+    'col_name_required' => 'Name (required)',
+    'col_guardian' => "Father's/Husband's Name",
+    'import_security_note' => "Any legacy password in the spreadsheet will not be used, for security. Each student gets a fresh temporary password (change required at first login), downloadable once as a CSV at the end. Existing rolls are skipped.",
+    'parse_error_title' => 'Could not read the file',
+
+    'preview_heading' => 'Import Preview',
+    'stat_will_import' => 'Will import',
+    'stat_existing' => 'Existing',
+    'stat_duplicate' => 'Duplicate',
+    'stat_error' => 'Error',
+    'preview_security_note' => 'For security, legacy spreadsheet passwords will not be used. Each student gets a fresh temporary password with a forced change at first login. All credentials will be downloadable once as a CSV after import.',
+    'row_col' => 'Row',
+    'status_will_import' => 'Will import',
+    'status_exists' => 'Existing — skipped',
+    'status_duplicate' => 'Duplicate — skipped',
+    'status_error' => 'Error — skipped',
+    'confirm_import_count' => 'Confirm import of :count',
+];
