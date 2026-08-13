@@ -79,6 +79,31 @@ class BengaliText
     }
 
     /**
+     * Format a Y-m-d date into a Bengali label such as "০২ জানুয়ারি ২০২৬" — the
+     * inverse of parseDate(). Used so an admin only ever picks a date from a
+     * calendar; the display label is always derived from it, never typed by hand.
+     */
+    public static function formatDateLabel(?string $date): ?string
+    {
+        if ($date === null || trim($date) === '') {
+            return null;
+        }
+
+        try {
+            $parsed = new \DateTimeImmutable($date);
+        } catch (\Exception) {
+            return null;
+        }
+
+        $monthNames = array_flip(self::MONTHS);
+        $day = self::toBengaliDigits($parsed->format('d'));
+        $month = $monthNames[(int) $parsed->format('n')] ?? '';
+        $year = self::toBengaliDigits($parsed->format('Y'));
+
+        return trim("{$day} {$month} {$year}");
+    }
+
+    /**
      * Parse a label such as "২ ঘণ্টা ১৫ মিনিট" or "৫৮ মিনিট" into total minutes.
      */
     public static function parseDurationMinutes(?string $label): ?int

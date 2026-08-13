@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\LessonRequest;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Services\Audit\AuditLogger;
+use App\Services\Import\BengaliText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -55,8 +56,11 @@ class LessonController extends Controller
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'syllabus' => $data['syllabus'] ?? null,
+                // The calendar picker is the only source of truth for the date; the
+                // Bengali label shown to students is always derived from it, never
+                // typed by hand.
                 'held_on' => $data['held_on'] ?? null,
-                'date_label' => $data['date_label'] ?? null,
+                'date_label' => BengaliText::formatDateLabel($data['held_on'] ?? null),
                 'duration_minutes' => $data['duration_minutes'] ?? null,
                 'duration_label' => $data['duration_label'] ?? null,
                 'media_provider' => $data['media_provider'],
@@ -99,7 +103,7 @@ class LessonController extends Controller
                 'description' => $data['description'] ?? null,
                 'syllabus' => $data['syllabus'] ?? null,
                 'held_on' => $data['held_on'] ?? null,
-                'date_label' => $data['date_label'] ?? null,
+                'date_label' => BengaliText::formatDateLabel($data['held_on'] ?? null),
                 'duration_minutes' => $data['duration_minutes'] ?? null,
                 'duration_label' => $data['duration_label'] ?? null,
                 'media_provider' => $data['media_provider'],

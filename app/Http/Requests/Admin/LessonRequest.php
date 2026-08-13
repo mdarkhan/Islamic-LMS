@@ -40,8 +40,10 @@ class LessonRequest extends FormRequest
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
             'syllabus' => ['nullable', 'string', 'max:5000'],
+            // date_label is not submitted: it is always derived from held_on
+            // (BengaliText::formatDateLabel) so the calendar is the single source
+            // of truth for what students see.
             'held_on' => ['nullable', 'date'],
-            'date_label' => ['nullable', 'string', 'max:100'],
             'duration_minutes' => ['nullable', 'integer', 'min:0', 'max:6000'],
             'duration_label' => ['nullable', 'string', 'max:100'],
             'media_provider' => ['required', Rule::in(['google_drive', 'external', 'none'])],

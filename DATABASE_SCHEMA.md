@@ -134,7 +134,7 @@ with zero lessons — see `PROJECT_PLAN.md` §4.2.)
 | summary | JSON NULL | Array of bullet strings |
 | syllabus | TEXT NULL | |
 | held_on | DATE NULL | Parsed date. NULL where the legacy label was `সংগৃহীত` |
-| date_label | VARCHAR(100) NULL | **Original Bengali label preserved verbatim** |
+| date_label | VARCHAR(100) NULL | Display label. Legacy import: original Bengali text preserved verbatim. Admin-authored: derived from `held_on` via `BengaliText::formatDateLabel()` — never typed by hand |
 | duration_minutes | SMALLINT UNSIGNED NULL | Parsed |
 | duration_label | VARCHAR(100) NULL | Original Bengali label preserved verbatim |
 | media_provider | ENUM('google_drive','external','none') | default `google_drive` |
@@ -154,8 +154,10 @@ KEY lessons_held_on_index (held_on)
 
 Keeping both `held_on` and `date_label` is deliberate: the label is the only faithful record for
 the 17 lessons whose date is the word "সংগৃহীত", and re-rendering a parsed date would change what
-students have always seen. `media_provider` exists so a future storage backend does not require a
-migration (brief §26).
+students have always seen. For lessons created or edited through the admin panel, the calendar
+(`held_on`) is the only thing an admin sets — `date_label` is always recomputed from it on save, so
+the two columns can never drift apart for non-legacy content. `media_provider` exists so a future
+storage backend does not require a migration (brief §26).
 
 ### `lesson_resources`
 

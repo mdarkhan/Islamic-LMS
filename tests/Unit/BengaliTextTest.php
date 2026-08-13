@@ -29,6 +29,36 @@ class BengaliTextTest extends TestCase
         ];
     }
 
+    #[DataProvider('formatDateLabels')]
+    public function test_it_formats_a_date_into_a_bengali_label(?string $date, ?string $expected): void
+    {
+        $this->assertSame($expected, BengaliText::formatDateLabel($date));
+    }
+
+    public static function formatDateLabels(): array
+    {
+        return [
+            'first seerat lesson' => ['2026-01-02', '০২ জানুয়ারি ২০২৬'],
+            'february, single digit day' => ['2026-02-06', '০৬ ফেব্রুয়ারি ২০২৬'],
+            'last seerat lesson' => ['2026-07-17', '১৭ জুলাই ২০২৬'],
+            'empty' => ['', null],
+            'null' => [null, null],
+            'unparseable' => ['not-a-date', null],
+        ];
+    }
+
+    /**
+     * formatDateLabel() is the inverse of parseDate(): every label parseDate()
+     * accepts as a real date must round-trip back to the same label, so the
+     * calendar-derived label always matches what parsing expects.
+     */
+    public function test_format_and_parse_round_trip(): void
+    {
+        $label = '০৯ জানুয়ারি ২০২৬';
+
+        $this->assertSame($label, BengaliText::formatDateLabel(BengaliText::parseDate($label)));
+    }
+
     #[DataProvider('durationLabels')]
     public function test_it_parses_bengali_duration_labels(?string $label, ?int $expected): void
     {

@@ -65,11 +65,8 @@
         <x-ui.card>
             <h3 class="font-bold text-ink mb-4">তথ্য</h3>
             <div class="space-y-4">
-                <x-ui.field label="তারিখ" name="held_on" hint="পার্স করা যায় এমন তারিখ">
+                <x-ui.field label="তারিখ" name="held_on" hint="ক্যালেন্ডার থেকে বেছে নিন — এই তারিখই শিক্ষার্থীদের কাছে লেবেল হিসেবে দেখানো হবে">
                     <x-ui.input name="held_on" type="date" :value="old('held_on', optional($lesson->held_on ?? null)->format('Y-m-d'))" />
-                </x-ui.field>
-                <x-ui.field label="তারিখ লেবেল" name="date_label" hint="যেমনঃ ০২ জানুয়ারি ২০২৬ / সংগৃহীত">
-                    <x-ui.input name="date_label" :value="old('date_label', $lesson->date_label ?? '')" />
                 </x-ui.field>
                 <div class="grid grid-cols-2 gap-3">
                     <x-ui.field label="মিনিট" name="duration_minutes">

@@ -60,6 +60,64 @@ class CourseLessonTest extends TestCase
         $this->assertNull($lesson->resources()->where('label', 'লিংকহীন নোট')->value('url'), 'placeholder # → NULL');
     }
 
+    public function test_the_date_label_is_derived_from_the_calendar_date(): void
+    {
+        $admin = $this->makeAdmin();
+        $course = Course::factory()->create();
+
+        $this->actingAs($admin)->post(route('admin.lessons.store'), [
+            'course_id' => $course->id,
+            'title' => 'সীরাত-২৭',
+            'held_on' => '2026-01-09',
+            'media_provider' => 'none',
+            'is_published' => '1',
+            // A client-submitted label must be ignored — the calendar date wins.
+            'date_label' => 'এলোমেলো টেক্সট',
+        ])->assertRedirect();
+
+        $lesson = Lesson::query()->where('title', 'সীরাত-২৭')->firstOrFail();
+        $this->assertSame('2026-01-09', $lesson->held_on->toDateString());
+        $this->assertSame('০৯ জানুয়ারি ২০২৬', $lesson->date_label);
+    }
+
+    public function test_clearing_the_date_clears_the_derived_label(): void
+    {
+        $admin = $this->makeAdmin();
+        $lesson = Lesson::factory()->create([
+            'held_on' => '2026-01-09',
+            'date_label' => '০৯ জানুয়ারি ২০২৬',
+        ]);
+
+        $this->actingAs($admin)->put(route('admin.lessons.update', $lesson), [
+            'course_id' => $lesson->course_id,
+            'title' => $lesson->title,
+            'media_provider' => 'none',
+            'held_on' => '',
+        ])->assertRedirect();
+
+        $fresh = $lesson->fresh();
+        $this->assertNull($fresh->held_on);
+        $this->assertNull($fresh->date_label);
+    }
+
+    public function test_updating_the_date_recomputes_the_label(): void
+    {
+        $admin = $this->makeAdmin();
+        $lesson = Lesson::factory()->create([
+            'held_on' => '2026-01-09',
+            'date_label' => '০৯ জানুয়ারি ২০২৬',
+        ]);
+
+        $this->actingAs($admin)->put(route('admin.lessons.update', $lesson), [
+            'course_id' => $lesson->course_id,
+            'title' => $lesson->title,
+            'media_provider' => 'none',
+            'held_on' => '2026-02-06',
+        ])->assertRedirect();
+
+        $this->assertSame('০৬ ফেব্রুয়ারি ২০২৬', $lesson->fresh()->date_label);
+    }
+
     public function test_toggling_publish_flips_visibility(): void
     {
         $admin = $this->makeAdmin();
