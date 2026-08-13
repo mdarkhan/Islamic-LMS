@@ -1,4 +1,3 @@
-@php $placeholder = 'এই ক্লাসের বিস্তারিত তথ্য ও কুইজ শীঘ্রই আপডেট করা হবে।'; @endphp
 <x-layout.admin title="ক্লাস" heading="ক্লাস ব্যবস্থাপনা">
     <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
         <form method="GET" class="flex-1">
@@ -24,20 +23,9 @@
                 <th class="px-4 py-3"></th>
             </x-slot:head>
             @foreach ($lessons as $lesson)
-                @php
-                    $flags = [];
-                    if (! $lesson->description || $lesson->description === $placeholder) $flags[] = 'বিবরণ নেই';
-                    if (! $lesson->held_on) $flags[] = 'তারিখ নেই';
-                    if ($lesson->resources_count === 0) $flags[] = 'রিসোর্স নেই';
-                @endphp
                 <tr>
                     <td class="px-4 py-3">
                         <p class="font-semibold text-ink">{{ $lesson->title }}</p>
-                        @if ($flags)
-                            <div class="flex flex-wrap gap-1 mt-1">
-                                @foreach ($flags as $flag)<x-ui.badge color="warning">{{ $flag }}</x-ui.badge>@endforeach
-                            </div>
-                        @endif
                     </td>
                     <td class="px-4 py-3 text-muted hidden md:table-cell">{{ $lesson->course->title }}</td>
                     <td class="px-4 py-3 text-muted hidden sm:table-cell">{{ $lesson->date_label ?? '—' }}</td>
