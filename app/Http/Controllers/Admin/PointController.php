@@ -104,19 +104,28 @@ class PointController extends Controller
             }
         }
 
-        DB::transaction(function () use ($students, $data, $request) {
-            foreach ($students as $student) {
-                $data['direction'] === 'credit'
-                    ? $this->points->credit($student, $data['amount'], PointTransaction::TYPE_GRANT, $data['reason'], $request->user())
-                    : $this->points->debit($student, $data['amount'], PointTransaction::TYPE_DEDUCTION, $data['reason'], $request->user());
-            }
+        try {
+            DB::transaction(function () use ($students, $data, $request) {
+                foreach ($students as $student) {
+                    $data['direction'] === 'credit'
+                        ? $this->points->credit($student, $data['amount'], PointTransaction::TYPE_GRANT, $data['reason'], $request->user())
+                        : $this->points->debit($student, $data['amount'], PointTransaction::TYPE_DEDUCTION, $data['reason'], $request->user());
+                }
 
-            $this->audit->log('points.bulk_'.$data['direction'], after: [
-                'students' => $students->count(),
-                'amount' => $data['amount'],
-                'reason' => $data['reason'],
-            ], actor: $request->user());
-        });
+                $this->audit->log('points.bulk_'.$data['direction'], after: [
+                    'students' => $students->count(),
+                    'amount' => $data['amount'],
+                    'reason' => $data['reason'],
+                ], actor: $request->user());
+            });
+        } catch (InsufficientPointsException) {
+            // A concurrent debit drained a balance after the pre-check. The whole
+            // transaction rolled back, so no partial movement survives — surface a
+            // clean Bengali message instead of a 500.
+            return back()->withErrors([
+                'amount' => 'অন্য একটি লেনদেনের কারণে কোনো শিক্ষার্থীর ব্যালেন্স অপর্যাপ্ত হয়ে গেছে। কোনো পরিবর্তন প্রয়োগ করা হয়নি — অনুগ্রহ করে আবার চেষ্টা করুন।',
+            ])->withInput();
+        }
 
         return redirect()->route('admin.points.index')
             ->with('success', $students->count().' জন শিক্ষার্থীর পয়েন্ট হালনাগাদ করা হয়েছে।');

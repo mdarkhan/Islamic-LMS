@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Hash;
 /**
  * Validates and imports parsed student rows.
  *
- * Passwords are plaintext only at this boundary and are hashed the instant a user
- * is created — never written to an intermediate table and never logged
- * (MIGRATION.md §1). Every imported account is forced to change its password at
- * first login because the legacy passwords were publicly exposed (SECURITY.md L2).
+ * The legacy spreadsheet password is treated as a COMPROMISED credential
+ * (SECURITY.md L2): it was publicly exposed to every browser, so it is never used
+ * as the account password, never saved, never logged. Its presence is only noted in
+ * the preview. Each imported account instead receives a fresh cryptographically
+ * random temporary password, is forced to change it at first login, and the plaintext
+ * is handed to the admin exactly once via a downloadable CSV (never persisted long).
  *
  * Existing rolls are skipped and reported, never silently overwritten.
  */
@@ -79,24 +81,19 @@ class StudentImporter
     }
 
     /**
-     * Import the rows classified as importable. Returns counts.
+     * Import the rows classified as importable.
      *
      * @param  array<int, array<string, ?string>>  $rows
-     * @return array{imported:int, skipped:int}
+     * @return array{imported:int, skipped:int, credentials:array<int, array{roll:?string, name:?string, password:string}>}
      */
     public function import(array $rows, User $actor): array
     {
         $preview = $this->preview($rows);
 
-        // Index the raw rows by row number so we can recover each password.
-        $byRow = [];
-        foreach ($rows as $raw) {
-            $byRow[$raw['row'] ?? null] = $raw;
-        }
-
         $imported = 0;
+        $credentials = [];
 
-        DB::transaction(function () use ($preview, $byRow, &$imported) {
+        DB::transaction(function () use ($preview, &$imported, &$credentials) {
             $studentRoleId = Role::query()->where('name', Role::STUDENT)->value('id');
 
             foreach ($preview['rows'] as $row) {
@@ -104,33 +101,35 @@ class StudentImporter
                     continue;
                 }
 
-                $raw = $byRow[$row['row']] ?? [];
-                $plain = ($raw['password'] ?? '') !== '' ? $raw['password'] : TemporaryPassword::generate();
+                // A brand-new temporary password — the legacy spreadsheet password is
+                // never read here and never becomes a usable credential.
+                $temp = TemporaryPassword::generate();
 
                 $student = User::query()->create([
                     'roll' => $row['roll'],
                     'name' => $row['name'],
                     'guardian_name' => $row['guardian_name'] ?: null,
-                    'password' => Hash::make($plain),   // hashed at once; plaintext discarded
+                    'password' => Hash::make($temp),
                     'status' => User::STATUS_ACTIVE,
-                    'force_password_change' => true,    // legacy passwords are compromised
+                    'force_password_change' => true,
                     'is_legacy_import' => true,
                 ]);
                 $student->roles()->syncWithoutDetaching([$studentRoleId]);
 
+                $credentials[] = ['roll' => $student->roll, 'name' => $student->name, 'password' => $temp];
                 $imported++;
             }
         });
 
         $skipped = count($rows) - $imported;
 
-        // Summary only — never the rows themselves, never any password.
+        // Summary counts only — never a name, roll, or password.
         $this->audit->log('students.imported', after: [
             'imported' => $imported,
             'skipped' => $skipped,
         ], actor: $actor);
 
-        return ['imported' => $imported, 'skipped' => $skipped];
+        return ['imported' => $imported, 'skipped' => $skipped, 'credentials' => $credentials];
     }
 
     /**

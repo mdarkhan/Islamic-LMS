@@ -8,10 +8,10 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Services\Audit\AuditLogger;
 use App\Services\Import\BengaliText;
+use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class LessonController extends Controller
@@ -180,14 +180,10 @@ class LessonController extends Controller
 
     private function uniqueSlug(string $title): string
     {
-        $base = Str::slug($title) ?: 'lesson';
-        $slug = $base;
-        $i = 1;
-
-        while (Lesson::query()->where('slug', $slug)->exists()) {
-            $slug = $base.'-'.(++$i);
-        }
-
-        return $slug;
+        return Slug::unique(
+            $title,
+            fn (string $slug) => Lesson::query()->where('slug', $slug)->exists(),
+            'lesson',
+        );
     }
 }

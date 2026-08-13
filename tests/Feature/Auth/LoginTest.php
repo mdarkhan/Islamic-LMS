@@ -98,6 +98,41 @@ class LoginTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_bengali_and_latin_roll_share_one_throttle_bucket(): void
+    {
+        $this->makeStudent(['roll' => '101', 'password' => Hash::make('secret123')]);
+
+        // Mix representations of the SAME account: 3 as "১০১" + 2 as "101" = 5 fails.
+        for ($i = 0; $i < 3; $i++) {
+            $this->post('/login', ['identifier' => '১০১', 'password' => 'wrong']);
+        }
+        for ($i = 0; $i < 2; $i++) {
+            $this->post('/login', ['identifier' => '101', 'password' => 'wrong']);
+        }
+
+        // The bucket is shared, so the correct password is now blocked regardless of
+        // which digit form is used — one account cannot get two throttle buckets.
+        $this->post('/login', ['identifier' => '১০১', 'password' => 'secret123'])
+            ->assertSessionHasErrors('identifier');
+        $this->assertGuest();
+    }
+
+    public function test_staff_email_throttle_is_case_insensitive(): void
+    {
+        $this->makeAdmin(['email' => 'boss@example.test', 'password' => Hash::make('secret123')]);
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->post('/login', ['identifier' => 'BOSS@example.test', 'password' => 'wrong']);
+        }
+        for ($i = 0; $i < 2; $i++) {
+            $this->post('/login', ['identifier' => 'boss@example.test', 'password' => 'wrong']);
+        }
+
+        $this->post('/login', ['identifier' => 'boss@example.test', 'password' => 'secret123'])
+            ->assertSessionHasErrors('identifier');
+        $this->assertGuest();
+    }
+
     public function test_logout_ends_the_session(): void
     {
         $student = $this->makeStudent();

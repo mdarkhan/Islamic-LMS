@@ -45,7 +45,7 @@ class StudentImportTest extends TestCase
         $this->assertDatabaseMissing('users', ['roll' => '101']);
     }
 
-    public function test_confirm_imports_new_rows_and_hashes_passwords(): void
+    public function test_confirm_imports_students_without_reusing_the_legacy_password(): void
     {
         Storage::fake('local');
         $admin = $this->makeAdmin();
@@ -53,19 +53,61 @@ class StudentImportTest extends TestCase
         $file = UploadedFile::fake()->createWithContent('students.csv', $this->csv());
         $token = $this->actingAs($admin)->post(route('admin.students.import.preview'), ['file' => $file])->viewData('token');
 
-        $this->actingAs($admin)->post(route('admin.students.import.confirm'), ['token' => $token])
-            ->assertRedirect(route('admin.students.index'));
+        $response = $this->actingAs($admin)->post(route('admin.students.import.confirm'), ['token' => $token]);
+        $response->assertRedirect(route('admin.students.index'));
 
         $this->assertSame(2, User::query()->students()->count());
 
         $student = User::query()->where('roll', '101')->first();
         $this->assertNotNull($student);
-        $this->assertTrue(Hash::check('pass101', $student->password), 'plaintext hashed on import');
-        $this->assertTrue($student->force_password_change, 'legacy passwords are treated as compromised');
+        // The compromised legacy password must NOT be a usable credential.
+        $this->assertFalse(Hash::check('pass101', $student->password), 'legacy password is never reused');
+        $this->assertTrue($student->force_password_change);
         $this->assertTrue($student->is_legacy_import);
 
-        // Temp file removed after import.
+        // A one-time credential download is offered.
+        $response->assertSessionHas('credentials_download');
+
+        // Temp upload removed after import.
         $this->assertCount(0, Storage::disk('local')->allFiles('imports/students'));
+    }
+
+    public function test_legacy_password_is_never_saved_or_reused_by_the_service(): void
+    {
+        $admin = $this->makeAdmin();
+
+        $rows = [['row' => 2, 'roll' => '101', 'name' => 'আব্দুল্লাহ', 'guardian_name' => null, 'password' => 'legacy-secret']];
+        $result = app(StudentImporter::class)->import($rows, $admin);
+
+        $student = User::query()->where('roll', '101')->firstOrFail();
+        $this->assertFalse(Hash::check('legacy-secret', $student->password), 'legacy password is not the account password');
+
+        // The generated temporary password is returned for one-time delivery and
+        // actually works as the login credential.
+        $this->assertCount(1, $result['credentials']);
+        $temp = $result['credentials'][0]['password'];
+        $this->assertNotSame('legacy-secret', $temp);
+        $this->assertTrue(Hash::check($temp, $student->password), 'the fresh temp password is the real credential');
+    }
+
+    public function test_credential_csv_downloads_once_then_is_deleted(): void
+    {
+        Storage::fake('local');
+        $admin = $this->makeAdmin();
+
+        $file = UploadedFile::fake()->createWithContent('students.csv', $this->csv());
+        $token = $this->actingAs($admin)->post(route('admin.students.import.preview'), ['file' => $file])->viewData('token');
+        $url = $this->actingAs($admin)->post(route('admin.students.import.confirm'), ['token' => $token])->getSession()->get('credentials_download');
+
+        $this->assertNotNull($url);
+        $this->assertCount(1, Storage::disk('local')->files('credential-exports'));
+
+        $download = $this->actingAs($admin)->get($url);
+        $download->assertOk();
+        $download->assertHeader('content-type', 'text/csv; charset=UTF-8');
+
+        // Delivered once, then gone.
+        $this->assertCount(0, Storage::disk('local')->files('credential-exports'));
     }
 
     public function test_existing_rolls_are_skipped_not_overwritten(): void

@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CourseRequest;
 use App\Models\Course;
 use App\Services\Audit\AuditLogger;
+use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CourseController extends Controller
@@ -109,14 +109,10 @@ class CourseController extends Controller
 
     private function uniqueSlug(string $title): string
     {
-        $base = Str::slug($title) ?: 'course';
-        $slug = $base;
-        $i = 1;
-
-        while (Course::query()->where('slug', $slug)->exists()) {
-            $slug = $base.'-'.(++$i);
-        }
-
-        return $slug;
+        return Slug::unique(
+            $title,
+            fn (string $slug) => Course::query()->where('slug', $slug)->exists(),
+            'course',
+        );
     }
 }

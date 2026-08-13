@@ -54,6 +54,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
     Route::post('students', [Admin\StudentController::class, 'store'])->name('students.store')->middleware('perm:students.create');
     Route::get('students/import', [Admin\StudentImportController::class, 'form'])->name('students.import.form')->middleware('perm:students.create');
     Route::post('students/import/preview', [Admin\StudentImportController::class, 'preview'])->name('students.import.preview')->middleware('perm:students.create');
+    Route::get('students/import/credentials/{token}', [Admin\StudentImportController::class, 'downloadCredentials'])->name('students.import.credentials')->middleware('perm:students.create');
     Route::post('students/import', [Admin\StudentImportController::class, 'confirm'])->name('students.import.confirm')->middleware('perm:students.create');
     Route::get('students/{student}', [Admin\StudentController::class, 'show'])->name('students.show')->middleware('perm:students.view');
     Route::get('students/{student}/edit', [Admin\StudentController::class, 'edit'])->name('students.edit')->middleware('perm:students.update');

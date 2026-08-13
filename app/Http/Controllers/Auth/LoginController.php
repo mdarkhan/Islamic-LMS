@@ -109,8 +109,18 @@ class LoginController extends Controller
         ]);
     }
 
+    /**
+     * Canonicalise the identifier BEFORE building the throttle key so a single
+     * account shares one bucket regardless of representation: "১০১" and "101" both
+     * normalise to the same roll, and "Boss@Example.test " to the same email. Without
+     * this, one account would get separate throttle buckets per spelling.
+     */
     private function throttleKey(Request $request, string $identifier): string
     {
-        return 'login:'.mb_strtolower($identifier).'|'.$request->ip();
+        $canonical = str_contains($identifier, '@')
+            ? mb_strtolower(trim($identifier))
+            : (User::normaliseRoll($identifier) ?? trim($identifier));
+
+        return 'login:'.$canonical.'|'.$request->ip();
     }
 }

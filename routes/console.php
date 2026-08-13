@@ -2,7 +2,13 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+// Hourly sweep of abandoned import uploads and expired credential exports.
+// Requires the cPanel cron entry documented in DEPLOYMENT.md:
+//   * * * * * cd /path && php artisan schedule:run >> /dev/null 2>&1
+Schedule::command('imports:cleanup')->hourly();

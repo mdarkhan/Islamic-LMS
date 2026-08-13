@@ -93,6 +93,45 @@ class PointManagementTest extends TestCase
         $this->assertSame(0, $poor->fresh()->points_balance);
     }
 
+    public function test_a_concurrent_debit_after_the_precheck_rolls_the_whole_batch_back(): void
+    {
+        // Simulate the race the pre-check cannot catch: two students pass the balance
+        // pre-check, the first debit succeeds, then a concurrent debit has drained a
+        // balance so the second debit throws. The admin must get a clean validation
+        // message and NO partial movement may survive.
+        $admin = $this->makeAdmin();
+        $a = $this->makeStudent();
+        $b = $this->makeStudent();
+        $this->actingAs($admin)->post(route('admin.points.store', $a), ['direction' => 'credit', 'amount' => 10, 'reason' => 'seed']);
+        $this->actingAs($admin)->post(route('admin.points.store', $b), ['direction' => 'credit', 'amount' => 10, 'reason' => 'seed']);
+
+        // A PointService whose second debit throws, as if raced concurrently.
+        $racing = new class extends \App\Services\Points\PointService
+        {
+            private int $debits = 0;
+
+            public function debit(User $user, int $amount, string $type = \App\Models\PointTransaction::TYPE_DEDUCTION, ?string $reason = null, ?User $performedBy = null, ?object $reference = null): \App\Models\PointTransaction
+            {
+                if (++$this->debits === 2) {
+                    throw new \App\Services\Points\InsufficientPointsException(required: $amount, available: 0);
+                }
+
+                return parent::debit($user, $amount, $type, $reason, $performedBy, $reference);
+            }
+        };
+        $this->app->instance(\App\Services\Points\PointService::class, $racing);
+
+        $this->actingAs($admin)->from(route('admin.points.bulk.form'))->post(route('admin.points.bulk.store'), [
+            'student_ids' => [$a->id, $b->id],
+            'direction' => 'deduct', 'amount' => 5, 'reason' => 'ব্যাচ',
+        ])->assertSessionHasErrors('amount');
+
+        // Both balances unchanged — the first debit was rolled back with the batch.
+        $this->assertSame(10, $a->fresh()->points_balance);
+        $this->assertSame(10, $b->fresh()->points_balance);
+        $this->assertSame(0, \App\Models\PointTransaction::query()->where('type', 'deduction')->count(), 'no deduction survived');
+    }
+
     public function test_the_ledger_invariant_holds_after_admin_operations(): void
     {
         $admin = $this->makeAdmin();

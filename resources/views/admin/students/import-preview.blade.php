@@ -16,13 +16,16 @@
         <x-ui.stat label="ত্রুটি" :value="bn($summary['error'])" tone="rose" />
     </div>
 
+    <x-ui.alert type="info" class="mb-6">
+        নিরাপত্তার কারণে স্প্রেডশিটের পুরনো পাসওয়ার্ড ব্যবহার করা হবে না। প্রতিটি শিক্ষার্থী নতুন অস্থায়ী পাসওয়ার্ড পাবে এবং প্রথম লগইনে তা পরিবর্তন বাধ্যতামূলক। ইমপোর্ট শেষে একটি CSV ফাইলে সব ক্রেডেনশিয়াল একবারই ডাউনলোড করা যাবে।
+    </x-ui.alert>
+
     <x-ui.table>
         <x-slot:head>
             <th class="px-4 py-3">সারি</th>
             <th class="px-4 py-3">রোল</th>
             <th class="px-4 py-3">নাম</th>
             <th class="px-4 py-3 hidden sm:table-cell">অভিভাবক</th>
-            <th class="px-4 py-3">পাসওয়ার্ড</th>
             <th class="px-4 py-3">অবস্থা</th>
         </x-slot:head>
         @foreach ($rows as $row)
@@ -32,9 +35,6 @@
                 <td class="px-4 py-3 text-ink tabular-nums">{{ $row['roll'] ? bn($row['roll']) : '—' }}</td>
                 <td class="px-4 py-3 text-ink">{{ $row['name'] ?? '—' }}</td>
                 <td class="px-4 py-3 text-muted hidden sm:table-cell">{{ $row['guardian_name'] ?? '—' }}</td>
-                <td class="px-4 py-3">
-                    @if ($row['has_password'])<span class="text-muted">••••</span>@else<span class="text-xs text-amber-600">স্বয়ংক্রিয়</span>@endif
-                </td>
                 <td class="px-4 py-3">
                     <x-ui.badge :color="$color">{{ $label }}</x-ui.badge>
                     @if (! empty($row['errors']))

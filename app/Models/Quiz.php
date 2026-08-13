@@ -42,12 +42,24 @@ class Quiz extends Model
         ];
     }
 
+    // Student-facing lifecycle states (computed from status + the clock).
+    public const STATE_DRAFT = 'draft';        // admin-only, never visible
+    public const STATE_UPCOMING = 'upcoming';  // scheduled/published, before starts_at
+    public const STATE_OPEN = 'open';          // scheduled/published, within the window
+    public const STATE_CLOSED = 'closed';      // scheduled/published, past ends_at
+    public const STATE_ARCHIVED = 'archived';  // no new official attempt (practice may remain)
+
     /**
-     * Server clock is authoritative — never trust a client-supplied time.
+     * Whether a new official attempt may START now.
+     *
+     * Both `scheduled` and `published` are live-eligible; the time window governs
+     * actual openness, so a quiz opens at `starts_at` and closes at `ends_at`
+     * WITHOUT any status mutation — nothing depends on a cron job flipping a flag.
+     * `draft` and `archived` are never open. Server clock is authoritative.
      */
     public function isOpenAt(\DateTimeInterface $now): bool
     {
-        if ($this->status !== self::STATUS_PUBLISHED) {
+        if (! in_array($this->status, [self::STATUS_SCHEDULED, self::STATUS_PUBLISHED], true)) {
             return false;
         }
         if ($this->starts_at && $now < $this->starts_at) {
@@ -58,6 +70,40 @@ class Quiz extends Model
         }
 
         return true;
+    }
+
+    /**
+     * The student-facing state used for grouping on the Exams page. Presentation
+     * only — QuizAttemptService remains authoritative for actually starting one.
+     */
+    public function officialState(\DateTimeInterface $now): string
+    {
+        if ($this->status === self::STATUS_DRAFT) {
+            return self::STATE_DRAFT;
+        }
+        if ($this->status === self::STATUS_ARCHIVED) {
+            return self::STATE_ARCHIVED;
+        }
+        if ($this->starts_at && $now < $this->starts_at) {
+            return self::STATE_UPCOMING;
+        }
+        if ($this->ends_at && $now >= $this->ends_at) {
+            return self::STATE_CLOSED;
+        }
+
+        return self::STATE_OPEN;
+    }
+
+    /** Draft quizzes are never shown to students; every other state may appear. */
+    public function isVisibleToStudents(): bool
+    {
+        return $this->status !== self::STATUS_DRAFT;
+    }
+
+    /** Practice is available whenever enabled and the quiz is not a draft. */
+    public function practiceAvailable(): bool
+    {
+        return $this->practice_enabled && $this->status !== self::STATUS_DRAFT;
     }
 
     public function resultsReleasedAt(\DateTimeInterface $now): bool

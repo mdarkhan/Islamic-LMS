@@ -23,10 +23,9 @@
                 <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Roll No. (আবশ্যক)</li>
                 <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Name (আবশ্যক)</li>
                 <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Father's/Husband's Name</li>
-                <li class="flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-brand" /> Password</li>
             </ul>
             <p class="text-xs text-muted mt-4 border-t border-line pt-3 leading-relaxed">
-                পাসওয়ার্ড সঙ্গে সঙ্গে হ্যাশ করা হয়। প্রতিটি ইমপোর্ট করা অ্যাকাউন্টের প্রথম লগইনে পাসওয়ার্ড পরিবর্তন বাধ্যতামূলক। বিদ্যমান রোল বাদ দেওয়া হবে।
+                স্প্রেডশিটে পুরনো পাসওয়ার্ড থাকলেও তা নিরাপত্তার কারণে ব্যবহার করা হবে না। প্রতিটি শিক্ষার্থী নতুন অস্থায়ী পাসওয়ার্ড পাবে (প্রথম লগইনে পরিবর্তন বাধ্যতামূলক), এবং শেষে একটি CSV ফাইলে একবার ডাউনলোড করা যাবে। বিদ্যমান রোল বাদ দেওয়া হবে।
             </p>
         </x-ui.card>
     </div>
