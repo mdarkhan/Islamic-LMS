@@ -153,10 +153,28 @@ and `super_admin` bypasses `perm:` via `User::hasPermission()`.
 - **Never put `@disabled` / `@checked` / `@selected` directives inside an `<x-...>`
   component tag** — it generates a dangling `endif`. Use a bound attribute
   (`:disabled="$expr"`) instead. Plain HTML elements are fine.
-- **Bengali digits for display**: use the `bn()` helper. Admin-authored resource
-  labels may contain legacy `<br />` — render with `resource_label_html()`, which
-  escapes everything and keeps only the break.
+- **Bengali digits for display**: use the `bn()` helper. It is **locale-aware** —
+  Bengali digits in the Bengali UI, Latin digits in the English UI. Admin-authored
+  resource labels may contain legacy `<br />` — render with `resource_label_html()`,
+  which escapes everything and keeps only the break.
 - Money/points/scores render right-aligned with `tabular-nums`.
+
+## Interface language (i18n)
+
+- **The UI chrome is bilingual (bn/en); content is always Bengali.** Navigation,
+  labels, buttons, dashboards, auth, profile, exams, points and shared components are
+  translated via `__('group.key')` with files in `lang/bn/*.php` and `lang/en/*.php`
+  (groups: `nav`, `ui`, `dashboard`, `auth`, `profile`, `exams`, `points`, `courses`).
+  Lesson titles, quiz questions/options, notices and other **content stay Bengali**
+  regardless of locale — never localise content strings.
+- Default locale is `bn` (`APP_LOCALE`). `SetLocale` middleware (web group) resolves the
+  language per request: authenticated `users.locale` → session → app default. The
+  `x-ui.locale-toggle` (in every layout header + the profile page) posts to
+  `locale.update`, which saves to the user and the session.
+- The site name **মাসউদ আলিমী** and the Arabic bismillah are never translated.
+- New user-facing chrome must use `__()` keys, not hardcoded strings. Deeper admin
+  CRUD forms (student/quiz/course/lesson management, imports) are **not yet localised**
+  and remain Bengali — migrate them incrementally with the same `__()` pattern.
 
 ## Auth
 

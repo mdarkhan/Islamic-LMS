@@ -4,7 +4,10 @@
     <div class="min-h-screen flex flex-col">
         <header class="p-5 flex items-center justify-between">
             <x-ui.brand :sub="false" />
-            <x-ui.theme-toggle />
+            <div class="flex items-center gap-2">
+                <x-ui.locale-toggle />
+                <x-ui.theme-toggle />
+            </div>
         </header>
 
         <main class="flex-1 grid place-items-center px-4 py-8">

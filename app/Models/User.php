@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
  */
 #[Fillable([
     'roll', 'name', 'guardian_name', 'email', 'phone', 'password',
-    'status', 'force_password_change', 'is_legacy_import',
+    'status', 'force_password_change', 'is_legacy_import', 'locale',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable

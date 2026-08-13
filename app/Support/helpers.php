@@ -18,7 +18,9 @@ if (! function_exists('resource_label_html')) {
 
 if (! function_exists('bn')) {
     /**
-     * Render a number in Bengali digits, for display only.
+     * Render a number for display, locale-aware: Bengali digits in the Bengali
+     * interface, Latin digits in the English interface. Used for interface figures
+     * (counts, points, scores); content strings are unaffected.
      */
     function bn(int|string|float|null $value): string
     {
@@ -26,6 +28,10 @@ if (! function_exists('bn')) {
             return '';
         }
 
-        return BengaliText::toBengaliDigits((string) $value);
+        $value = (string) $value;
+
+        return app()->getLocale() === 'en'
+            ? BengaliText::toLatinDigits($value)
+            : BengaliText::toBengaliDigits($value);
     }
 }

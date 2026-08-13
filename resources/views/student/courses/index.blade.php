@@ -1,10 +1,10 @@
-<x-layout.student title="কোর্স" heading="কোর্স ও ক্লাস">
+<x-layout.student :title="__('nav.courses')" :heading="__('courses.heading')">
     {{-- Filters --}}
     <form method="GET" class="flex flex-col sm:flex-row gap-3 mb-6">
         <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
             <a href="{{ route('student.courses.index', ['q' => $search]) }}"
                class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border transition-colors {{ ! $courseFilter ? 'bg-brand text-brand-ink border-brand' : 'bg-card text-muted border-line hover:text-ink' }}">
-                সব
+                {{ __('courses.all') }}
             </a>
             @foreach ($courses as $course)
                 <a href="{{ route('student.courses.index', ['course' => $course->slug, 'q' => $search]) }}"
@@ -15,14 +15,14 @@
         </div>
         <div class="relative sm:ml-auto sm:w-64 shrink-0">
             <x-ui.icon name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input name="q" value="{{ $search }}" placeholder="ক্লাস খুঁজুন..."
+            <input name="q" value="{{ $search }}" placeholder="{{ __('courses.search_placeholder') }}"
                    class="w-full rounded-xl bg-surface-raised border border-line pl-9 pr-4 py-2.5 text-sm outline-none focus:border-brand">
             @if ($courseFilter)<input type="hidden" name="course" value="{{ $courseFilter }}">@endif
         </div>
     </form>
 
     @if ($lessons->isEmpty())
-        <x-ui.card><x-ui.empty title="কোনো ক্লাস খুঁজে পাওয়া যায়নি।">অন্য কিছু খুঁজে দেখুন অথবা ফিল্টার পরিবর্তন করুন।</x-ui.empty></x-ui.card>
+        <x-ui.card><x-ui.empty :title="__('courses.none_found')">{{ __('courses.none_found_hint') }}</x-ui.empty></x-ui.card>
     @else
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($lessons as $lesson)

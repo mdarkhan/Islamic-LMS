@@ -17,7 +17,7 @@
     <span class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted/50 cursor-not-allowed select-none">
         <x-ui.icon :name="$icon" />
         <span class="truncate">{{ $label }}</span>
-        <span class="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded bg-ink/5 text-muted">পরবর্তী ধাপ</span>
+        <span class="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded bg-ink/5 text-muted">{{ __('nav.later_phase') }}</span>
     </span>
 @else
     <a href="{{ $href }}" @if ($active) aria-current="page" @endif

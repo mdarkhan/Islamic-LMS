@@ -33,7 +33,7 @@
                    class="absolute inset-y-0 left-0 w-72 bg-surface-raised border-r border-line flex flex-col">
                 <div class="h-16 flex items-center justify-between px-5 border-b border-line">
                     <x-ui.brand :sub="false" />
-                    <button @click="mobileNav = false" class="p-2 text-muted" aria-label="মেনু বন্ধ করুন"><x-ui.icon name="close" /></button>
+                    <button @click="mobileNav = false" class="p-2 text-muted" aria-label="{{ __('nav.close_menu') }}"><x-ui.icon name="close" /></button>
                 </div>
                 <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
                     @foreach ($nav as $item)
@@ -47,10 +47,11 @@
         <div class="flex-1 min-w-0 flex flex-col">
             <header class="h-16 shrink-0 sticky top-0 z-30 bg-surface/80 backdrop-blur border-b border-line flex items-center justify-between px-4 sm:px-6">
                 <div class="flex items-center gap-3 min-w-0">
-                    <button @click="mobileNav = true" class="lg:hidden p-2 -ml-2 text-muted hover:text-ink" aria-label="মেনু খুলুন"><x-ui.icon name="menu" /></button>
+                    <button @click="mobileNav = true" class="lg:hidden p-2 -ml-2 text-muted hover:text-ink" aria-label="{{ __('nav.open_menu') }}"><x-ui.icon name="menu" /></button>
                     <h1 class="font-bold text-ink truncate">{{ $heading ?? $title }}</h1>
                 </div>
                 <div class="flex items-center gap-1 sm:gap-2">
+                    <x-ui.locale-toggle />
                     <x-ui.theme-toggle />
                     <div class="hidden sm:flex items-center gap-2 pl-2 ml-1 border-l border-line">
                         <div class="text-right leading-tight">
@@ -60,7 +61,7 @@
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="p-2 rounded-lg text-muted hover:text-rose-600 hover:bg-rose-500/10 transition-colors" aria-label="লগআউট"><x-ui.icon name="logout" /></button>
+                        <button class="p-2 rounded-lg text-muted hover:text-rose-600 hover:bg-rose-500/10 transition-colors" aria-label="{{ __('nav.logout') }}"><x-ui.icon name="logout" /></button>
                     </form>
                 </div>
             </header>

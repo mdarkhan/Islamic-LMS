@@ -6,13 +6,14 @@
             <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                 <x-ui.brand />
                 <div class="flex items-center gap-2">
+                    <x-ui.locale-toggle />
                     <x-ui.theme-toggle />
                     @auth
                         <x-ui.button :href="auth()->user()->isAdmin() ? route('admin.dashboard') : route('student.dashboard')" size="sm">
-                            ড্যাশবোর্ড
+                            {{ __('nav.dashboard') }}
                         </x-ui.button>
                     @else
-                        <x-ui.button :href="route('login')" size="sm">প্রবেশ করুন</x-ui.button>
+                        <x-ui.button :href="route('login')" size="sm">{{ __('auth.enter') }}</x-ui.button>
                     @endauth
                 </div>
             </div>

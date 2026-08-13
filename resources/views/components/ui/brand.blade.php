@@ -5,6 +5,6 @@
     </span>
     <span class="leading-tight">
         <span class="block font-black text-ink">মাসউদ আলিমী</span>
-        @if ($sub)<span class="block text-[11px] text-muted -mt-0.5">কুরআন তাফসির ও সীরাত কোর্স</span>@endif
+        @if ($sub)<span class="block text-[11px] text-muted -mt-0.5">{{ __('nav.subtitle') }}</span>@endif
     </span>
 </a>

@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
 
+// Interface language toggle (available to everyone, including guests).
+Route::post('locale', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
+
 /*
  * Authentication
  */
