@@ -12,6 +12,17 @@
 # Database exports used for the legacy migration
 /legacy/db/
 
+# Credential exports from the student importer are one-time downloads only and
+# are never committed (SECURITY.md). They live under this private path.
+/storage/app/private/credential-exports/
+/storage/app/credential-exports/
+
+# Project packaging archives created for review/hand-off — large binaries, not
+# part of the source tree.
+/*.zip
+/*.rar
+/*.7z
+
 # ─── Laravel ──────────────────────────────────────────────────────────────────
 /vendor/
 /node_modules/
