@@ -145,8 +145,28 @@ hard-coded. See `PROJECT_PLAN.md` §6 and `DATABASE_SCHEMA.md` §8.
 ### 2.9 Audit logging
 
 Sensitive admin actions are recorded with actor, action, entity, before/after and timestamp. A
-redaction allow-list keeps password hashes, plaintext passwords and tokens out of `before`/`after`;
-a test asserts this.
+redaction list keeps password hashes, plaintext passwords and tokens out of `before`/`after`;
+`AuditLogTest` asserts this. Implemented by `AuditLogger`; wired into student create/update/status/
+password-reset, point credit/deduct/bulk, course & lesson create/update/delete, and student import
+(summary counts only — never rows or passwords).
+
+### 2.10 Application-layer specifics (phase 2)
+
+- **Login does not leak account existence.** Credentials are verified (with a dummy hash check when
+  no account matches, to avoid a timing oracle) before any "account suspended/inactive" message is
+  shown. Wrong password and unknown roll return the identical generic error. Rate-limited per
+  identifier+IP.
+- **Temporary passwords** (admin create with "generate", and password reset) are shown once via a
+  flash message for delivery, hashed immediately, and never persisted in plaintext or logged. A
+  reset also deletes the student's `sessions` rows; suspending or archiving does the same.
+- **Student import** hashes each password the instant the user is created, never writes an
+  intermediate plaintext table, forces a password change on every imported account, and skips
+  existing rolls rather than overwriting. The uploaded file is held in a private temp location
+  between preview and confirm (not the session) and deleted the moment the import commits.
+- **Forced password change** is enforced by middleware, not by hidden UI — every protected route
+  redirects to the change screen until the flag clears.
+- **Answer-key confidentiality carried into Eloquent**: `QuizOption::is_correct` is in the model's
+  `$hidden` set, so it cannot leak into a serialised response by accident.
 
 ---
 

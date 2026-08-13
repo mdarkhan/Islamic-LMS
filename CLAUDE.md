@@ -26,6 +26,16 @@ accident. Full reasoning lives in `PROJECT_PLAN.md`, `DATABASE_SCHEMA.md`,
    answers; show "detailed answers unavailable", never invent them.
 7. **Per-question marks stay hidden during a live official exam.** Legacy behaviour,
    deliberate — students must not be steered toward mega questions.
+8. **Terminal attempt states are one-way.** `submitted` / `expired` / `voided` never
+   transition. A late `submit()` on a still-in-progress attempt past its deadline is
+   recorded as `expired` (with the authoritative deadline timestamps), never as an
+   on-time submission. Only `finalise()` may make an attempt terminal.
+9. **`saveAnswer` fails closed.** A foreign option id, or more than one option for a
+   single-choice question, throws — it is never silently dropped or truncated. An
+   empty selection clears the answer.
+10. **`startOfficial` creates the attempt before debiting**, then debits with the
+    attempt as the ledger reference. Never revert to updating a `point_transactions`
+    row after the fact — the ledger is append-only.
 
 ---
 
@@ -51,6 +61,13 @@ Databases: `masudalimi` (dev), `masudalimi_test` (tests, configured in
 `phpunit.xml`). Tests run on **MySQL, not sqlite** — the point ledger and attempt
 creation depend on `lockForUpdate`, and the schema uses `ENUM` and `utf8mb4`.
 
+Dev accounts (from `DevAccountsSeeder`, never runs in production):
+`admin@masudalimi.test` / `password` (super_admin), students roll `১০১`–`১০৬` /
+`password`. Test helpers `makeStudent()` / `makeAdmin()` / `makeSuperAdmin()` live
+on the base `TestCase`.
+
+Preview the app with `php artisan serve` (or the `masudalimi` launch config).
+
 ---
 
 ## Architecture
@@ -59,11 +76,48 @@ creation depend on `lockForUpdate`, and the schema uses `ENUM` and `utf8mb4`.
 app/Models/            Eloquent models, thin
 app/Services/Points/   PointService (the only writer of points_balance)
 app/Services/Quiz/     QuizAttemptService, QuizScoringService
-app/Services/Import/   BengaliText, LegacyCourseImporter
+app/Services/Import/   BengaliText, LegacyCourseImporter, StudentImporter, StudentSpreadsheetParser
+app/Services/Audit/    AuditLogger (redacts secrets from before/after snapshots)
+app/Http/Controllers/  PublicController, Auth\*, Student\*, Admin\*
+app/Http/Middleware/   EnsureRole (role:), EnsurePermission (perm:), EnsurePasswordChanged
+app/Http/Requests/Admin/  Form Requests for every admin mutation
 ```
 
 Controllers stay thin; business logic lives in services. Use Form Requests for
-validation and Policies for authorisation.
+validation. Authorisation is layered: `role:` gates an area, `perm:` gates an action,
+and `super_admin` bypasses `perm:` via `User::hasPermission()`.
+
+## Web layer conventions
+
+- **Blade + Alpine, no SPA.** UI components live in `resources/views/components/ui/*`
+  (button, input, field, card, badge, alert, table, modal, …). Layouts in
+  `components/layout/*` (base, guest, public, student, admin, app shell).
+- **Design tokens** are semantic CSS custom properties in `resources/css/app.css`
+  (`bg-surface`, `text-ink`, `border-line`, `text-brand`, …), re-pointed under `.dark`.
+  Use the tokens, not raw palette values, so both themes stay consistent. Emerald/teal
+  on warm neutral. Respect `prefers-reduced-motion` (already handled globally).
+- **Tailwind v4 via Vite.** Never the CDN. `npm run build` compiles CSS/JS and
+  self-hosts the Bengali/Arabic/Latin fonts into `public/build`. Node is a build-time
+  dependency only.
+- **Never put `@disabled` / `@checked` / `@selected` directives inside an `<x-...>`
+  component tag** — it generates a dangling `endif`. Use a bound attribute
+  (`:disabled="$expr"`) instead. Plain HTML elements are fine.
+- **Bengali digits for display**: use the `bn()` helper. Admin-authored resource
+  labels may contain legacy `<br />` — render with `resource_label_html()`, which
+  escapes everything and keeps only the break.
+- Money/points/scores render right-aligned with `tabular-nums`.
+
+## Auth
+
+- One login screen. Identifier with `@` → staff email; else student roll (normalised).
+  Credentials are verified before any account-status message, so a suspended notice
+  never leaks account existence. Rate-limited per identifier+IP.
+- Students authenticate by roll (Bengali or Latin digits). No public registration.
+- `force_password_change` → `EnsurePasswordChanged` redirects every protected page to
+  `password.change` until the student sets a new password.
+- Admin-issued temp passwords are shown once (flash `temp_password`) for delivery,
+  hashed immediately, never stored in plaintext or logged. Reset also drops the
+  student's DB sessions.
 
 ---
 
@@ -144,3 +198,8 @@ from any algorithmic calendar.
 `PROJECT_PLAN.md` §11 is the honest status list. Keep it truthful: do not mark
 anything done that has not been run. If a feature is incomplete, say so there
 rather than leaving a button that pretends to work.
+
+Unbuilt sections show a disabled "পরবর্তী ধাপ" (later phase) nav item — do not wire
+a fake page behind them. Not yet built: quiz builder, Sheet quiz importer, live exam
+UI, results/answer sheets, leaderboards, regrade UI, blog, Ask Ustaz, Zakat
+calculator, Hijri calendar, and the student/legacy-result migrations.

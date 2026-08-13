@@ -65,6 +65,24 @@ class User extends Authenticatable
         return $this->status === self::STATUS_ACTIVE;
     }
 
+    /** Users holding the student role — the population the admin student area manages. */
+    public function scopeStudents(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->whereHas('roles', fn ($r) => $r->where('name', Role::STUDENT));
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->hasRole(Role::STUDENT);
+    }
+
+    public function assignRole(string $name): void
+    {
+        $role = Role::query()->where('name', $name)->firstOrFail();
+        $this->roles()->syncWithoutDetaching([$role->getKey()]);
+        $this->unsetRelation('roles');
+    }
+
     public function hasRole(string $name): bool
     {
         return $this->roles->contains('name', $name);

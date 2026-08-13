@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkPointRequest;
+use App\Http\Requests\Admin\PointRequest;
+use App\Models\PointTransaction;
+use App\Models\User;
+use App\Services\Audit\AuditLogger;
+use App\Services\Points\InsufficientPointsException;
+use App\Services\Points\PointService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class PointController extends Controller
+{
+    public function __construct(
+        private readonly PointService $points,
+        private readonly AuditLogger $audit,
+    ) {}
+
+    public function index(Request $request): View
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        $students = User::query()->students()
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('roll', 'like', "%{$search}%")))
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.points.index', compact('students', 'search'));
+    }
+
+    public function show(User $student): View
+    {
+        abort_unless($student->isStudent(), 404);
+
+        return view('admin.points.show', [
+            'student' => $student,
+            'transactions' => $student->pointTransactions()->with('performedBy')->latest('id')->paginate(20),
+        ]);
+    }
+
+    public function store(PointRequest $request, User $student): RedirectResponse
+    {
+        abort_unless($student->isStudent(), 404);
+
+        $data = $request->validated();
+
+        try {
+            $tx = $data['direction'] === 'credit'
+                ? $this->points->credit($student, $data['amount'], PointTransaction::TYPE_GRANT, $data['reason'], $request->user())
+                : $this->points->debit($student, $data['amount'], PointTransaction::TYPE_DEDUCTION, $data['reason'], $request->user());
+        } catch (InsufficientPointsException $e) {
+            return back()->withErrors(['amount' => "শিক্ষার্থীর পর্যাপ্ত পয়েন্ট নেই (বর্তমান: {$e->available})।"])->withInput();
+        }
+
+        $this->audit->log('points.'.$data['direction'], $student, after: [
+            'amount' => $tx->amount, 'balance_after' => $tx->balance_after, 'reason' => $data['reason'],
+        ]);
+
+        return back()->with('success', 'পয়েন্ট সফলভাবে হালনাগাদ করা হয়েছে।');
+    }
+
+    public function bulkForm(Request $request): View
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        $students = User::query()->students()->where('status', User::STATUS_ACTIVE)
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('roll', 'like', "%{$search}%")))
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.points.bulk', compact('students', 'search'));
+    }
+
+    /**
+     * Bulk grant/deduct. Behaviour is ALL-OR-NOTHING and validated up front: for a
+     * deduction, if any selected student lacks the balance the whole batch is
+     * rejected before any change is made, and the blocking students are listed. This
+     * is deterministic — the admin never has to reason about a partial result.
+     */
+    public function bulkStore(BulkPointRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $students = User::query()->students()->whereIn('id', $data['student_ids'])->get();
+
+        if ($data['direction'] === 'deduct') {
+            $blocked = $students->where('points_balance', '<', $data['amount']);
+
+            if ($blocked->isNotEmpty()) {
+                return back()->withErrors([
+                    'amount' => 'নিচের শিক্ষার্থীদের পর্যাপ্ত পয়েন্ট নেই: '.$blocked->pluck('name')->implode(', '),
+                ])->withInput();
+            }
+        }
+
+        DB::transaction(function () use ($students, $data, $request) {
+            foreach ($students as $student) {
+                $data['direction'] === 'credit'
+                    ? $this->points->credit($student, $data['amount'], PointTransaction::TYPE_GRANT, $data['reason'], $request->user())
+                    : $this->points->debit($student, $data['amount'], PointTransaction::TYPE_DEDUCTION, $data['reason'], $request->user());
+            }
+
+            $this->audit->log('points.bulk_'.$data['direction'], after: [
+                'students' => $students->count(),
+                'amount' => $data['amount'],
+                'reason' => $data['reason'],
+            ], actor: $request->user());
+        });
+
+        return redirect()->route('admin.points.index')
+            ->with('success', $students->count().' জন শিক্ষার্থীর পয়েন্ট হালনাগাদ করা হয়েছে।');
+    }
+}

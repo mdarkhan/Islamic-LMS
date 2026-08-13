@@ -1,8 +1,9 @@
 # PROJECT_PLAN.md — Masud Alimi Islamic Learning & Examination Platform
 
-**Status:** Steps A–E complete. Inspection, audit, schema, migration strategy, and the Laravel
-foundation (schema, domain services, legacy course migration, 71 passing tests) are done. Step F
-(feature modules and the entire web interface) has not started.
+**Status:** Steps A–E complete, plus the first application-layer phase. Domain hardening,
+authentication, the design system, and the student & admin management interfaces (students,
+points, courses, lessons, import, audit) are built and tested (**133 passing tests**). The quiz
+builder, exam engine UI, results, leaderboards and public content modules have not started.
 
 **Last updated:** 2026-08-13
 
@@ -306,10 +307,10 @@ Critical paths that must be green before any module is called complete:
 | 0 | Inspection, audit, schema, migration strategy, legacy preservation | **Done** |
 | 1 | Laravel scaffold, `.env.example`, local toolchain | **Done** (base layout / design tokens outstanding) |
 | 2 | Migrations, models, factories, roles/permissions seed | **Done** |
-| 3 | Auth, student accounts, admin student manager | Not started |
-| 4 | Point ledger + admin point manager | Ledger **done**; admin UI not started |
-| 5 | Courses / lessons + catalogue UI + course seeder from extracted JSON | Seeder **done**; UI not started |
-| 6 | Quiz builder, Sheet/CSV/XLSX importer with row-level validation | Not started |
+| 3 | Auth, student accounts, admin student manager | **Done** (login, forced password change, roles/permissions, student CRUD + CSV/XLSX import) |
+| 4 | Point ledger + admin point manager | **Done** (grant / deduct / bulk, ledger views) |
+| 5 | Courses / lessons + catalogue UI + course seeder from extracted JSON | **Done** (student archive + admin course/lesson CRUD with inline resources) |
+| 6 | Quiz builder, Sheet/CSV/XLSX importer with row-level validation | Student importer **done**; quiz builder & Sheet quiz import not started |
 | 7 | Quiz engine: eligibility, transaction, autosave, resume, submit | Not started |
 | 8 | Results, answer sheets, leaderboards, cumulative leaderboard | Not started |
 | 9 | Regrading + manual score adjustment + audit log | Not started |
@@ -346,11 +347,36 @@ Critical paths that must be green before any module is called complete:
   Bengali dates and durations, reports content gaps instead of inventing content.
 - Seeders: roles/permissions, settings, and the 42 migrated lessons.
 
-**Tests: 71 passing, 146 assertions, on MySQL** (not sqlite — the ledger and attempt creation
-depend on `lockForUpdate`). Covering: point grant/debit/insufficient-balance/rollback/drift;
-scoring including partial-selection-scores-zero and mega marks; resume-does-not-re-debit;
-duplicate-submit idempotency; expiry rejection; suspended-user refusal; practice being free and
-unranked; foreign-option rejection; and the full legacy course import against real data.
+### Application layer (phase 2)
+
+- **Domain hardening**: attempt terminal states are one-way and a late submit is recorded as
+  expired with authoritative timestamps; submission serial is assigned under a quiz-row lock with a
+  `unique(quiz_id, submission_seq)` backstop; `startOfficial` creates the attempt then debits with
+  it as an immutable reference (no ledger row is ever mutated); `saveAnswer` fails closed on foreign
+  options and single-choice over-selection.
+- **Design system**: Tailwind v4 + Alpine, a Blade component library (button, field, input, select,
+  card, badge, alert, table, modal, breadcrumbs, pagination, empty state, stat, nav), light/dark via
+  semantic tokens, `prefers-reduced-motion`, self-hosted Bengali/Arabic/Latin fonts, mobile-first.
+- **Auth & authorisation**: one login screen (roll or email), rate limiting, generic error that does
+  not leak account existence, forced temp-password change, `role:` / `perm:` middleware, super_admin
+  bypass.
+- **Student area**: dashboard (real metrics), profile (contact + password, identity read-only),
+  course archive with filter/search, lesson detail, point history.
+- **Admin area**: dashboard, student CRUD, CSV/XLSX import (upload → preview → confirm; passwords
+  hashed at the boundary, forced change, existing rolls skipped), point management (grant / deduct /
+  bulk all-or-nothing), course & lesson management with inline resources and honest gap flags, audit
+  log with secret redaction.
+
+**Tests: 133 passing, 331 assertions, on MySQL** (not sqlite — the ledger and attempt creation
+depend on `lockForUpdate`). Adds the phase-1 hardening regressions plus auth, forced password change,
+authorisation (student↔admin isolation, permission enforcement, super_admin bypass), student
+management, point management, student import, course/lesson CRUD, student course access, and audit
+redaction — on top of the domain suite (points, scoring, attempts, Bengali parsing, legacy import).
+
+**Manual browser QA** (via the in-app browser): public home, login (roll + email), admin dashboard,
+students list, lesson editor (Alpine resource rows), student dashboard/profile/courses/points, and
+lesson detail all render with correct Bengali/Arabic and real data; no console errors; no horizontal
+overflow at 375px; mobile nav present; dark-mode tokens switch correctly.
 
 Independent cross-check: the importer's gap report reproduced the audit's numbers exactly
 (22 placeholder descriptions, 17 undated lessons, 17 without resources, 35 without syllabus,
@@ -358,10 +384,11 @@ Independent cross-check: the importer's gap report reproduced the audit's number
 
 ### Not built
 
-The **entire web interface** — public site, student dashboard, exam screen, admin panel, quiz
-builder, Google Sheet importer, leaderboards, results/answer sheets, regrade UI, blog, notices,
-Ask Ustaz, Zakat calculator, calendar service — plus the student and legacy-result migrations
-(phases 3, 6–14). No route, controller or Blade view has been written beyond Laravel's defaults.
+Quiz builder, Google Sheet quiz importer, live exam UI, results & answer sheets, leaderboards
+(per-quiz and cumulative), regrade UI, manual score-adjustment UI, blog/Fatwa CMS, notices admin,
+Ask Ustaz, Zakat calculator, Hijri calendar service, and the student + legacy-result data
+migrations. The `AuditLogger`, `settings` and `notices` tables exist and are used where relevant,
+but their dedicated admin screens (beyond the audit log viewer) are not built.
 
 ---
 

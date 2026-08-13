@@ -1,9 +1,136 @@
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+/* Class-based dark mode: the toggle adds/removes `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Design tokens.
+ *
+ * Semantic names map to CSS custom properties so a single set of utilities
+ * (bg-surface, text-ink, border-line, …) works in both themes — the properties
+ * are re-pointed under .dark below. Brand identity is emerald/teal on warm
+ * neutral surfaces, following the legacy site.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Noto Sans Bengali', 'Hind Siliguri', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-arabic: 'Noto Naskh Arabic', 'Amiri', serif;
+
+    --color-surface: var(--surface);
+    --color-surface-raised: var(--surface-raised);
+    --color-card: var(--card);
+    --color-ink: var(--ink);
+    --color-muted: var(--muted);
+    --color-line: var(--line);
+    --color-brand: var(--brand);
+    --color-brand-strong: var(--brand-strong);
+    --color-brand-ink: var(--brand-ink);
+    --color-brand-tint: var(--brand-tint);
+    --color-accent: var(--accent);
+
+    --radius-card: 1rem;
+    --shadow-soft: 0 4px 20px -2px rgb(0 0 0 / 0.06);
 }
+
+:root {
+    --surface: #f7f6f3;         /* warm neutral page */
+    --surface-raised: #ffffff;
+    --card: #ffffff;
+    --ink: #1c1917;             /* stone-900 */
+    --muted: #78716c;           /* stone-500 */
+    --line: #e7e5e4;            /* stone-200 */
+    --brand: #059669;           /* emerald-600 */
+    --brand-strong: #047857;    /* emerald-700 */
+    --brand-ink: #ffffff;
+    --brand-tint: #ecfdf5;      /* emerald-50 */
+    --accent: #0d9488;          /* teal-600 */
+}
+
+.dark {
+    --surface: #0b1220;
+    --surface-raised: #0f172a;  /* slate-900 */
+    --card: #172033;
+    --ink: #f1f5f9;             /* slate-100 */
+    --muted: #94a3b8;           /* slate-400 */
+    --line: #263043;
+    --brand: #10b981;           /* emerald-500 */
+    --brand-strong: #34d399;    /* emerald-400 */
+    --brand-ink: #04231a;
+    --brand-tint: #0b2f27;
+    --accent: #2dd4bf;          /* teal-400 */
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--color-surface);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* Arabic passages (bismillah, du'a) opt into a naskh face and larger leading. */
+    .font-arabic {
+        font-family: var(--font-arabic);
+        line-height: 2;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-brand);
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+
+    /* Respect the user's motion preference everywhere. */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /* Tasteful entrance — disabled automatically under reduced-motion. */
+    .animate-rise {
+        animation: rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes rise {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Restrained Islamic geometric accent for hero/section corners. */
+    .geo-accent {
+        background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-brand) 22%, transparent) 1px, transparent 0);
+        background-size: 18px 18px;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Hide Alpine-cloaked elements until Alpine initialises. */
+[x-cloak] {
+    display: none !important;
+}
+

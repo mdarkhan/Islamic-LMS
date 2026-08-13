@@ -282,6 +282,13 @@ enforced by taking the user row lock in the same transaction that creates the at
 re-checking. The unique key is the backstop, the lock is the fast path — JavaScript is never
 relied upon (brief §45).
 
+**Submission serial integrity.** `qa_unique_submission_seq` — `unique(quiz_id, submission_seq)` —
+backs the per-quiz serial. `QuizAttemptService::finalise()` assigns the serial under a
+`lockForUpdate()` on the quiz row, so two students finalising the same quiz concurrently cannot read
+the same `MAX(submission_seq)` and collide; the unique index turns any residual race into an error.
+Only official attempts get a serial (practice → `NULL`, and MySQL permits multiple NULLs in a unique
+index). The serial is informational only — ranking never uses it.
+
 `point_transaction_id` links the attempt to its debit, which makes "did this attempt already
 charge the student?" a single nullable-FK check — that is what makes resume idempotent.
 

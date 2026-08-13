@@ -5,10 +5,12 @@ scheduled online examinations with server-side scoring, a points system, course
 archive, leaderboards, and an admin panel that removes the need to edit source
 code to manage content.
 
-> **Status: foundation phase.** The database, domain services and legacy data
-> migration are built and tested. The web interface is not. See
-> [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current status — nothing
-> is listed there as done unless it has been run.
+> **Status: application layer, phase 2.** The hardened domain layer, authentication,
+> the design system, and the student & admin management interfaces (students, points,
+> courses, lessons, import, audit) are built and tested. The quiz builder, exam UI,
+> results, leaderboards and public modules are not yet built. See
+> [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current status — nothing is
+> listed there as done unless it has been run.
 
 ---
 
@@ -58,13 +60,18 @@ MariaDB).
 cp .env.example .env
 "$LOCALAPPDATA/php83/php.exe" artisan key:generate
 
-# 4. Schema + seed data (roles, settings, 42 migrated lessons)
+# 4. Schema + seed data (roles, settings, 42 migrated lessons, dev accounts)
 "$LOCALAPPDATA/php83/php.exe" artisan migrate:fresh --seed
 ```
 
-Run the tests:
+Dev logins (local only): `admin@masudalimi.test` / `password`, or student roll
+`১০১`–`১০৬` / `password`.
+
+Build assets and run the app / tests:
 
 ```bash
+npm install && npm run build
+"$LOCALAPPDATA/php83/php.exe" artisan serve
 "$LOCALAPPDATA/php83/php.exe" artisan test
 ```
 
@@ -84,17 +91,28 @@ the input to the course seeder.
 
 ## What exists today
 
+**Domain (hardened)**
 - Full normalised schema — 31 tables, all `utf8mb4_unicode_ci`
 - `PointService` — atomic, append-only ledger with a balance invariant
 - `QuizScoringService` — server-side scoring, exact-set match, custom marks
-- `QuizAttemptService` — eligibility, transactional point debit, idempotent
-  autosave/resume/submit
+- `QuizAttemptService` — one-way terminal states, concurrency-safe submission serial,
+  attempt-first append-only debit, fail-closed answer validation
 - `LegacyCourseImporter` — imports the real legacy catalogue, reports content gaps
-  rather than inventing content
-- 71 passing tests / 146 assertions, running on MySQL
+
+**Application layer**
+- Design system (Tailwind v4 + Alpine, Blade component library, light/dark, self-hosted
+  Bengali/Arabic fonts, mobile-first), and public / student / admin layouts
+- Authentication (roll or email, rate-limited, forced temp-password change), role +
+  permission middleware
+- Student dashboard, profile, course archive, lesson detail, point history
+- Admin dashboard, student CRUD, CSV/XLSX student import (preview → confirm), point
+  management (grant / deduct / bulk), course & lesson management with inline resources,
+  audit log
+- **133 passing tests / 331 assertions** on MySQL, plus manual browser QA
 
 ## What does not exist yet
 
-Web UI, admin panel, quiz builder, Google Sheet importer, leaderboards, blog,
-Ask Ustaz, Zakat calculator, calendar service, student/results migration.
+Quiz builder, Google Sheet quiz importer, live exam UI, results & answer sheets,
+leaderboards, regrade UI, blog/Fatwa, Ask Ustaz, Zakat calculator, Hijri calendar,
+and the student/legacy-result data migrations.
 Tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md) §10–11.
