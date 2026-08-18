@@ -1,12 +1,13 @@
 # PROJECT_PLAN.md — Masud Alimi Islamic Learning & Examination Platform
 
-**Status:** Through Phase 8. Domain hardening, authentication, the design system, the student &
+**Status:** Through Phase 9. Domain hardening, authentication, the design system, the student &
 admin management interfaces, the **quiz builder + CSV/XLSX importer**, the **secure live OFFICIAL
-exam**, and now the **post-exam & practice ecosystem** — student `/results` history + detailed
-answer sheets, Practice Mode, per-quiz and overall leaderboards (via a central `LeaderboardService`),
-and the admin results / manual-adjustment / answer-key-regrade surface — are built and tested
-(**286 passing tests**). Public content (blog, Ask Ustaz, Zakat, Hijri calendar) and the
-student/legacy-result data migrations have not started (Phase 9+).
+exam**, the **post-exam & practice ecosystem**, and now the **public knowledge platform** — an
+upgraded homepage, a Blog/Fatwa/Q&A CMS (Markdown, sanitised) with SEO + sitemap + robots, admin
+notices with a server-time window, the **email-only Ask Ustaz** form (no persistence), a decimal-safe
+**Zakat calculator**, and a centralised **CalendarService** (Gregorian / Bangladesh-revised Bangla /
+tabular Hijri with sunset rollover + admin offset) — are built and tested (**342 passing tests**).
+The student/legacy-result data migrations and final cPanel deployment have not started (Phase 10).
 
 **Last updated:** 2026-08-18
 
@@ -318,8 +319,8 @@ Critical paths that must be green before any module is called complete:
 | 8 | Results, answer sheets, leaderboards, cumulative leaderboard | **Done** (student `/results` + release-gated answer sheets; per-quiz + overall leaderboards via `LeaderboardService`) |
 | 9 | Regrading + manual score adjustment + audit log | **Done** (`QuizRegradeService` preview/apply; `ScoreAdjustmentService`; `score_adjustments`/`regrade_runs`/`regrade_entries` + audit events) |
 | 10 | Practice mode | **Done** (free, untimed, unranked, repeatable; safe-key availability rule; immediate review) |
-| 11 | Blog/Fatwa CMS, notices, settings | Not started |
-| 12 | Ask Ustaz (email-only), Zakat calculator, calendar service | Not started |
+| 11 | Blog/Fatwa CMS, notices, settings | **Done** (Markdown CMS + categories + SEO/sitemap/robots; admin notices with server-time window; `SettingService` + general/zakat/calendar admin) |
+| 12 | Ask Ustaz (email-only), Zakat calculator, calendar service | **Done** (email-only Ask Ustaz with no persistence; decimal-safe `ZakatCalculatorService`; `CalendarService` — Gregorian/Bangla/Hijri + sunset rollover) |
 | 13 | Legacy data migration + verification | Not started |
 | 14 | Accessibility pass, responsive QA, performance pass | Not started |
 
@@ -433,19 +434,41 @@ Independent cross-check: the importer's gap report reproduced the audit's number
   - **Historical integrity** — no snapshot columns; stored `option_id` selections + the builder
     text-freeze keep every answer sheet faithful (see §DATABASE_SCHEMA).
 
-**Tests: 286 passing, 789 assertions, on MySQL.** Frontend build clean. Ranking semantics, release
-gating, IDOR, practice safety/zero-cost, leaderboard visibility, regrade correctness (raise/lower,
-exact-set, marks, manual-adjustment survival, terminal-metadata preservation, audit, preview
-non-persistence), adjustment bounds/audit, authorization and rank refresh are each covered. Manual
-browser QA: admin results/detail (live adjustment preview), regrade (AJAX impact preview), student
-results + answer sheet, dark mode + 375px, no console errors.
+- **Public knowledge platform (Phase 9):**
+  - **Homepage** — hero, the calendar date widget, active public notices, course overview (no
+    protected material), recent articles, and Zakat/Ask-Ustaz/login CTAs. Full public nav.
+  - **CMS** — Markdown posts (rendered with raw HTML stripped, `javascript:` links neutralised),
+    admin-managed categories with safe archive, draft/published/archived + future-scheduling, real
+    Bengali slugs. Public index (published only, category filter, search, pagination) + detail with
+    SEO meta/OG/canonical, a dynamic `sitemap.xml` and `robots.txt` that block the private areas.
+  - **Notices** — admin CRUD with a server-time active window (no cron); homepage shows public/all,
+    student dashboard shows students/all.
+  - **Ask Ustaz** — `/ask-ustaz`, email only via a Mailable to `USTAZ_EMAIL`; **never persisted**,
+    audited or logged. Honeypot + min-fill-time + rate limit; a failed send never claims success.
+  - **Zakat** — `ZakatCalculatorService` (BCMath, decimal-safe): assets − eligible liabilities vs
+    gold/silver Nisab from admin rates, 2.5%, documented constants (87.48 g / 612.36 g / 11.664 g
+    per ভরি). Public page (no login, no persistence) with an Alpine preview mirroring the server.
+  - **Calendar** — `CalendarService`: Gregorian (Dhaka), the revised Bangladesh Bangla calendar, and
+    the tabular Hijri calendar with a **sunset** rollover (`date_sun_info`, Dhaka) + `hijri_offset_days`
+    (−1/0/+1). Operates on the JDN so month/year boundaries stay valid.
+  - **Settings** — `SettingService` (typed, cached, invalidated) + admin general/zakat/calendar UI
+    and a mail diagnostic that never reveals secrets.
+  - **Error pages** — themed 403/404/419/429/500/503.
+
+**Tests: 342 passing, 990 assertions, on MySQL.** Frontend build clean. New coverage: calendar
+(sunset boundary, midnight non-transition, offset across year boundary, Pohela Boishakh, leap
+Choitro), Zakat (below/at/above Nisab, liabilities, gold vs silver, decimal safety, zero-rate),
+CMS (draft/archived/future hidden, Bengali slug, duplicate slug, filter/search, sanitisation, SEO,
+authorization), Ask Ustaz (email to recipient, validation, honeypot, rate limit, safe failure, no
+DB/audit record, no submission table), notices (window/audience/priority/permission), and public
+access boundaries. Manual browser QA: homepage desktop + 375px, live date widget (sunset rollover),
+Zakat live preview matching the server, dark mode.
 
 ### Not built
 
-Blog/Fatwa CMS, notices admin, Ask Ustaz (email-only), Zakat calculator, Hijri calendar service,
-and the student + legacy-result data migrations. (The results/leaderboard/regrade schema already
-supports legacy rows — `is_legacy_import`, `answer_details_available` — so the migration slots in
-without further schema work.)
+The student + legacy-result data migrations (Phase 10) and final cPanel deployment. Legacy
+`quiz_submissions` is deliberately left untouched; the schema already supports legacy rows
+(`is_legacy_import`, `answer_details_available`). No Tafsir lessons are fabricated.
 
 ---
 

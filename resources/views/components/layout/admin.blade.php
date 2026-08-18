@@ -19,6 +19,18 @@
         $nav[] = ['label' => __('nav.results'), 'href' => route('admin.results.index'), 'icon' => 'results', 'active' => request()->routeIs('admin.results.*')];
     }
 
+    if ($user?->hasPermission('posts.manage')) {
+        $nav[] = ['label' => __('nav.posts'), 'href' => route('admin.posts.index'), 'icon' => 'book', 'active' => request()->routeIs('admin.posts.*')];
+    }
+
+    if ($user?->hasPermission('notices.manage')) {
+        $nav[] = ['label' => __('nav.notices'), 'href' => route('admin.notices.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.notices.*')];
+    }
+
+    if ($user?->hasPermission('settings.manage')) {
+        $nav[] = ['label' => __('nav.settings'), 'href' => route('admin.settings.edit'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')];
+    }
+
     $nav[] = ['label' => __('nav.audit'), 'href' => route('admin.audit.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.audit.*')];
 @endphp
 

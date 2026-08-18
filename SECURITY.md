@@ -219,6 +219,32 @@ password-reset, point credit/deduct/bulk, course & lesson create/update/delete, 
   email, phone or point balance; a test asserts contact fields are absent from the rendered board.
 - **CSV export** carries attempt-level scores only, never answer-level detail.
 
+### 2.13 Phase 9 specifics (public site, CMS, Ask Ustaz, Zakat, calendar)
+
+- **Ask Ustaz is email-only and never persisted.** The flow is validate → anti-spam → Mail →
+  `USTAZ_EMAIL` → discard. There is deliberately no `ustaz_questions` / `inquiries` /
+  `contact_messages` table (a test asserts none exists), the question is never audited or written
+  to the app log, and it is never flashed back into the (MySQL) session — only name/email/mobile/
+  subject are. A failed delivery returns a safe Bengali error and NEVER reports success. Anti-spam
+  is free and server-side: honeypot field, minimum fill time, and a per-IP `throttle:5,10`.
+- **The recipient is configured, never hard-coded.** `config('mail.ustaz_email')` ← `USTAZ_EMAIL`.
+  SMTP credentials live only in the environment; the admin Settings page reports configured/not,
+  never the values, and cannot edit the SMTP password / APP_KEY / DB credentials.
+- **CMS content is sanitised.** Post bodies are Markdown rendered with raw HTML stripped and
+  `javascript:`/`data:` links removed (`App\Support\Markdown`), so admin- or paste-authored content
+  cannot execute a script, event handler or iframe. A test feeds `<script>`, `<iframe>` and a
+  `javascript:` link and asserts none survive. Only `Post::scopePublic()` content is ever public —
+  drafts, archived and future-scheduled posts 404.
+- **Zakat inputs are never persisted or logged.** The calculator is stateless per request (no
+  `zakat_calculations` table, no login); money maths uses BCMath decimal strings, never floats.
+- **Public/admin boundaries hold.** Guests reach only home, articles, the Zakat calculator and Ask
+  Ustaz; `/dashboard`, `/exams`, `/results`, `/practice`, `/admin` redirect to login (tests assert
+  this). `robots.txt` disallows every private area and the authenticated layout is `noindex`.
+- **Calendar reliability:** the Hijri date is a documented *tabular (civil)* calculation, not a
+  moon-sighting claim — hence the admin `hijri_offset_days`. Sunset uses the offline built-in
+  `date_sun_info` for the configured institutional location; no paid prayer-time API, no visitor
+  geolocation.
+
 ---
 
 ## 3. Files that must never be committed

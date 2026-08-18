@@ -15,7 +15,10 @@ uploaded.
 | Composer | Available in cPanel Terminal, or upload `vendor/` built locally |
 | HTTPS | Required |
 
-`intl` is **not optional** — the Hijri calendar depends on it.
+`intl` is **not optional** — Bengali NFC normalisation (`Normalizer`, used by slugs and text
+comparison) depends on it. `bcmath` is **not optional** — the Zakat calculator does all money
+arithmetic with it. The Hijri calendar and sunset use pure PHP + the core `date` extension
+(`date_sun_info`); no prayer-time API is required.
 
 > **If the host cannot offer PHP 8.3**, stop and say so before going further. The
 > application would need to be pinned to an older Laravel release, which is a
@@ -142,7 +145,28 @@ USTAZ_EMAIL=<where Ask Ustaz questions go>
 ```
 
 Send a test before launch — Ask Ustaz questions are **not stored anywhere**, so a
-silent mail failure loses them permanently.
+silent mail failure loses them permanently. The admin **Settings → Mail** panel reports
+configured/incomplete for the mailer, the from-address and `USTAZ_EMAIL` (never the
+secret values), which is the quickest pre-launch check.
+
+---
+
+## 8b. Public-module configuration (admin, not `.env`)
+
+These are edited in **/admin/settings** by an admin and stored in the `settings` table
+(`SettingService`) — no `.env` change or redeploy needed:
+
+- **Zakat reference** — gold price/gram, silver price/gram, default Nisab basis, currency
+  symbol. The calculator shows the "last updated" stamp; until the rates are set it warns
+  that the Nisab cannot be computed. Set these before promoting the Zakat calculator.
+- **Calendar** — institutional latitude/longitude (default Dhaka `23.8103, 90.4125`),
+  timezone (`Asia/Dhaka`), and `hijri_offset_days` (−1/0/+1) to align the calculated Hijri
+  date with the local moon sighting.
+- **General** — site name, tagline, Telegram URL.
+
+**Caching:** settings, and any public caching, use the configured cache driver — `file`
+or `database` is fine on cPanel; **Redis is not required**. `SettingService` invalidates
+its cache on every save, so admin edits take effect immediately.
 
 ---
 

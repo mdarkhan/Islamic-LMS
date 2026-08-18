@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Notice;
 use App\Models\QuizAttempt;
 use App\Services\Quiz\LeaderboardService;
 use Carbon\CarbonImmutable;
@@ -35,6 +36,12 @@ class DashboardController extends Controller
             'user' => $user,
             'completed' => $completed,
             'overall' => $overall,
+            'notices' => Notice::query()
+                ->activeAt()
+                ->forAudience(Notice::AUDIENCE_STUDENTS)
+                ->orderByDesc('priority')
+                ->limit(3)
+                ->get(),
             'recent' => QuizAttempt::query()
                 ->where('user_id', $user->getKey())
                 ->where('kind', QuizAttempt::KIND_OFFICIAL)

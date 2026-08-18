@@ -7,7 +7,7 @@
 
 @php $user = auth()->user(); @endphp
 
-<x-layout.base :title="$title">
+<x-layout.base :title="$title" :noindex="true">
     <div x-data="{ mobileNav: false }" class="min-h-screen lg:flex">
 
         {{-- Sidebar (desktop) --}}

@@ -14,6 +14,18 @@ return [
     'leaderboard' => 'মেধাতালিকা',
     'point_history' => 'পয়েন্ট হিস্ট্রি',
     'profile' => 'প্রোফাইল',
+
+    'posts' => 'লেখাসমূহ',
+    'notices' => 'নোটিশ',
+    'settings' => 'সেটিংস',
+
+    // Public site
+    'home' => 'হোম',
+    'articles' => 'লেখাসমূহ',
+    'fatwa' => 'ফতোয়া ও প্রশ্নোত্তর',
+    'zakat' => 'যাকাত ক্যালকুলেটর',
+    'ask_ustaz' => 'উস্তাযকে জিজ্ঞাসা করুন',
+    'login' => 'লগইন',
     'logout' => 'লগআউট',
     'later_phase' => 'পরবর্তী ধাপ',
 

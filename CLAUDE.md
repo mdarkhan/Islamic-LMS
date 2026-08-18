@@ -331,3 +331,35 @@ results/adjustment/regrade surface. Key rules, all centralised:
 - **`AttemptReviewPresenter`** is the reveal counterpart to `ExamAttemptPresenter` — only for
   terminal attempts the caller has already release-gated. Legacy attempts
   (`answer_details_available = false`) show "answers not preserved", never fabricated.
+
+The **public knowledge platform** IS built (Phase 9): homepage, Blog/Fatwa CMS, notices, Ask
+Ustaz, Zakat calculator and the calendar. Conventions, all centralised:
+
+- **Settings go through `SettingService`** (typed, cached, default-backed) — never
+  `Setting::where(...)` in a controller/Blade. `set()` ignores unknown keys and invalidates the
+  cache. Decimals (rates/money) are returned as STRINGS for BCMath safety. Secrets (SMTP password,
+  APP_KEY, DB creds) live in the environment only and are NEVER stored or shown here.
+- **Post content is Markdown**, rendered by `App\Support\Markdown::render()` with raw HTML stripped
+  and `javascript:`/`data:` links neutralised — the only safe way to output a body. Never
+  `{!! $post->body !!}`. `Post::scopePublic()` (published AND `published_at <= now`) is the single
+  public-visibility definition; a draft, archived or future-scheduled post is never public.
+- **Ask Ustaz is email-only and NEVER persisted** (CLAUDE.md #1 still holds): validate → anti-spam
+  (honeypot + min-fill-time + `throttle`) → `AskUstazQuestion` Mailable → `config('mail.ustaz_email')`
+  → discard. A failed send returns a safe Bengali error and NEVER claims success; the question is
+  never written to a table, an audit log, the session (only name/email/mobile/subject flash back),
+  or the app log. There is no submission table — do not add one.
+- **Zakat: `ZakatCalculatorService` is the authority** (BCMath decimal strings, never float money).
+  Constants live there (Nisab 87.48 g gold / 612.36 g silver, 1 ভরি = 11.664 g, rate 0.025). The
+  browser preview must mirror the same formula/constants. Financial inputs are NEVER persisted.
+- **Calendar: `CalendarService` owns all date logic.** Gregorian (Dhaka), the *revised Bangladesh*
+  Bangla calendar (Pohela Boishakh = 14 April; Choitro is 31 days when Feb of the epoch-year+1 is
+  leap — NOT the West Bengal system), and the *tabular Islamic (civil)* Hijri calendar. The Hijri
+  day rolls over at **local sunset** (`date_sun_info`, configured Dhaka lat/lng — never a hard-coded
+  18:00), then `hijri_offset_days` (−1/0/+1) is applied. Both the sunset roll and the offset are
+  added to the Julian Day Number and converted ONCE, so month/year boundaries can never become
+  invalid. Freeze time in tests; never hard-code a day integer.
+- **Notices** are window-governed by server time (`Notice::scopeActiveAt`), no cron. `scopeForAudience`
+  matches the audience plus `all`. Homepage shows public/all; student dashboard shows students/all.
+- **SEO/indexing:** the public `x-layout.base` accepts `description`/`canonical`/`ogImage`; the
+  authenticated `x-layout.app` sets `:noindex`. `robots.txt` + `sitemap.xml` are dynamic
+  (`SitemapController`) and the sitemap lists only `Post::scopePublic()` rows.

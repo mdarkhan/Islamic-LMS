@@ -1,16 +1,36 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\AskUstazController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordChangeController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Student;
+use App\Http\Controllers\ZakatController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
 
 // Interface language toggle (available to everyone, including guests).
 Route::post('locale', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
+
+/*
+ * Public knowledge platform (Phase 9) — no login required.
+ */
+Route::get('articles', [BlogController::class, 'index'])->name('blog.index');
+Route::get('articles/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::get('zakat-calculator', [ZakatController::class, 'index'])->name('zakat.index');
+Route::post('zakat-calculator', [ZakatController::class, 'calculate'])->name('zakat.calculate');
+
+Route::get('ask-ustaz', [AskUstazController::class, 'show'])->name('ask-ustaz.show');
+// Email-only; rate-limited per IP. The question is never persisted.
+Route::post('ask-ustaz', [AskUstazController::class, 'store'])->name('ask-ustaz.store')->middleware('throttle:5,10');
+
+Route::get('sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 /*
  * Authentication
@@ -153,6 +173,42 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
     Route::get('quizzes/{quiz}/regrade', [Admin\RegradeController::class, 'create'])->name('quizzes.regrade.create')->middleware('perm:results.regrade');
     Route::post('quizzes/{quiz}/regrade/preview', [Admin\RegradeController::class, 'preview'])->name('quizzes.regrade.preview')->middleware('perm:results.regrade');
     Route::post('quizzes/{quiz}/regrade', [Admin\RegradeController::class, 'apply'])->name('quizzes.regrade.apply')->middleware('perm:results.regrade');
+
+    // Content CMS (Phase 9). Categories + create are declared before the {post} wildcard.
+    Route::middleware('perm:posts.manage')->group(function () {
+        Route::get('posts', [Admin\PostController::class, 'index'])->name('posts.index');
+        Route::get('posts/create', [Admin\PostController::class, 'create'])->name('posts.create');
+        Route::post('posts', [Admin\PostController::class, 'store'])->name('posts.store');
+
+        Route::get('posts/categories', [Admin\PostCategoryController::class, 'index'])->name('posts.categories.index');
+        Route::post('posts/categories', [Admin\PostCategoryController::class, 'store'])->name('posts.categories.store');
+        Route::put('posts/categories/{category}', [Admin\PostCategoryController::class, 'update'])->name('posts.categories.update');
+        Route::delete('posts/categories/{category}', [Admin\PostCategoryController::class, 'destroy'])->name('posts.categories.destroy');
+
+        Route::get('posts/{post}/edit', [Admin\PostController::class, 'edit'])->name('posts.edit');
+        Route::put('posts/{post}', [Admin\PostController::class, 'update'])->name('posts.update');
+        Route::get('posts/{post}/preview', [Admin\PostController::class, 'preview'])->name('posts.preview');
+        Route::post('posts/{post}/publish', [Admin\PostController::class, 'publish'])->name('posts.publish');
+        Route::post('posts/{post}/archive', [Admin\PostController::class, 'archive'])->name('posts.archive');
+        Route::delete('posts/{post}', [Admin\PostController::class, 'destroy'])->name('posts.destroy');
+    });
+
+    // Notices
+    Route::middleware('perm:notices.manage')->group(function () {
+        Route::get('notices', [Admin\NoticeController::class, 'index'])->name('notices.index');
+        Route::post('notices', [Admin\NoticeController::class, 'store'])->name('notices.store');
+        Route::put('notices/{notice}', [Admin\NoticeController::class, 'update'])->name('notices.update');
+        Route::put('notices/{notice}/toggle', [Admin\NoticeController::class, 'toggle'])->name('notices.toggle');
+        Route::delete('notices/{notice}', [Admin\NoticeController::class, 'destroy'])->name('notices.destroy');
+    });
+
+    // Settings (general / zakat / calendar). Secrets are never editable here.
+    Route::middleware('perm:settings.manage')->group(function () {
+        Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings.edit');
+        Route::put('settings/general', [Admin\SettingController::class, 'updateGeneral'])->name('settings.general');
+        Route::put('settings/zakat', [Admin\SettingController::class, 'updateZakat'])->name('settings.zakat');
+        Route::put('settings/calendar', [Admin\SettingController::class, 'updateCalendar'])->name('settings.calendar');
+    });
 
     // Audit
     Route::get('audit', [Admin\AuditController::class, 'index'])->name('audit.index')->middleware('perm:audit.view');

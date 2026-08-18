@@ -17,6 +17,18 @@ return [
     'logout' => 'Log out',
     'later_phase' => 'Later phase',
 
+    'posts' => 'Articles',
+    'notices' => 'Notices',
+    'settings' => 'Settings',
+
+    // Public site
+    'home' => 'Home',
+    'articles' => 'Articles',
+    'fatwa' => 'Fatwa & Q&A',
+    'zakat' => 'Zakat Calculator',
+    'ask_ustaz' => 'Ask Ustaz',
+    'login' => 'Login',
+
     'context_student' => 'Student',
     'context_admin' => 'Admin',
 

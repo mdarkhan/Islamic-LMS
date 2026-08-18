@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'heading' => 'Notices',
+    'body' => 'Message',
+    'priority' => 'Priority',
+    'audience' => 'Audience',
+    'starts_at' => 'Starts at',
+    'ends_at' => 'Ends at',
+    'active' => 'Active',
+    'audience_public' => 'Public',
+    'audience_students' => 'Students',
+    'audience_all' => 'Everyone',
+    'add' => 'Add notice',
+    'save' => 'Save',
+    'saved' => 'The notice has been saved.',
+    'delete' => 'Delete',
+    'deleted' => 'The notice has been deleted.',
+    'delete_confirm' => 'Delete this notice?',
+    'activate' => 'Activate',
+    'deactivate' => 'Deactivate',
+    'none' => 'No notices yet.',
+    'status_live' => 'Live now',
+    'status_scheduled' => 'Scheduled',
+    'status_expired' => 'Expired',
+    'status_inactive' => 'Inactive',
+    'window_hint' => 'Times are Asia/Dhaka. Leave blank for no limit.',
+];

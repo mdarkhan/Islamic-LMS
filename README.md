@@ -5,14 +5,14 @@ scheduled online examinations with server-side scoring, a points system, course
 archive, leaderboards, and an admin panel that removes the need to edit source
 code to manage content.
 
-> **Status: post-exam & practice ecosystem, phase 8.** On top of the hardened domain layer,
-> authentication, design system, student/admin management, the quiz builder + importer and the
-> secure live official exam, this phase adds **student results + release-gated answer sheets**,
-> **Practice Mode**, **per-quiz and overall leaderboards** (via a central `LeaderboardService`),
-> and the admin **results / manual-adjustment / answer-key-regrade** surface. The public modules
-> (blog / Ask Ustaz / Zakat / Hijri) and the student/legacy-result data migrations are not yet
-> built. See [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current status — nothing is
-> listed there as done unless it has been run.
+> **Status: public knowledge platform, phase 9.** On top of the hardened domain layer, the quiz
+> engine, the secure live exam and the post-exam/practice ecosystem, this phase adds the
+> **public site**: an upgraded homepage, a **Blog/Fatwa/Q&A CMS** (Markdown, sanitised, SEO +
+> sitemap + robots), admin **notices**, the **email-only Ask Ustaz** form (never persisted), a
+> decimal-safe **Zakat calculator**, and a centralised **CalendarService** (Gregorian / revised
+> Bangla / tabular Hijri with a sunset rollover + admin offset). The student/legacy-result data
+> migrations and final cPanel deployment are Phase 10. See [PROJECT_PLAN.md](PROJECT_PLAN.md) §11
+> for the honest, current status — nothing is listed there as done unless it has been run.
 
 ---
 
@@ -119,10 +119,13 @@ the input to the course seeder.
 - **Post-exam & practice ecosystem** — student `/results` history + release-gated answer
   sheets, **Practice Mode** (free, untimed, unranked, immediate review), per-quiz +
   overall **leaderboards**, and the admin results / manual-adjustment / **regrade** surface
-- **286 passing tests / 789 assertions** on MySQL, plus manual browser QA
+- **Public knowledge platform** — homepage with the calendar date widget, a **Markdown
+  CMS** (Blog/Fatwa/Q&A, sanitised, SEO + `sitemap.xml` + `robots.txt`), admin **notices**,
+  the **email-only Ask Ustaz** form (never persisted), a decimal-safe **Zakat calculator**,
+  and `CalendarService` (Gregorian / revised Bangla / tabular Hijri with sunset rollover)
+- **342 passing tests / 990 assertions** on MySQL, plus manual browser QA
 
 ## What does not exist yet
 
-Blog/Fatwa CMS, notices admin, Ask Ustaz (email-only), Zakat calculator, Hijri calendar,
-and the student/legacy-result data migrations.
+The student + legacy-result data migrations and the final cPanel deployment/cutover.
 Tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md) §11.

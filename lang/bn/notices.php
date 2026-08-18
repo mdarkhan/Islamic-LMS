@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'heading' => 'নোটিশ',
+    'body' => 'বার্তা',
+    'priority' => 'অগ্রাধিকার',
+    'audience' => 'দর্শক',
+    'starts_at' => 'শুরুর সময়',
+    'ends_at' => 'শেষ সময়',
+    'active' => 'সক্রিয়',
+    'audience_public' => 'সর্বজনীন',
+    'audience_students' => 'শিক্ষার্থী',
+    'audience_all' => 'সবাই',
+    'add' => 'নোটিশ যোগ করুন',
+    'save' => 'সংরক্ষণ',
+    'saved' => 'নোটিশটি সংরক্ষণ করা হয়েছে।',
+    'delete' => 'মুছুন',
+    'deleted' => 'নোটিশটি মুছে ফেলা হয়েছে।',
+    'delete_confirm' => 'এই নোটিশটি মুছে ফেলবেন?',
+    'activate' => 'সক্রিয় করুন',
+    'deactivate' => 'নিষ্ক্রিয় করুন',
+    'none' => 'এখনও কোনো নোটিশ নেই।',
+    'status_live' => 'এখন সক্রিয়',
+    'status_scheduled' => 'নির্ধারিত',
+    'status_expired' => 'মেয়াদোত্তীর্ণ',
+    'status_inactive' => 'নিষ্ক্রিয়',
+    'window_hint' => 'সময় Asia/Dhaka অনুযায়ী। সীমা না চাইলে খালি রাখুন।',
+];

@@ -1,4 +1,8 @@
 <x-layout.student :title="__('nav.dashboard')" :heading="__('nav.dashboard')">
+    @if ($notices->isNotEmpty())
+        <div class="mb-6"><x-ui.notice-banner :notices="$notices" /></div>
+    @endif
+
     {{-- Welcome --}}
     <x-ui.card class="relative overflow-hidden mb-6">
         <div class="absolute inset-0 geo-accent opacity-50" aria-hidden="true"></div>
