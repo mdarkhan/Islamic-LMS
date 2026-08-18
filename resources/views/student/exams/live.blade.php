@@ -1,9 +1,14 @@
 @php
-    $endpoints = [
+    // The screen is shared by the official exam and Practice Mode. Each controller
+    // supplies its own endpoints, submit action and (for practice) a mode badge;
+    // the official routes remain the default so the Phase 7 flow is unchanged.
+    $endpoints = $endpoints ?? [
         'answer' => route('student.attempts.answer', ['attempt' => $attempt->id, 'question' => '__Q__']),
         'status' => route('student.attempts.status', $attempt),
         'result' => route('student.attempts.result', $attempt),
     ];
+    $submitAction = $submitAction ?? route('student.attempts.submit', $attempt);
+    $practiceLabel = $practiceLabel ?? null;
 
     // Boot payload for the browser. Deliberately carries ONLY the allow-listed
     // question data from ExamAttemptPresenter — no answer key, marks or explanation.
@@ -24,7 +29,12 @@
         <header class="sticky top-0 z-30 bg-surface/90 backdrop-blur border-b border-line">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
                 <div class="min-w-0">
-                    <h1 class="font-bold text-ink truncate">{{ $quiz->title }}</h1>
+                    <div class="flex items-center gap-2">
+                        @if ($practiceLabel)
+                            <x-ui.badge color="brand">{{ $practiceLabel }}</x-ui.badge>
+                        @endif
+                        <h1 class="font-bold text-ink truncate">{{ $quiz->title }}</h1>
+                    </div>
                     <p class="text-xs text-muted" x-text="answeredLabel()"></p>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
@@ -142,7 +152,7 @@
 
     {{-- Plain POST submission: works with or without JS, and the server records the
          authoritative terminal state. JS flushes pending saves, then submits this. --}}
-    <form id="exam-submit-form" method="POST" action="{{ route('student.attempts.submit', $attempt) }}" class="hidden">
+    <form id="exam-submit-form" method="POST" action="{{ $submitAction }}" class="hidden">
         @csrf
     </form>
 

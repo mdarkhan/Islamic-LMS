@@ -92,27 +92,59 @@ class QuizLifecycleTest extends TestCase
     {
         $quiz = Quiz::factory()->practice()->create([
             'status' => Quiz::STATUS_ARCHIVED,
-            'starts_at' => $this->now->subHour(),
-            'ends_at' => $this->now->addHour(),
+            'starts_at' => $this->now->subDays(2),
+            'ends_at' => $this->now->subHour(),   // window ended → key safe → results released
         ]);
 
         $this->assertFalse($quiz->isOpenAt($this->now), 'no new official attempt on an archived quiz');
         $this->assertSame(Quiz::STATE_ARCHIVED, $quiz->officialState($this->now));
-        $this->assertTrue($quiz->practiceAvailable());
+        $this->assertTrue($quiz->practiceAvailableAt($this->now));
         $this->assertTrue($quiz->isVisibleToStudents());
+    }
+
+    public function test_practice_stays_closed_while_the_official_key_is_still_secret(): void
+    {
+        // Archived, but the window has not ended yet → results not released → the answer
+        // key is not safe to reveal, so practice must not open (brief §10).
+        $quiz = Quiz::factory()->practice()->create([
+            'status' => Quiz::STATUS_ARCHIVED,
+            'starts_at' => $this->now->subHour(),
+            'ends_at' => $this->now->addHour(),
+        ]);
+
+        $this->assertFalse($quiz->practiceAvailableAt($this->now));
+    }
+
+    public function test_practice_is_closed_during_a_live_official_window(): void
+    {
+        // A published quiz mid-window: a student must not be able to open practice and
+        // read the answer key for an exam they can still sit.
+        $quiz = Quiz::factory()->practice()->create([
+            'status' => Quiz::STATUS_PUBLISHED,
+            'starts_at' => $this->now->subHour(),
+            'ends_at' => $this->now->addHour(),
+        ]);
+
+        $this->assertTrue($quiz->isOpenAt($this->now));
+        $this->assertFalse($quiz->practiceAvailableAt($this->now));
     }
 
     public function test_archived_without_practice_offers_no_practice(): void
     {
-        $quiz = Quiz::factory()->create(['status' => Quiz::STATUS_ARCHIVED, 'practice_enabled' => false]);
+        $quiz = Quiz::factory()->create([
+            'status' => Quiz::STATUS_ARCHIVED,
+            'practice_enabled' => false,
+            'starts_at' => $this->now->subDays(2),
+            'ends_at' => $this->now->subHour(),
+        ]);
 
-        $this->assertFalse($quiz->practiceAvailable());
+        $this->assertFalse($quiz->practiceAvailableAt($this->now));
     }
 
     public function test_draft_never_offers_practice_even_if_flagged(): void
     {
         $quiz = Quiz::factory()->practice()->create(['status' => Quiz::STATUS_DRAFT]);
 
-        $this->assertFalse($quiz->practiceAvailable());
+        $this->assertFalse($quiz->practiceAvailableAt($this->now));
     }
 }

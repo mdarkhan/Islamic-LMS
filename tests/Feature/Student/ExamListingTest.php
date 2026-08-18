@@ -53,6 +53,9 @@ class ExamListingTest extends TestCase
         Quiz::factory()->practice()->create([
             'title' => 'আর্কাইভ অনুশীলন',
             'status' => Quiz::STATUS_ARCHIVED,
+            // Window ended → official key safe → practice open (Phase 8 rule).
+            'starts_at' => now()->subDays(2),
+            'ends_at' => now()->subHour(),
         ]);
 
         $this->actingAs($this->makeStudent())->get(route('student.exams.index'))

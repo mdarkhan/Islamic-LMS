@@ -26,6 +26,14 @@ class QuizAttempt extends Model
     public const STATUS_EXPIRED = 'expired';
     public const STATUS_VOIDED = 'voided';
 
+    /**
+     * The terminal statuses that carry a real, scored result and therefore appear on
+     * leaderboards and count toward cumulative totals: a submitted attempt and an
+     * expired one (the student ran out of time but is ranked on what they achieved).
+     * `voided` and `in_progress` never rank.
+     */
+    public const RANKABLE_STATUSES = [self::STATUS_SUBMITTED, self::STATUS_EXPIRED];
+
     protected function casts(): array
     {
         return [
@@ -81,10 +89,28 @@ class QuizAttempt extends Model
         return $this->expires_at !== null && $now >= $this->expires_at;
     }
 
+    /** Whether this attempt's score was ever changed by an answer-key regrade. */
+    public function wasRegraded(): bool
+    {
+        return $this->regradeEntries()->exists();
+    }
+
     /** @return HasMany<QuizAnswer, $this> */
     public function answers(): HasMany
     {
         return $this->hasMany(QuizAnswer::class, 'attempt_id');
+    }
+
+    /** @return HasMany<ScoreAdjustment, $this> */
+    public function scoreAdjustments(): HasMany
+    {
+        return $this->hasMany(ScoreAdjustment::class, 'attempt_id');
+    }
+
+    /** @return HasMany<RegradeEntry, $this> */
+    public function regradeEntries(): HasMany
+    {
+        return $this->hasMany(RegradeEntry::class, 'attempt_id');
     }
 
     /** @return BelongsTo<Quiz, $this> */

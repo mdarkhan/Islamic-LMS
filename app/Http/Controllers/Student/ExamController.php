@@ -83,7 +83,7 @@ class ExamController extends Controller
             'has_questions' => $quiz->active_questions_count > 0,
             'attempt_id' => $attempt?->id,
             'enough_points' => $user->points_balance >= $quiz->point_cost,
-            'practice_available' => $quiz->practiceAvailable(),
+            'practice_available' => $quiz->practiceAvailableAt($now),
             // A student sees their own score only once results are released.
             'score' => ($completed && $resultsReleased) ? $attempt->final_score : null,
             'results_pending' => $completed && ! $resultsReleased,

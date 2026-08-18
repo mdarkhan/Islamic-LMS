@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'course_id', 'lesson_id', 'slug', 'title', 'description', 'status',
     'practice_enabled', 'point_cost', 'duration_seconds', 'starts_at', 'ends_at',
     'result_release_at', 'results_released_at', 'leaderboard_visible',
-    'max_official_attempts', 'created_by',
+    'counts_toward_overall', 'max_official_attempts', 'created_by',
 ])]
 class Quiz extends Model
 {
@@ -35,6 +35,7 @@ class Quiz extends Model
             'published_at' => 'datetime',
             'practice_enabled' => 'boolean',
             'leaderboard_visible' => 'boolean',
+            'counts_toward_overall' => 'boolean',
             'point_cost' => 'integer',
             'duration_seconds' => 'integer',
             'total_marks' => 'integer',
@@ -100,10 +101,38 @@ class Quiz extends Model
         return $this->status !== self::STATUS_DRAFT;
     }
 
-    /** Practice is available whenever enabled and the quiz is not a draft. */
-    public function practiceAvailable(): bool
+    /**
+     * The central Practice-availability rule (brief §10). Practice reveals correct
+     * answers and explanations the instant an attempt is submitted, so it must NEVER be
+     * openable while the official answer key is still secret. It becomes available only
+     * once the key is safe to reveal:
+     *
+     *   - practice is enabled and the quiz is not a draft;
+     *   - no official attempt may currently START (the live official window is closed,
+     *     or the quiz is archived) — so opening practice cannot hand a student the key
+     *     for an exam they could still sit; and
+     *   - official results have been released (same gate as the answer sheet), so the
+     *     key is already public to those who took it.
+     *
+     * A "practice-only" quiz is therefore expressed as an archived (or past-window)
+     * quiz with practice_enabled — its official window is closed, so practice opens.
+     */
+    public function practiceAvailableAt(\DateTimeInterface $now): bool
     {
-        return $this->practice_enabled && $this->status !== self::STATUS_DRAFT;
+        return $this->practice_enabled
+            && $this->status !== self::STATUS_DRAFT
+            && ! $this->isOpenAt($now)
+            && $this->resultsReleasedAt($now);
+    }
+
+    /**
+     * The central per-quiz leaderboard-visibility rule (brief §19). A quiz leaderboard
+     * appears only once results are released AND the admin has left it visible. The
+     * controller relies on this so a direct-route request cannot see it early.
+     */
+    public function leaderboardVisibleAt(\DateTimeInterface $now): bool
+    {
+        return $this->leaderboard_visible && $this->resultsReleasedAt($now);
     }
 
     public function resultsReleasedAt(\DateTimeInterface $now): bool

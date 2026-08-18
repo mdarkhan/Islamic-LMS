@@ -11,7 +11,7 @@
     <div x-data="{ mobileNav: false }" class="min-h-screen lg:flex">
 
         {{-- Sidebar (desktop) --}}
-        <aside class="hidden lg:flex lg:flex-col w-64 shrink-0 border-r border-line bg-surface-raised">
+        <aside class="hidden lg:flex lg:flex-col w-64 shrink-0 border-r border-line bg-surface-raised print:hidden">
             <div class="h-16 flex items-center px-5 border-b border-line">
                 <x-ui.brand :sub="false" />
             </div>
@@ -45,7 +45,7 @@
 
         {{-- Main column --}}
         <div class="flex-1 min-w-0 flex flex-col">
-            <header class="h-16 shrink-0 sticky top-0 z-30 bg-surface/80 backdrop-blur border-b border-line flex items-center justify-between px-4 sm:px-6">
+            <header class="h-16 shrink-0 sticky top-0 z-30 bg-surface/80 backdrop-blur border-b border-line flex items-center justify-between px-4 sm:px-6 print:hidden">
                 <div class="flex items-center gap-3 min-w-0">
                     <button @click="mobileNav = true" class="lg:hidden p-2 -ml-2 text-muted hover:text-ink" aria-label="{{ __('nav.open_menu') }}"><x-ui.icon name="menu" /></button>
                     <h1 class="font-bold text-ink truncate">{{ $heading ?? $title }}</h1>

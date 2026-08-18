@@ -58,10 +58,15 @@
 
             <p class="text-xs text-muted mt-6">{{ __('exams.result_detailed_unavailable') }}</p>
 
-            <div class="mt-6">
+            <div class="mt-6 flex items-center justify-center gap-3">
                 <x-ui.button :href="route('student.exams.index')" variant="secondary">
                     {{ __('exams.result_back') }}
                 </x-ui.button>
+                @if ($released && $attempt->answer_details_available)
+                    <x-ui.button :href="route('student.results.show', $attempt)">
+                        {{ __('results.view_answer_sheet') }}
+                    </x-ui.button>
+                @endif
             </div>
         </x-ui.card>
     </div>

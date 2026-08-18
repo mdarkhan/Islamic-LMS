@@ -48,6 +48,23 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
     Route::post('exam-attempts/{attempt}/submit', [Student\ExamAttemptController::class, 'submit'])->name('student.attempts.submit');
     Route::get('exam-attempts/{attempt}/result', [Student\ExamAttemptController::class, 'result'])->name('student.attempts.result');
 
+    // Results & detailed answer sheets (Phase 8). Release is enforced in the controller.
+    Route::get('results', [Student\ResultController::class, 'index'])->name('student.results.index');
+    Route::get('results/{attempt}', [Student\ResultController::class, 'show'])->name('student.results.show');
+
+    // Practice Mode (Phase 8). Availability (the official key being safe to reveal) is
+    // enforced on start; practice is free, untimed and unranked.
+    Route::get('practice', [Student\PracticeController::class, 'index'])->name('student.practice.index');
+    Route::post('practice/{quiz}/start', [Student\PracticeController::class, 'start'])->name('student.practice.start');
+    Route::get('practice-attempts/{attempt}', [Student\PracticeController::class, 'show'])->name('student.practice.show');
+    Route::put('practice-attempts/{attempt}/answers/{question}', [Student\PracticeController::class, 'saveAnswer'])->name('student.practice.answer');
+    Route::post('practice-attempts/{attempt}/submit', [Student\PracticeController::class, 'submit'])->name('student.practice.submit');
+    Route::get('practice-attempts/{attempt}/result', [Student\PracticeController::class, 'result'])->name('student.practice.result');
+
+    // Leaderboards (Phase 8). Per-quiz visibility is gated server-side.
+    Route::get('leaderboards', [Student\LeaderboardController::class, 'overall'])->name('student.leaderboards.overall');
+    Route::get('leaderboards/{quiz}', [Student\LeaderboardController::class, 'quiz'])->name('student.leaderboards.quiz');
+
     Route::get('points', [Student\PointController::class, 'index'])->name('student.points');
 
     Route::get('profile', [Student\ProfileController::class, 'edit'])->name('student.profile.edit');
