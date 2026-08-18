@@ -55,6 +55,8 @@ class PostController extends Controller
     public function store(PostRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        unset($data['new_category']);
+        $data['post_category_id'] = $this->resolveCategoryId($request);
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'));
         $data['body'] = HtmlSanitizer::clean($data['body']);
         $data['author_id'] = $request->user()->getKey();
@@ -77,6 +79,8 @@ class PostController extends Controller
     public function update(PostRequest $request, Post $post): RedirectResponse
     {
         $data = $request->validated();
+        unset($data['new_category']);
+        $data['post_category_id'] = $this->resolveCategoryId($request);
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'), $post->getKey());
         $data['body'] = HtmlSanitizer::clean($data['body']);
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'), $post);
@@ -131,6 +135,36 @@ class PostController extends Controller
     private function activeCategories()
     {
         return PostCategory::query()->active()->orderBy('sort_order')->get(['id', 'name']);
+    }
+
+    /**
+     * A category is either picked from the list or typed inline. An inline name reuses a
+     * category of the same name (case-insensitive) if one exists, otherwise creates one
+     * with a real Bengali slug — so the admin never has to leave the editor to file a
+     * post under a new topic.
+     */
+    private function resolveCategoryId(PostRequest $request): int
+    {
+        $name = trim((string) $request->input('new_category'));
+
+        if ($name === '') {
+            return (int) $request->input('post_category_id');
+        }
+
+        $existing = PostCategory::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first();
+        if ($existing !== null) {
+            return $existing->getKey();
+        }
+
+        $category = PostCategory::query()->create([
+            'name' => $name,
+            'slug' => Slug::unique($name, fn (string $s) => PostCategory::query()->where('slug', $s)->exists(), 'category'),
+            'is_active' => true,
+            'sort_order' => (int) PostCategory::query()->max('sort_order') + 1,
+        ]);
+        $this->audit->log('category.created', $category, after: ['name' => $category->name]);
+
+        return $category->getKey();
     }
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string

@@ -128,13 +128,33 @@
         </x-ui.card>
 
         <x-ui.card class="space-y-4">
-            <x-ui.field :label="__('posts.category')" name="post_category_id" :required="true">
-                <x-ui.select name="post_category_id" required>
-                    @foreach ($categories as $c)
-                        <option value="{{ $c->id }}" @selected(old('post_category_id', $post?->post_category_id) == $c->id)>{{ $c->name }}</option>
-                    @endforeach
-                </x-ui.select>
-            </x-ui.field>
+            <div x-data="{ adding: {{ old('new_category') ? 'true' : 'false' }} }">
+                <x-ui.field :label="__('posts.category')" name="post_category_id" :required="true">
+                    {{-- Pick an existing category… --}}
+                    <div x-show="!adding">
+                        <x-ui.select name="post_category_id">
+                            @foreach ($categories as $c)
+                                <option value="{{ $c->id }}" @selected(old('post_category_id', $post?->post_category_id) == $c->id)>{{ $c->name }}</option>
+                            @endforeach
+                        </x-ui.select>
+                        <button type="button" @click="adding = true; $nextTick(() => $refs.newCategory.focus())"
+                                class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
+                            <span class="text-base leading-none">+</span> {{ __('posts.category_add') }}
+                        </button>
+                    </div>
+
+                    {{-- …or create a new one inline (WordPress-style). --}}
+                    <div x-show="adding" x-cloak class="space-y-2">
+                        <x-ui.input name="new_category" x-ref="newCategory" :value="old('new_category')"
+                                    :placeholder="__('posts.category_name')" />
+                        <button type="button" @click="adding = false"
+                                class="text-sm text-muted hover:text-ink hover:underline">
+                            {{ __('ui.cancel') }}
+                        </button>
+                    </div>
+                </x-ui.field>
+                @error('new_category') <p class="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
+            </div>
         </x-ui.card>
     </div>
 </div>

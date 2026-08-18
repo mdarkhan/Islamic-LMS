@@ -17,7 +17,10 @@ class PostRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:250'],
-            'post_category_id' => ['required', Rule::exists('post_categories', 'id')],
+            // A category is required, but the admin may create one inline instead of
+            // picking an existing one (resolved in the controller).
+            'post_category_id' => ['required_without:new_category', 'nullable', Rule::exists('post_categories', 'id')],
+            'new_category' => ['nullable', 'string', 'max:150'],
             'slug' => ['nullable', 'string', 'max:200'],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'body' => ['required', 'string', 'max:50000'],
@@ -33,7 +36,7 @@ class PostRequest extends FormRequest
     {
         return [
             'title.required' => 'শিরোনাম আবশ্যক।',
-            'post_category_id.required' => 'একটি বিভাগ নির্বাচন করুন।',
+            'post_category_id.required_without' => 'একটি বিভাগ নির্বাচন করুন অথবা নতুন বিভাগ লিখুন।',
             'body.required' => 'লেখার মূল অংশ আবশ্যক।',
         ];
     }

@@ -97,6 +97,48 @@ class BlogTest extends TestCase
         $this->assertSame($slugs->count(), $slugs->unique()->count());
     }
 
+    // ── Inline category creation ──────────────────────────────────────────────────
+
+    public function test_admin_can_create_a_category_inline_while_writing(): void
+    {
+        $this->actingAs($this->makeAdmin())->post(route('admin.posts.store'), [
+            'title' => 'নতুন বিষয়ের লেখা',
+            'new_category' => 'নতুন বিভাগ',   // no post_category_id — created inline
+            'body' => '<p>মূল লেখা</p>',
+            'status' => Post::STATUS_DRAFT,
+        ])->assertRedirect();
+
+        $category = PostCategory::query()->where('name', 'নতুন বিভাগ')->first();
+        $this->assertNotNull($category);
+        $this->assertTrue($category->is_active);
+        $this->assertSame('নতুন-বিভাগ', $category->slug);   // real Bengali slug
+        $this->assertSame($category->id, Post::query()->latest('id')->first()->post_category_id);
+    }
+
+    public function test_inline_category_reuses_an_existing_name_and_does_not_duplicate(): void
+    {
+        $existing = $this->makeCategory(['name' => 'সীরাত', 'slug' => 'seerah-x']);
+
+        $this->actingAs($this->makeAdmin())->post(route('admin.posts.store'), [
+            'title' => 'সীরাতের লেখা',
+            'new_category' => 'সীরাত',   // same name as an existing category
+            'body' => '<p>লেখা</p>',
+            'status' => Post::STATUS_DRAFT,
+        ])->assertRedirect();
+
+        $this->assertSame(1, PostCategory::query()->where('name', 'সীরাত')->count());
+        $this->assertSame($existing->id, Post::query()->latest('id')->first()->post_category_id);
+    }
+
+    public function test_a_post_still_requires_a_category(): void
+    {
+        $this->actingAs($this->makeAdmin())->from(route('admin.posts.create'))->post(route('admin.posts.store'), [
+            'title' => 'বিভাগহীন',
+            'body' => '<p>লেখা</p>',
+            'status' => Post::STATUS_DRAFT,
+        ])->assertSessionHasErrors('post_category_id');
+    }
+
     // ── Filters & search ──────────────────────────────────────────────────────────
 
     public function test_category_filter_and_search_work(): void
