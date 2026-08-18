@@ -194,6 +194,31 @@ password-reset, point credit/deduct/bulk, course & lesson create/update/delete, 
 - **Timezone integrity.** `config/app.php` now honours `APP_TIMEZONE=Asia/Dhaka` (it was silently
   UTC), so admin-entered exam schedules are interpreted in Dhaka rather than shifted six hours.
 
+### 2.12 Phase 7–8 specifics (live exam, results, practice, leaderboards, regrade)
+
+- **The live exam payload is allow-listed.** `ExamAttemptPresenter` emits only question id/type/body
+  and option id/body — never `is_correct`, `marks` or `explanation`. `AttemptReviewPresenter` (which
+  *does* reveal the key) is used only for terminal attempts the caller has already release-gated.
+- **Result release is enforced server-side on every path**, not by hiding buttons. A score,
+  percentage, rank, correctness or answer sheet is exposed only when `Quiz::resultsReleasedAt($now)`;
+  the student results controller `abort(403)`s an early answer-sheet request, and the per-quiz
+  leaderboard `abort(404)`s until `Quiz::leaderboardVisibleAt($now)` (released AND admin-visible).
+  Tests hit these routes directly before release and assert nothing leaks.
+- **Ownership (IDOR).** Every student attempt route checks `attempt.user_id` against the session user;
+  another student gets 403 on the answer sheet, practice attempt, submit and save.
+- **Practice cannot leak the key.** `Quiz::practiceAvailableAt($now)` requires the official window
+  closed *and* results released, enforced on start in `PracticeController` — so practice (which reveals
+  answers on submit) can never be opened for an exam a student could still sit. Practice is untimed,
+  free (no point ledger movement) and unranked.
+- **Scores stay server-authoritative through regrade & adjustment.** `manual_adjustment`/`final_score`
+  are written only by `QuizScoringService`; a manual adjustment is validated to `0..total` (refused,
+  not clamped) and audited; a regrade recomputes from stored selections, preserves the manual delta and
+  every terminal timestamp, and is one transaction. The ordinary question editor stays locked once
+  official attempts exist — key changes go only through the regrade workflow, gated by `results.regrade`.
+- **Leaderboard privacy.** Boards expose roll, name and score-derived figures only — never guardian,
+  email, phone or point balance; a test asserts contact fields are absent from the rendered board.
+- **CSV export** carries attempt-level scores only, never answer-level detail.
+
 ---
 
 ## 3. Files that must never be committed

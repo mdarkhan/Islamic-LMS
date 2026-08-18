@@ -12,12 +12,16 @@
         </div>
     </x-ui.card>
 
-    {{-- Metrics --}}
+    {{-- Metrics — real figures, matching the leaderboard exactly. --}}
     <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
         <x-ui.stat :label="__('dashboard.points')" :value="bn($user->points_balance)" tone="brand" />
         <x-ui.stat :label="__('dashboard.completed_exams')" :value="bn($completed)" tone="ink" />
-        <x-ui.stat :label="__('dashboard.obtained_marks')" :value="bn($obtained)" :sub="__('dashboard.total_of', ['total' => bn($possible)])" tone="ink" />
-        <x-ui.stat :label="__('dashboard.average_percentage')" :value="$percentage !== null ? bn($percentage).'%' : '—'" tone="amber" />
+        <x-ui.stat
+            :label="__('dashboard.obtained_marks')"
+            :value="$overall ? bn($overall['obtained']) : '—'"
+            :sub="$overall ? __('dashboard.total_of', ['total' => bn($overall['possible'])]).' · '.bn(number_format($overall['percentage'], 1)).'%' : null"
+            tone="ink" />
+        <x-ui.stat :label="__('dashboard.overall_rank')" :value="$overall ? bn($overall['rank']) : '—'" tone="amber" />
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
@@ -42,8 +46,32 @@
             @endforelse
         </div>
 
-        {{-- Recent points --}}
+        {{-- Recent results + points --}}
         <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-ink">{{ __('dashboard.recent_results') }}</h3>
+                <a href="{{ route('student.results.index') }}" class="text-sm text-brand font-semibold hover:underline">{{ __('ui.all') }}</a>
+            </div>
+            <x-ui.card :padded="false" class="divide-y divide-line">
+                @forelse ($recent as $attempt)
+                    @php $released = $attempt->quiz->resultsReleasedAt(now()); @endphp
+                    <a href="{{ $released && $attempt->answer_details_available ? route('student.results.show', $attempt) : route('student.results.index') }}"
+                       class="flex items-center justify-between px-4 py-3 hover:bg-surface-raised/50">
+                        <div class="min-w-0">
+                            <p class="text-sm text-ink truncate">{{ $attempt->quiz->title }}</p>
+                            <p class="text-xs text-muted">{{ $attempt->submitted_at?->format('d/m/Y') }}</p>
+                        </div>
+                        @if ($released)
+                            <span class="font-bold text-brand tabular-nums">{{ bn($attempt->final_score) }}/{{ bn($attempt->total_marks_snapshot) }}</span>
+                        @else
+                            <span class="text-xs text-muted">{{ __('results.group_pending') }}</span>
+                        @endif
+                    </a>
+                @empty
+                    <div class="px-4 py-8 text-center text-sm text-muted">{{ __('results.none_yet') }}</div>
+                @endforelse
+            </x-ui.card>
+
             <div class="flex items-center justify-between">
                 <h3 class="font-bold text-ink">{{ __('dashboard.recent_points') }}</h3>
                 <a href="{{ route('student.points') }}" class="text-sm text-brand font-semibold hover:underline">{{ __('ui.all') }}</a>

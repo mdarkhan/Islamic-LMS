@@ -289,3 +289,45 @@ never holds score authority, and a save past the deadline is refused (409) and t
 attempt finalised as EXPIRED. Expired-but-abandoned attempts are swept by
 `attempts:finalize-expired` (every-minute schedule). The result page shows the score
 only once `resultsReleasedAt()`. The live screen is built so Practice Mode can reuse it.
+
+The **post-exam & practice ecosystem** IS built (Phase 8): student `/results` history +
+detailed answer sheets, Practice Mode, per-quiz and overall leaderboards, and the admin
+results/adjustment/regrade surface. Key rules, all centralised:
+
+- **Ranking lives only in `LeaderboardService`** — never re-derive a rank in a controller
+  or Blade. Per-quiz order: `final_score` desc, `time_taken` asc, then a deterministic
+  unique tiebreak (`submitted_at`, `id`) for display only. Overall order: total obtained
+  desc, percentage desc, then user id. **Competition ranking** (1,2,2,4): two students
+  share a rank only when equal on every dimension *before* the deterministic tiebreak.
+  Ranking is computed live from stored `final_score`, so an adjustment or regrade reorders
+  boards immediately — there is nothing cached to invalidate.
+- **Eligibility everywhere:** official + terminal (`submitted`/`expired`) only; practice and
+  `voided` never rank. **Best attempt per student** (`max_official_attempts > 1`).
+- **Release/visibility gates are server-side and central.** A score, percentage, rank or
+  answer sheet is exposed only when `Quiz::resultsReleasedAt($now)`; a per-quiz leaderboard
+  needs `Quiz::leaderboardVisibleAt($now)` (released AND `leaderboard_visible`). Enforce in
+  the controller with `abort_unless`/`abort(404)` — never rely on a hidden button.
+- **Practice safety:** `Quiz::practiceAvailableAt($now)` = enabled, not draft, official
+  window closed AND results released. Practice must never open while the key is still
+  secret. Practice is **untimed** (`expires_at = null`; never reuse `ends_at`), free, unranked,
+  repeatable, and reviewed immediately. Enforced on start in `PracticeController`.
+- **Overall leaderboard** counts each student's best attempt per quiz where
+  `quizzes.counts_toward_overall` AND the quiz's results are released. `counts_toward_overall`
+  (quiz-level, admin-set) is orthogonal to the per-attempt `counts_toward_cumulative`
+  (practice→0). "Possible" is summed from `total_marks_snapshot`.
+- **Manual adjustment** goes through `ScoreAdjustmentService`: `final = calculated + manual`,
+  validated to `0..total` (refused, not clamped), audited (`score_adjustments` + `result.adjusted`).
+  `QuizScoringService::setManualAdjustment` is the only writer of `manual_adjustment`/`final_score`
+  besides scoring.
+- **Answer-key correction goes through `QuizRegradeService` only** (never by unlocking the
+  question editor). It changes `is_correct`/`marks`/`type`/`explanation` — **never body text** —
+  re-scores affected official attempts (preserving `manual_adjustment` and all terminal
+  timestamps), recomputes `quiz.total_marks`, and records a `regrade_run` + per-attempt
+  `regrade_entries` + `quiz.regraded` audit, all in one transaction. Preview never persists.
+- **Historical snapshot:** none needed. Student selections are stored as immutable
+  `quiz_answer_options.option_id` references and the builder scoring-lock freezes all
+  question/option TEXT once official attempts exist, so an answer sheet always shows what the
+  student actually saw while the *current* corrected key drives correctness.
+- **`AttemptReviewPresenter`** is the reveal counterpart to `ExamAttemptPresenter` — only for
+  terminal attempts the caller has already release-gated. Legacy attempts
+  (`answer_details_available = false`) show "answers not preserved", never fabricated.

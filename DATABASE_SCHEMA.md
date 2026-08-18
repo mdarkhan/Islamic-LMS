@@ -192,7 +192,8 @@ imported as NULL. A resource with no URL renders as plain text, not a dead link.
 | ends_at | DATETIME NULL | |
 | result_release_at | DATETIME NULL | Independent of `ends_at` (brief §39) |
 | results_released_at | DATETIME NULL | Set when an admin releases early |
-| leaderboard_visible | TINYINT(1) | default 1 |
+| leaderboard_visible | TINYINT(1) | default 1 | Admin gate for the per-quiz leaderboard; combined with result release by `leaderboardVisibleAt()` |
+| counts_toward_overall | TINYINT(1) | default 1 | Admin exclusion of trial/diagnostic quizzes from the cumulative leaderboard (brief §21). Orthogonal to the per-attempt `counts_toward_cumulative` |
 | max_official_attempts | TINYINT UNSIGNED | default 1 |
 | total_marks | INT UNSIGNED | default 0. Cached sum of active question marks |
 | created_by | BIGINT UNSIGNED NULL FK→users RESTRICT | |
@@ -321,6 +322,15 @@ One row per selected option — this is what makes multi-answer questions and la
 possible. **This table is the reason regrading works**: because the student's raw selections are
 retained independently of the answer key, changing `quiz_options.is_correct` and recomputing yields
 a correct new score without any guesswork.
+
+**Historical-snapshot decision (brief §4).** There are deliberately **no** answer-snapshot columns
+(no stored copy of question/option text on the attempt). Two existing invariants make them
+unnecessary: (1) selections are stored as immutable `option_id` references (`RESTRICT`), and
+(2) the builder scoring-lock (`Quiz::scoringLocked()`) refuses every add/edit/delete of a question
+once any official attempt exists, so question and option **text are frozen** from that moment. The
+only sanctioned post-lock change is `QuizRegradeService`, which alters `is_correct` / `marks` /
+`type` / `explanation` but **never body text**. So a rendered answer sheet always shows exactly what
+the student saw, while correctness reflects the *current* corrected key — no snapshot required.
 
 ---
 

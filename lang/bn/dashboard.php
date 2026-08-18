@@ -13,6 +13,8 @@ return [
     'courses' => 'কোর্সসমূহ',
     'see_all' => 'সব দেখুন',
     'recent_points' => 'সাম্প্রতিক পয়েন্ট',
+    'recent_results' => 'সাম্প্রতিক ফলাফল',
+    'overall_rank' => 'সার্বিক অবস্থান',
     'no_transactions' => 'এখনো কোনো লেনদেন নেই।',
     'point_adjustment' => 'পয়েন্ট সমন্বয়',
     'lessons_count' => ':count টি ক্লাস',

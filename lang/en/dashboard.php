@@ -13,6 +13,8 @@ return [
     'courses' => 'Courses',
     'see_all' => 'See all',
     'recent_points' => 'Recent points',
+    'recent_results' => 'Recent results',
+    'overall_rank' => 'Overall rank',
     'no_transactions' => 'No transactions yet.',
     'point_adjustment' => 'Point adjustment',
     'lessons_count' => ':count lessons',

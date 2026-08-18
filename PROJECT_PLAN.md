@@ -1,11 +1,12 @@
 # PROJECT_PLAN.md — Masud Alimi Islamic Learning & Examination Platform
 
-**Status:** Through Phase 7. Domain hardening, authentication, the design system, the student &
-admin management interfaces, the **quiz builder + CSV/XLSX importer + student exams listing**, and
-now the **secure live OFFICIAL exam** (start/resume, per-question autosave, authoritative server
-timer, expiry finalisation + `attempts:finalize-expired` sweep, and the released-score summary)
-are built and tested (**237 passing tests**). Detailed answer-sheet review, Practice Mode taking
-UI, leaderboards, regrade, manual adjustment and public content modules have not started (Phase 8+).
+**Status:** Through Phase 8. Domain hardening, authentication, the design system, the student &
+admin management interfaces, the **quiz builder + CSV/XLSX importer**, the **secure live OFFICIAL
+exam**, and now the **post-exam & practice ecosystem** — student `/results` history + detailed
+answer sheets, Practice Mode, per-quiz and overall leaderboards (via a central `LeaderboardService`),
+and the admin results / manual-adjustment / answer-key-regrade surface — are built and tested
+(**286 passing tests**). Public content (blog, Ask Ustaz, Zakat, Hijri calendar) and the
+student/legacy-result data migrations have not started (Phase 9+).
 
 **Last updated:** 2026-08-18
 
@@ -314,9 +315,9 @@ Critical paths that must be green before any module is called complete:
 | 5 | Courses / lessons + catalogue UI + course seeder from extracted JSON | **Done** (student archive + admin course/lesson CRUD with inline resources) |
 | 6 | Quiz builder, CSV/XLSX importer with row-level validation | **Done** (quiz admin, question builder, scheduling/publish, preview, duplicate, legacy CSV/XLSX importer, student `/exams` listing foundation) |
 | 7 | Quiz engine UI: eligibility, transaction, autosave, resume, submit | **Done** (secure live official exam: start/resume, per-question autosave, authoritative server timer, expiry finalisation + `attempts:finalize-expired` sweep, released-score summary) |
-| 8 | Results, answer sheets, leaderboards, cumulative leaderboard | Not started |
-| 9 | Regrading + manual score adjustment + audit log | Not started |
-| 10 | Practice mode | Not started |
+| 8 | Results, answer sheets, leaderboards, cumulative leaderboard | **Done** (student `/results` + release-gated answer sheets; per-quiz + overall leaderboards via `LeaderboardService`) |
+| 9 | Regrading + manual score adjustment + audit log | **Done** (`QuizRegradeService` preview/apply; `ScoreAdjustmentService`; `score_adjustments`/`regrade_runs`/`regrade_entries` + audit events) |
+| 10 | Practice mode | **Done** (free, untimed, unranked, repeatable; safe-key availability rule; immediate review) |
 | 11 | Blog/Fatwa CMS, notices, settings | Not started |
 | 12 | Ask Ustaz (email-only), Zakat calculator, calendar service | Not started |
 | 13 | Legacy data migration + verification | Not started |
@@ -413,16 +414,38 @@ Independent cross-check: the importer's gap report reproduced the audit's number
   ownership. `ExamAttemptPresenter` allow-lists the browser payload — `is_correct`/`marks`/
   `explanation` never leave the server. Live screen structured so Practice Mode can reuse it.
 
-**Tests: 237 passing, 638 assertions, on MySQL.** Frontend build clean. The live exam view is
-rendered end-to-end by the feature suite (real GET → 200, options present, answer key absent);
-autosave, submit, expiry, IDOR, and the result-release gate are each covered.
+- **Post-exam & practice ecosystem (Phase 8):**
+  - **Student `/results`** — own official history grouped released / expired / pending / legacy,
+    with an overall-standing strip; release enforced server-side on every path. **Answer sheet**
+    (`/results/{attempt}`) is release-gated and IDOR-guarded, shows the *current* corrected key with
+    a regrade note, and shows "answers not preserved" for legacy attempts (never fabricated).
+  - **Practice Mode** — `Quiz::practiceAvailableAt()` opens practice only once the official key is
+    safe (window closed AND results released); free, untimed, unranked, repeatable, reviewed
+    immediately. Reuses the live screen + autosave.
+  - **Leaderboards** — `LeaderboardService` is the single owner of ranking (per-quiz + overall,
+    competition ties, best-attempt selection, live from `final_score`). Per-quiz board gated by
+    `leaderboardVisibleAt()`; roll/name/score only (no contact data).
+  - **Admin** — filterable results index + attempt detail (answers revealed to the authorized
+    admin), CSV export; `ScoreAdjustmentService` (validated, audited manual adjustment);
+    `QuizRegradeService` (transactional preview/apply, preserves manual adjustment + terminal
+    metadata, changes only key/marks/type, records run + entries + audit). Builder exposes a
+    Regrade action; the question editor stays locked.
+  - **Historical integrity** — no snapshot columns; stored `option_id` selections + the builder
+    text-freeze keep every answer sheet faithful (see §DATABASE_SCHEMA).
+
+**Tests: 286 passing, 789 assertions, on MySQL.** Frontend build clean. Ranking semantics, release
+gating, IDOR, practice safety/zero-cost, leaderboard visibility, regrade correctness (raise/lower,
+exact-set, marks, manual-adjustment survival, terminal-metadata preservation, audit, preview
+non-persistence), adjustment bounds/audit, authorization and rank refresh are each covered. Manual
+browser QA: admin results/detail (live adjustment preview), regrade (AJAX impact preview), student
+results + answer sheet, dark mode + 375px, no console errors.
 
 ### Not built
 
-Detailed answer-sheet review (correct/wrong per question), Practice Mode taking UI, results &
-answer sheets, leaderboards (per-quiz and cumulative), regrade UI, manual score-adjustment UI,
-blog/Fatwa CMS, notices admin, Ask Ustaz, Zakat calculator, Hijri calendar service, and the
-student + legacy-result data migrations.
+Blog/Fatwa CMS, notices admin, Ask Ustaz (email-only), Zakat calculator, Hijri calendar service,
+and the student + legacy-result data migrations. (The results/leaderboard/regrade schema already
+supports legacy rows — `is_legacy_import`, `answer_details_available` — so the migration slots in
+without further schema work.)
 
 ---
 

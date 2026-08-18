@@ -5,14 +5,14 @@ scheduled online examinations with server-side scoring, a points system, course
 archive, leaderboards, and an admin panel that removes the need to edit source
 code to manage content.
 
-> **Status: quiz builder & import, phase 6.** On top of the hardened domain layer,
-> authentication, design system and student/admin management, this phase adds the
-> **quiz administration system** (index, config, question builder, scheduling/publish,
-> preview, duplicate), the **CSV/XLSX legacy quiz importer** (worksheet select, preview,
-> validation), and the student **`/exams` listing foundation**. The **live exam-taking
-> UI**, results, leaderboards, regrade, and public modules (blog/Ask Ustaz/Zakat/Hijri)
-> are not yet built. See [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current
-> status — nothing is listed there as done unless it has been run.
+> **Status: post-exam & practice ecosystem, phase 8.** On top of the hardened domain layer,
+> authentication, design system, student/admin management, the quiz builder + importer and the
+> secure live official exam, this phase adds **student results + release-gated answer sheets**,
+> **Practice Mode**, **per-quiz and overall leaderboards** (via a central `LeaderboardService`),
+> and the admin **results / manual-adjustment / answer-key-regrade** surface. The public modules
+> (blog / Ask Ustaz / Zakat / Hijri) and the student/legacy-result data migrations are not yet
+> built. See [PROJECT_PLAN.md](PROJECT_PLAN.md) §11 for the honest, current status — nothing is
+> listed there as done unless it has been run.
 
 ---
 
@@ -99,6 +99,10 @@ the input to the course seeder.
 - `QuizScoringService` — server-side scoring, exact-set match, custom marks
 - `QuizAttemptService` — one-way terminal states, concurrency-safe submission serial,
   attempt-first append-only debit, fail-closed answer validation
+- `LeaderboardService` — the single owner of ranking (per-quiz + cumulative, competition
+  ties, best-attempt selection, computed live from stored scores)
+- `QuizRegradeService` / `ScoreAdjustmentService` — transactional answer-key correction and
+  validated, audited manual adjustment; both preserve the admin's manual delta
 - `LegacyCourseImporter` — imports the real legacy catalogue, reports content gaps
 
 **Application layer**
@@ -110,11 +114,15 @@ the input to the course seeder.
 - Admin dashboard, student CRUD, CSV/XLSX student import (preview → confirm), point
   management (grant / deduct / bulk), course & lesson management with inline resources,
   audit log
-- **133 passing tests / 331 assertions** on MySQL, plus manual browser QA
+- **Quiz builder + CSV/XLSX importer**, and the **secure live official exam**
+  (start/resume, autosave, authoritative timer, expiry sweep, release-gated result)
+- **Post-exam & practice ecosystem** — student `/results` history + release-gated answer
+  sheets, **Practice Mode** (free, untimed, unranked, immediate review), per-quiz +
+  overall **leaderboards**, and the admin results / manual-adjustment / **regrade** surface
+- **286 passing tests / 789 assertions** on MySQL, plus manual browser QA
 
 ## What does not exist yet
 
-Quiz builder, Google Sheet quiz importer, live exam UI, results & answer sheets,
-leaderboards, regrade UI, blog/Fatwa, Ask Ustaz, Zakat calculator, Hijri calendar,
+Blog/Fatwa CMS, notices admin, Ask Ustaz (email-only), Zakat calculator, Hijri calendar,
 and the student/legacy-result data migrations.
-Tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md) §10–11.
+Tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md) §11.

@@ -5,32 +5,44 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\QuizAttempt;
+use App\Services\Quiz\LeaderboardService;
+use Carbon\CarbonImmutable;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function __construct(private readonly LeaderboardService $leaderboards) {}
+
     public function index(): View
     {
         $user = auth()->user();
+        $now = CarbonImmutable::now();
 
-        // Real figures only. With no exam engine yet these are genuinely zero for a
-        // new account — they are not fabricated, and grow as official attempts land.
-        $official = QuizAttempt::query()
+        // Overall figures come from the SAME service that powers the leaderboard, so the
+        // dashboard can never disagree with it (brief §24). null until a released,
+        // counted attempt exists — never fabricated.
+        $overall = $this->leaderboards->studentOverall($user, $now);
+
+        // Exams completed = distinct official exams the student has a terminal attempt in.
+        $completed = QuizAttempt::query()
             ->where('user_id', $user->getKey())
             ->where('kind', QuizAttempt::KIND_OFFICIAL)
-            ->where('status', QuizAttempt::STATUS_SUBMITTED)
-            ->where('counts_toward_cumulative', true);
-
-        $completed = (clone $official)->count();
-        $obtained = (int) (clone $official)->sum('final_score');
-        $possible = (int) (clone $official)->sum('total_marks_snapshot');
+            ->whereIn('status', QuizAttempt::RANKABLE_STATUSES)
+            ->distinct()
+            ->count('quiz_id');
 
         return view('student.dashboard', [
             'user' => $user,
             'completed' => $completed,
-            'obtained' => $obtained,
-            'possible' => $possible,
-            'percentage' => $possible > 0 ? round($obtained / $possible * 100, 1) : null,
+            'overall' => $overall,
+            'recent' => QuizAttempt::query()
+                ->where('user_id', $user->getKey())
+                ->where('kind', QuizAttempt::KIND_OFFICIAL)
+                ->whereIn('status', QuizAttempt::RANKABLE_STATUSES)
+                ->with('quiz')
+                ->orderByDesc('submitted_at')
+                ->limit(5)
+                ->get(),
             'recentPoints' => $user->pointTransactions()->latest('id')->limit(5)->get(),
             'courses' => Course::query()
                 ->where('is_published', true)
