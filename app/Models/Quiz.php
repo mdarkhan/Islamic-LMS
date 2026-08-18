@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'course_id', 'lesson_id', 'slug', 'title', 'description', 'status',
-    'practice_enabled', 'point_cost', 'duration_seconds', 'starts_at', 'ends_at',
-    'result_release_at', 'results_released_at', 'leaderboard_visible',
-    'counts_toward_overall', 'max_official_attempts', 'created_by',
+    'practice_enabled', 'practice_timer_enabled', 'point_cost', 'duration_seconds',
+    'starts_at', 'ends_at', 'result_release_at', 'results_released_at',
+    'leaderboard_visible', 'counts_toward_overall', 'max_official_attempts', 'created_by',
     'legacy_import_batch_id', 'legacy_source_key',
 ])]
 class Quiz extends Model
@@ -38,6 +38,7 @@ class Quiz extends Model
             'results_released_at' => 'datetime',
             'published_at' => 'datetime',
             'practice_enabled' => 'boolean',
+            'practice_timer_enabled' => 'boolean',
             'leaderboard_visible' => 'boolean',
             'counts_toward_overall' => 'boolean',
             'point_cost' => 'integer',
@@ -141,6 +142,16 @@ class Quiz extends Model
     public function leaderboardVisibleAt(\DateTimeInterface $now): bool
     {
         return $this->leaderboard_visible && $this->resultsReleasedAt($now);
+    }
+
+    /**
+     * Whether Practice Mode should run with a countdown. Admin opt-in per quiz; it needs
+     * a duration to count. When off (the default), practice is untimed. The official
+     * `ends_at` is never used here — only the quiz's own `duration_seconds`.
+     */
+    public function practiceTimerActive(): bool
+    {
+        return $this->practice_timer_enabled && $this->duration_seconds !== null && $this->duration_seconds > 0;
     }
 
     public function resultsReleasedAt(\DateTimeInterface $now): bool

@@ -119,7 +119,16 @@ class QuizAttemptService
     }
 
     /**
-     * Practice attempts are free, unranked and unlimited.
+     * Start a practice attempt: free, unranked, and NOT retained as history.
+     *
+     * Practice keeps no history (product decision) — any earlier practice attempt for
+     * this quiz+user is deleted first (its answers cascade), so at most one practice
+     * attempt exists at a time, purely for the current session and its immediate review.
+     * Nothing here touches the point ledger.
+     *
+     * Timer: untimed by default. When the admin enabled `practice_timer_enabled` and the
+     * quiz has a duration, the attempt gets a countdown from `duration_seconds` — the
+     * official `ends_at` is never reused.
      */
     public function startPractice(Quiz $quiz, User $user, ?CarbonImmutable $now = null): QuizAttempt
     {
@@ -129,24 +138,28 @@ class QuizAttemptService
             throw new AttemptNotAllowedException('এই কুইজের জন্য অনুশীলন চালু নেই।');
         }
 
-        $nextNo = (int) QuizAttempt::query()
-            ->where('quiz_id', $quiz->getKey())
-            ->where('user_id', $user->getKey())
-            ->where('kind', QuizAttempt::KIND_PRACTICE)
-            ->max('attempt_no');
+        return DB::transaction(function () use ($quiz, $user, $now) {
+            // No practice history: drop any prior practice attempt (answers cascade).
+            QuizAttempt::query()
+                ->where('quiz_id', $quiz->getKey())
+                ->where('user_id', $user->getKey())
+                ->where('kind', QuizAttempt::KIND_PRACTICE)
+                ->get()
+                ->each(fn (QuizAttempt $old) => $old->delete());
 
-        return QuizAttempt::query()->create([
-            'quiz_id' => $quiz->getKey(),
-            'user_id' => $user->getKey(),
-            'kind' => QuizAttempt::KIND_PRACTICE,
-            'attempt_no' => $nextNo + 1,
-            'status' => QuizAttempt::STATUS_IN_PROGRESS,
-            'started_at' => $now,
-            'expires_at' => null,
-            'counts_toward_cumulative' => false,   // never affects leaderboards
-            'point_transaction_id' => null,        // never costs a point
-            'total_marks_snapshot' => $quiz->total_marks,
-        ]);
+            return QuizAttempt::query()->create([
+                'quiz_id' => $quiz->getKey(),
+                'user_id' => $user->getKey(),
+                'kind' => QuizAttempt::KIND_PRACTICE,
+                'attempt_no' => 1,
+                'status' => QuizAttempt::STATUS_IN_PROGRESS,
+                'started_at' => $now,
+                'expires_at' => $quiz->practiceTimerActive() ? $now->addSeconds((int) $quiz->duration_seconds) : null,
+                'counts_toward_cumulative' => false,   // never affects leaderboards
+                'point_transaction_id' => null,        // never costs a point
+                'total_marks_snapshot' => $quiz->total_marks,
+            ]);
+        });
     }
 
     /**

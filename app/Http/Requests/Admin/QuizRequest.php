@@ -39,6 +39,7 @@ class QuizRequest extends FormRequest
             'result_release_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
 
             'practice_enabled' => ['sometimes', 'boolean'],
+            'practice_timer_enabled' => ['sometimes', 'boolean'],
             'leaderboard_visible' => ['sometimes', 'boolean'],
             'max_official_attempts' => ['required', 'integer', 'min:1', 'max:100'],
         ];

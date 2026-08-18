@@ -20,14 +20,18 @@ use Illuminate\View\View;
 
 /**
  * Practice Mode. Reuses the secure attempt machinery (QuizAttemptService, the live
- * screen, the answer-key allow-list) but with practice rules: free, untimed, unranked,
- * repeatable, and reviewable immediately after submit.
+ * screen, the answer-key allow-list) but with practice rules: free, unranked, reviewable
+ * immediately after submit, and NOT retained as history — a student sees only the score
+ * and answer sheet of their current practice; nothing is browsable afterward.
  *
  * SAFETY (brief §10): practice becomes available only when the official answer key is
  * already safe to reveal — Quiz::practiceAvailableAt() requires the official window to
  * be closed AND results released. That rule is enforced on every start here, so a
- * student can never open practice mid-exam and read the key. Practice is untimed: it
- * never reuses the official ends_at (the attempt has expires_at = null).
+ * student can never open practice mid-exam and read the key.
+ *
+ * Timer: untimed unless the admin enabled `practice_timer_enabled` on the quiz, in which
+ * case the attempt counts down from the quiz's own duration; the official ends_at is
+ * never reused.
  */
 class PracticeController extends Controller
 {
@@ -36,7 +40,6 @@ class PracticeController extends Controller
     /** The practice library: quizzes whose key is safe to reveal, grouped by course. */
     public function index(Request $request): View
     {
-        $user = $request->user();
         $now = CarbonImmutable::now();
 
         $quizzes = Quiz::query()
@@ -48,30 +51,8 @@ class PracticeController extends Controller
             ->get()
             ->filter(fn (Quiz $quiz) => $quiz->practiceAvailableAt($now));
 
-        // Per-quiz practice stats for this student (count + best terminal score).
-        $stats = QuizAttempt::query()
-            ->where('user_id', $user->getKey())
-            ->where('kind', QuizAttempt::KIND_PRACTICE)
-            ->selectRaw('quiz_id, count(*) as attempts, max(case when status = ? then final_score end) as best', [QuizAttempt::STATUS_SUBMITTED])
-            ->groupBy('quiz_id')
-            ->get()
-            ->keyBy('quiz_id');
-
-        $byCourse = $quizzes->groupBy(fn (Quiz $quiz) => $quiz->course?->title ?? '—');
-
-        $history = QuizAttempt::query()
-            ->where('user_id', $user->getKey())
-            ->where('kind', QuizAttempt::KIND_PRACTICE)
-            ->whereIn('status', [QuizAttempt::STATUS_SUBMITTED])
-            ->with('quiz.course')
-            ->orderByDesc('submitted_at')
-            ->limit(20)
-            ->get();
-
         return view('student.practice.index', [
-            'byCourse' => $byCourse,
-            'stats' => $stats,
-            'history' => $history,
+            'byCourse' => $quizzes->groupBy(fn (Quiz $quiz) => $quiz->course?->title ?? '—'),
         ]);
     }
 
@@ -93,28 +74,49 @@ class PracticeController extends Controller
         return redirect()->route('student.practice.show', $attempt);
     }
 
-    /** The live practice screen (shared with the official exam), untimed and badged. */
+    /** The live practice screen (shared with the official exam); badged, optionally timed. */
     public function show(Request $request, QuizAttempt $attempt): View|RedirectResponse
     {
         $this->guard($request, $attempt);
 
+        $now = CarbonImmutable::now();
+        $attempt = $this->finaliseIfExpired($attempt, $now);
+
         if ($attempt->isTerminal()) {
             return redirect()->route('student.practice.result', $attempt);
         }
+
+        // Timed practice re-uses the live timer + status poll; untimed leaves both inert.
+        $timed = $attempt->expires_at !== null;
 
         return view('student.exams.live', [
             'attempt' => $attempt,
             'quiz' => $attempt->quiz,
             'questions' => ExamAttemptPresenter::questions($attempt),
             'selections' => ExamAttemptPresenter::selections($attempt),
-            'remaining' => null,   // practice is untimed
+            'remaining' => ExamAttemptPresenter::remainingSeconds($attempt, $now),
             'practiceLabel' => __('practice.badge'),
             'submitAction' => route('student.practice.submit', $attempt),
             'endpoints' => [
                 'answer' => route('student.practice.answer', ['attempt' => $attempt->id, 'question' => '__Q__']),
-                'status' => null,   // untimed → the browser never polls
+                'status' => $timed ? route('student.practice.status', $attempt) : null,
                 'result' => route('student.practice.result', $attempt),
             ],
+        ]);
+    }
+
+    /** Timer/terminal poll for timed practice (mirrors the official status endpoint). */
+    public function status(Request $request, QuizAttempt $attempt): JsonResponse
+    {
+        $this->guard($request, $attempt);
+
+        $now = CarbonImmutable::now();
+        $attempt = $this->finaliseIfExpired($attempt, $now);
+
+        return response()->json([
+            'terminal' => $attempt->isTerminal(),
+            'remaining_seconds' => ExamAttemptPresenter::remainingSeconds($attempt, $now),
+            'redirect' => $attempt->isTerminal() ? route('student.practice.result', $attempt) : null,
         ]);
     }
 
@@ -137,7 +139,11 @@ class PracticeController extends Controller
             return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
         }
 
-        return response()->json(['ok' => true, 'answered' => $answer !== null, 'remaining_seconds' => null]);
+        return response()->json([
+            'ok' => true,
+            'answered' => $answer !== null,
+            'remaining_seconds' => ExamAttemptPresenter::remainingSeconds($attempt->fresh(), CarbonImmutable::now()),
+        ]);
     }
 
     public function submit(Request $request, QuizAttempt $attempt): RedirectResponse
@@ -157,7 +163,10 @@ class PracticeController extends Controller
         $this->guard($request, $attempt);
 
         if ($attempt->isInProgress()) {
-            return redirect()->route('student.practice.show', $attempt);
+            $attempt = $this->finaliseIfExpired($attempt, CarbonImmutable::now());
+            if ($attempt->isInProgress()) {
+                return redirect()->route('student.practice.show', $attempt);
+            }
         }
 
         return view('student.practice.result', [
@@ -165,6 +174,16 @@ class PracticeController extends Controller
             'quiz' => $attempt->quiz,
             'rows' => AttemptReviewPresenter::questions($attempt),
         ]);
+    }
+
+    /** Finalise a timed practice attempt whose deadline has passed (scores it as terminal). */
+    private function finaliseIfExpired(QuizAttempt $attempt, CarbonImmutable $now): QuizAttempt
+    {
+        if ($attempt->isInProgress() && $attempt->hasExpiredAt($now)) {
+            return $this->attempts->submit($attempt, $now);
+        }
+
+        return $attempt;
     }
 
     /** Ownership + practice-kind guard shared by every attempt-scoped action. */

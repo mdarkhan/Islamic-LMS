@@ -28,7 +28,6 @@ class ResultController extends Controller
         $filters = [
             'quiz_id' => $request->integer('quiz_id') ?: null,
             'status' => $request->string('status')->toString() ?: null,
-            'kind' => $request->string('kind')->toString() ?: null,
             'q' => trim($request->string('q')->toString()),
         ];
 
@@ -48,6 +47,8 @@ class ResultController extends Controller
 
     public function show(QuizAttempt $attempt): View
     {
+        abort_unless($attempt->isOfficial(), 404);   // practice is not an admin concern
+
         $attempt->load(['quiz.course', 'user', 'scoreAdjustments.admin', 'regradeEntries']);
 
         return view('admin.results.show', [
@@ -60,6 +61,8 @@ class ResultController extends Controller
 
     public function adjust(ScoreAdjustmentRequest $request, QuizAttempt $attempt): RedirectResponse
     {
+        abort_unless($attempt->isOfficial(), 404);
+
         try {
             $this->adjustments->adjust(
                 $attempt,
@@ -113,10 +116,12 @@ class ResultController extends Controller
      */
     private function filteredQuery(array $filters)
     {
+        // Practice attempts are never surfaced to the admin (they are not retained as
+        // history) — the results area is official attempts only.
         return QuizAttempt::query()
+            ->where('kind', QuizAttempt::KIND_OFFICIAL)
             ->when($filters['quiz_id'], fn ($q, $id) => $q->where('quiz_id', $id))
             ->when($filters['status'], fn ($q, $s) => $q->where('status', $s))
-            ->when($filters['kind'], fn ($q, $k) => $q->where('kind', $k))
             ->when($filters['q'] !== '', fn ($q) => $q->whereHas('user', function ($u) use ($filters) {
                 $u->where('name', 'like', '%'.$filters['q'].'%')
                     ->orWhere('roll', 'like', '%'.$filters['q'].'%');

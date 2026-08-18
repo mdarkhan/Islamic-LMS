@@ -80,7 +80,7 @@ class PracticeModeTest extends TestCase
         $this->assertSame(3, $student->fresh()->points_balance);
     }
 
-    public function test_repeated_practice_is_free_and_makes_a_fresh_attempt(): void
+    public function test_repeated_practice_is_free_and_keeps_no_history(): void
     {
         [$quiz] = $this->availableQuiz();
         $student = $this->withPoints($this->makeStudent(), 3);
@@ -88,9 +88,22 @@ class PracticeModeTest extends TestCase
         $this->actingAs($student)->post(route('student.practice.start', $quiz))->assertRedirect();
         $this->actingAs($student)->post(route('student.practice.start', $quiz))->assertRedirect();
 
-        $this->assertSame(2, QuizAttempt::query()->where('user_id', $student->id)->count());
+        // Practice is not retained as history: only the current attempt exists.
+        $this->assertSame(1, QuizAttempt::query()->where('user_id', $student->id)->count());
         $this->assertSame(3, $student->fresh()->points_balance);
         $this->assertSame(0, PointTransaction::query()->where('type', PointTransaction::TYPE_DEDUCTION)->count());
+    }
+
+    public function test_admin_enabled_timer_gives_practice_a_deadline(): void
+    {
+        [$quiz] = $this->availableQuiz();
+        $quiz->forceFill(['practice_timer_enabled' => true, 'duration_seconds' => 600])->save();
+        $student = $this->makeStudent();
+
+        $this->actingAs($student)->post(route('student.practice.start', $quiz->fresh()))->assertRedirect();
+
+        $attempt = QuizAttempt::query()->where('user_id', $student->id)->first();
+        $this->assertNotNull($attempt->expires_at, 'a timed practice attempt has a deadline');
     }
 
     public function test_practice_shows_the_score_and_key_immediately_after_submit(): void

@@ -13,6 +13,7 @@ return [
     'start' => 'Start practice',
     'start_again' => 'Practice again',
     'untimed_note' => 'Practice is untimed and costs no points.',
+    'timed_note' => 'Timed practice — costs no points.',
     'unavailable' => 'Not available for practice',
 
     // Practice result

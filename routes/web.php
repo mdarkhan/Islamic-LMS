@@ -77,6 +77,7 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
     Route::get('practice', [Student\PracticeController::class, 'index'])->name('student.practice.index');
     Route::post('practice/{quiz}/start', [Student\PracticeController::class, 'start'])->name('student.practice.start');
     Route::get('practice-attempts/{attempt}', [Student\PracticeController::class, 'show'])->name('student.practice.show');
+    Route::get('practice-attempts/{attempt}/status', [Student\PracticeController::class, 'status'])->name('student.practice.status');
     Route::put('practice-attempts/{attempt}/answers/{question}', [Student\PracticeController::class, 'saveAnswer'])->name('student.practice.answer');
     Route::post('practice-attempts/{attempt}/submit', [Student\PracticeController::class, 'submit'])->name('student.practice.submit');
     Route::get('practice-attempts/{attempt}/result', [Student\PracticeController::class, 'result'])->name('student.practice.result');

@@ -78,6 +78,7 @@ class QuizController extends Controller
             'ends_at' => $data['ends_at'] ?? null,
             'result_release_at' => $data['result_release_at'] ?? null,
             'practice_enabled' => $request->boolean('practice_enabled'),
+            'practice_timer_enabled' => $request->boolean('practice_timer_enabled'),
             'leaderboard_visible' => $request->boolean('leaderboard_visible'),
             'max_official_attempts' => $data['max_official_attempts'],
             'created_by' => $request->user()->id,
@@ -118,6 +119,7 @@ class QuizController extends Controller
             'ends_at' => $data['ends_at'] ?? null,
             'result_release_at' => $data['result_release_at'] ?? null,
             'practice_enabled' => $request->boolean('practice_enabled'),
+            'practice_timer_enabled' => $request->boolean('practice_timer_enabled'),
             'leaderboard_visible' => $request->boolean('leaderboard_visible'),
             'max_official_attempts' => $data['max_official_attempts'],
         ]);

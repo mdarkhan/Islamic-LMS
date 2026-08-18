@@ -54,6 +54,7 @@ return [
     'duration_hint' => 'খালি রাখলে সময়সীমা নেই',
     'max_attempts' => 'সর্বোচ্চ অফিসিয়াল অ্যাটেম্পট',
     'practice_enabled' => 'অনুশীলন চালু',
+    'practice_timer_enabled' => 'অনুশীলনে টাইমার',
     'leaderboard_visible' => 'মেধাতালিকা দৃশ্যমান',
 
     // Edit page

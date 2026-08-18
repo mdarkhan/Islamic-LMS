@@ -54,6 +54,7 @@ return [
     'duration_hint' => 'Leave blank for no time limit',
     'max_attempts' => 'Max official attempts',
     'practice_enabled' => 'Practice enabled',
+    'practice_timer_enabled' => 'Practice has a timer',
     'leaderboard_visible' => 'Leaderboard visible',
 
     // Edit page

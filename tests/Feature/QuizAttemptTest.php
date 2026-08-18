@@ -323,7 +323,7 @@ class QuizAttemptTest extends TestCase
         $this->assertSame(QuizAttempt::KIND_PRACTICE, $attempt->kind);
     }
 
-    public function test_practice_allows_repeated_attempts(): void
+    public function test_practice_can_be_retaken_but_keeps_no_history(): void
     {
         [$quiz] = $this->quizWithOneQuestion(['practice_enabled' => true]);
         $user = User::factory()->create();
@@ -331,8 +331,24 @@ class QuizAttemptTest extends TestCase
         $a = $this->attempts->startPractice($quiz, $user);
         $b = $this->attempts->startPractice($quiz, $user);
 
+        // Retaking gives a fresh attempt, and the previous one is not retained as history.
         $this->assertNotSame($a->id, $b->id);
-        $this->assertSame(2, $b->attempt_no);
+        $this->assertNull(QuizAttempt::find($a->id), 'the previous practice attempt is discarded');
+        $this->assertSame(1, QuizAttempt::query()->where('kind', QuizAttempt::KIND_PRACTICE)->count());
+        $this->assertNull($b->point_transaction_id, 'practice is still free');
+    }
+
+    public function test_practice_timer_is_off_by_default_and_on_when_enabled(): void
+    {
+        $user = User::factory()->create();
+
+        [$untimed] = $this->quizWithOneQuestion(['practice_enabled' => true, 'duration_seconds' => 600]);
+        $this->assertNull($this->attempts->startPractice($untimed, $user)->expires_at, 'untimed by default');
+
+        [$timed] = $this->quizWithOneQuestion(['practice_enabled' => true, 'practice_timer_enabled' => true, 'duration_seconds' => 600]);
+        $attempt = $this->attempts->startPractice($timed, $user);
+        $this->assertNotNull($attempt->expires_at, 'timer produces a deadline');
+        $this->assertSame(600, (int) $attempt->expires_at->diffInSeconds($attempt->started_at, absolute: true));
     }
 
     public function test_practice_is_refused_when_not_enabled(): void

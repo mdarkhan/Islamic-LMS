@@ -86,6 +86,10 @@
                     {{ __('quizzes.practice_enabled') }}
                 </label>
                 <label class="flex items-center gap-2 text-sm text-ink">
+                    <input type="checkbox" name="practice_timer_enabled" value="1" @checked(old('practice_timer_enabled', $quiz->practice_timer_enabled ?? false)) class="rounded border-line text-brand focus:ring-brand">
+                    {{ __('quizzes.practice_timer_enabled') }}
+                </label>
+                <label class="flex items-center gap-2 text-sm text-ink">
                     <input type="checkbox" name="leaderboard_visible" value="1" @checked(old('leaderboard_visible', $quiz->leaderboard_visible ?? true)) class="rounded border-line text-brand focus:ring-brand">
                     {{ __('quizzes.leaderboard_visible') }}
                 </label>
