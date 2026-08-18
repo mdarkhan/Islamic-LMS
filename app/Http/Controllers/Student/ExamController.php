@@ -67,12 +67,21 @@ class ExamController extends Controller
             default => 'previous',   // closed or archived
         };
 
+        // The quiz can actually be started now (open window, questions authored) —
+        // presentation only; QuizAttemptService re-checks everything authoritatively.
+        $startable = $state === Quiz::STATE_OPEN
+            && $quiz->isOpenAt($now)
+            && $quiz->active_questions_count > 0;
+
         return [
             'group' => $group,
             'quiz' => $quiz,
             'state' => $state,
             'completed' => $completed,
             'resume' => $inProgress && $quiz->isOpenAt($now),
+            'startable' => $startable && ! $inProgress,
+            'has_questions' => $quiz->active_questions_count > 0,
+            'attempt_id' => $attempt?->id,
             'enough_points' => $user->points_balance >= $quiz->point_cost,
             'practice_available' => $quiz->practiceAvailable(),
             // A student sees their own score only once results are released.

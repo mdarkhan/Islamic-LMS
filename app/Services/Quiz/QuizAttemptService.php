@@ -259,6 +259,42 @@ class QuizAttemptService
     }
 
     /**
+     * Finalise every official attempt whose authoritative deadline has passed but
+     * which is still in_progress (the student closed the tab, lost connectivity, or
+     * never submitted). Each is closed through submit(), so finalise() records it as
+     * EXPIRED with the deadline as the effective end — never as an on-time submission.
+     *
+     * Safety net only: saveAnswer(), startOfficial() (on resume) and the exam screen
+     * all finalise opportunistically too, so an attempt is never left dangling. Runs
+     * from the scheduler (attempts:finalize-expired). Idempotent — an already-terminal
+     * attempt is skipped by finalise().
+     *
+     * @return int  number of attempts finalised
+     */
+    public function finalizeExpired(?CarbonImmutable $now = null): int
+    {
+        $now ??= CarbonImmutable::now();
+
+        $finalised = 0;
+
+        QuizAttempt::query()
+            ->where('kind', QuizAttempt::KIND_OFFICIAL)
+            ->where('status', QuizAttempt::STATUS_IN_PROGRESS)
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', $now)
+            ->orderBy('id')
+            ->chunkById(200, function ($attempts) use ($now, &$finalised): void {
+                foreach ($attempts as $attempt) {
+                    // submit() past the deadline records EXPIRED (see finalise()).
+                    $this->submit($attempt, $now);
+                    $finalised++;
+                }
+            });
+
+        return $finalised;
+    }
+
+    /**
      * Close out an attempt and score it. The single place an attempt becomes terminal.
      *
      * Guarantees:

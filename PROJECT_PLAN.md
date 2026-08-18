@@ -1,11 +1,13 @@
 # PROJECT_PLAN.md — Masud Alimi Islamic Learning & Examination Platform
 
-**Status:** Through Phase 6. Domain hardening, authentication, the design system, the student &
-admin management interfaces, and now the **quiz builder + CSV/XLSX importer + student exams
-listing** are built and tested (**211 passing tests**). The live exam-taking UI, results,
-leaderboards, regrade and public content modules have not started (Phase 7+).
+**Status:** Through Phase 7. Domain hardening, authentication, the design system, the student &
+admin management interfaces, the **quiz builder + CSV/XLSX importer + student exams listing**, and
+now the **secure live OFFICIAL exam** (start/resume, per-question autosave, authoritative server
+timer, expiry finalisation + `attempts:finalize-expired` sweep, and the released-score summary)
+are built and tested (**237 passing tests**). Detailed answer-sheet review, Practice Mode taking
+UI, leaderboards, regrade, manual adjustment and public content modules have not started (Phase 8+).
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-18
 
 ---
 
@@ -311,7 +313,7 @@ Critical paths that must be green before any module is called complete:
 | 4 | Point ledger + admin point manager | **Done** (grant / deduct / bulk, ledger views) |
 | 5 | Courses / lessons + catalogue UI + course seeder from extracted JSON | **Done** (student archive + admin course/lesson CRUD with inline resources) |
 | 6 | Quiz builder, CSV/XLSX importer with row-level validation | **Done** (quiz admin, question builder, scheduling/publish, preview, duplicate, legacy CSV/XLSX importer, student `/exams` listing foundation) |
-| 7 | Quiz engine UI: eligibility, transaction, autosave, resume, submit | Not started (domain services exist and are tested; the live UI is Phase 7) |
+| 7 | Quiz engine UI: eligibility, transaction, autosave, resume, submit | **Done** (secure live official exam: start/resume, per-question autosave, authoritative server timer, expiry finalisation + `attempts:finalize-expired` sweep, released-score summary) |
 | 8 | Results, answer sheets, leaderboards, cumulative leaderboard | Not started |
 | 9 | Regrading + manual score adjustment + audit log | Not started |
 | 10 | Practice mode | Not started |
@@ -401,18 +403,26 @@ Independent cross-check: the importer's gap report reproduced the audit's number
   import, hardened temp files. Google Sheets is never a runtime dependency.
 - **Student `/exams`:** grouped (open / upcoming / completed / previous) listing foundation,
   eligibility presentation, no answer-key leakage. Informational only — no attempt is started here.
+- **Secure live official exam (Phase 7):** start/resume via `ExamAttemptController` (thin
+  orchestration only) over `QuizAttemptService` — atomic point debit + attempt creation, resume
+  never re-debits. Per-question autosave (JSON, fails closed on foreign/over-selected options,
+  out-of-order protection client-side, refused with 409 past the deadline). Authoritative server
+  timer with a status poll; expiry finalises as EXPIRED (deadline-pinned) opportunistically on
+  show/status/result and via the every-minute `attempts:finalize-expired` sweep. Result page shows
+  the server-computed score only once `resultsReleasedAt()`; IDOR blocked by session-derived
+  ownership. `ExamAttemptPresenter` allow-lists the browser payload — `is_correct`/`marks`/
+  `explanation` never leave the server. Live screen structured so Practice Mode can reuse it.
 
-**Tests: 211 passing, 540 assertions, on MySQL.** Frontend build clean. Manual browser QA covered
-the quiz index/create/edit/builder/preview, CSV import upload→preview, and the student exams page
-(desktop + 375px mobile, dark mode, no console errors, answer key absent from the HTML).
+**Tests: 237 passing, 638 assertions, on MySQL.** Frontend build clean. The live exam view is
+rendered end-to-end by the feature suite (real GET → 200, options present, answer key absent);
+autosave, submit, expiry, IDOR, and the result-release gate are each covered.
 
 ### Not built
 
-Live exam-taking UI (start/resume/autosave/submit screens), results & answer sheets, leaderboards
-(per-quiz and cumulative), regrade UI, manual score-adjustment UI, blog/Fatwa CMS, notices admin,
-Ask Ustaz, Zakat calculator, Hijri calendar service, and the student + legacy-result data
-migrations. The quiz domain services (`QuizAttemptService`, `QuizScoringService`) exist and are
-tested, but the student-facing exam interface on top of them is Phase 7.
+Detailed answer-sheet review (correct/wrong per question), Practice Mode taking UI, results &
+answer sheets, leaderboards (per-quiz and cumulative), regrade UI, manual score-adjustment UI,
+blog/Fatwa CMS, notices admin, Ask Ustaz, Zakat calculator, Hijri calendar service, and the
+student + legacy-result data migrations.
 
 ---
 

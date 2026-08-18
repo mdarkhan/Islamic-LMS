@@ -45,19 +45,32 @@
 
                             <div class="mt-4 pt-3 border-t border-line text-sm">
                                 @if ($card['completed'])
-                                    @if ($card['results_pending'])
-                                        <span class="text-muted">{{ __('exams.results_pending') }}</span>
-                                    @else
-                                        <span class="font-semibold text-brand">{{ __('exams.obtained', ['score' => bn($card['score']), 'total' => bn($quiz->total_marks)]) }}</span>
-                                    @endif
+                                    <div class="flex items-center justify-between gap-2">
+                                        @if ($card['results_pending'])
+                                            <span class="text-muted">{{ __('exams.results_pending') }}</span>
+                                        @else
+                                            <span class="font-semibold text-brand">{{ __('exams.obtained', ['score' => bn($card['score']), 'total' => bn($quiz->total_marks)]) }}</span>
+                                        @endif
+                                        <x-ui.button :href="route('student.attempts.result', $card['attempt_id'])" variant="secondary" size="sm">{{ __('exams.view_result') }}</x-ui.button>
+                                    </div>
                                 @elseif ($card['resume'])
-                                    <span class="font-semibold text-brand">{{ __('exams.ready_to_resume') }}</span>
-                                @elseif ($key === 'open')
+                                    <x-ui.button :href="route('student.attempts.show', $card['attempt_id'])" size="sm" class="w-full">
+                                        <x-ui.icon name="exam" class="w-4 h-4" /> {{ __('exams.resume') }}
+                                    </x-ui.button>
+                                @elseif ($card['startable'])
                                     @if ($card['enough_points'])
-                                        <span class="text-muted">{{ __('exams.ready_to_start') }} <span class="text-xs">({{ __('exams.coming_soon') }})</span></span>
+                                        <form method="POST" action="{{ route('student.exams.start', $quiz) }}">
+                                            @csrf
+                                            <x-ui.button type="submit" size="sm" class="w-full">
+                                                <x-ui.icon name="exam" class="w-4 h-4" /> {{ __('exams.start') }}
+                                            </x-ui.button>
+                                            <p class="text-xs text-muted text-center mt-1.5">{{ __('exams.start_cost_note', ['count' => bn($quiz->point_cost)]) }}</p>
+                                        </form>
                                     @else
                                         <span class="text-rose-600">{{ __('exams.insufficient_points') }}</span>
                                     @endif
+                                @elseif ($key === 'open' && ! $card['has_questions'])
+                                    <span class="text-muted">{{ __('exams.no_questions') }}</span>
                                 @elseif ($key === 'upcoming')
                                     <span class="text-muted">{{ __('exams.awaiting_start') }}</span>
                                 @else

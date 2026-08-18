@@ -273,9 +273,19 @@ anything done that has not been run. If a feature is incomplete, say so there
 rather than leaving a button that pretends to work.
 
 Unbuilt sections show a disabled "পরবর্তী ধাপ" (later phase) nav item — do not wire
-a fake page behind them. Not yet built: **live exam UI** (start/resume/autosave/submit
-screens), results/answer sheets, leaderboards, regrade UI, manual mark adjustment UI,
-blog, Ask Ustaz, Zakat calculator, Hijri calendar, and the student/legacy-result
+a fake page behind them. Not yet built: **detailed answer-sheet review** (correct/wrong
+per question), Practice Mode taking UI, leaderboards, regrade UI, manual mark adjustment
+UI, blog, Ask Ustaz, Zakat calculator, Hijri calendar, and the student/legacy-result
 migrations. The Quiz Builder, quiz import (CSV/XLSX) and the student `/exams` listing
 foundation ARE built (Phase 6). `/exams` is informational only — it never starts or
 debits an attempt; `QuizAttemptService` remains the only authority for that.
+
+The **secure live OFFICIAL exam** IS built (Phase 7): start/resume, per-question
+autosave, the authoritative server timer, expiry finalisation and a released-score
+summary. `ExamAttemptController` only orchestrates — the point debit, one-way terminal
+states, expiry and scoring stay in `QuizAttemptService` / `QuizScoringService`. The
+browser never receives the answer key (`ExamAttemptPresenter` allow-lists the payload),
+never holds score authority, and a save past the deadline is refused (409) and the
+attempt finalised as EXPIRED. Expired-but-abandoned attempts are swept by
+`attempts:finalize-expired` (every-minute schedule). The result page shows the score
+only once `resultsReleasedAt()`. The live screen is built so Practice Mode can reuse it.

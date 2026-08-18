@@ -39,6 +39,15 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
 
     Route::get('exams', [Student\ExamController::class, 'index'])->name('student.exams.index');
 
+    // Live official exam (Phase 7). Start/resume is idempotent in the service; the
+    // attempt id — not a client-supplied user id — identifies every later request.
+    Route::post('exams/{quiz}/start', [Student\ExamAttemptController::class, 'start'])->name('student.exams.start');
+    Route::get('exam-attempts/{attempt}', [Student\ExamAttemptController::class, 'show'])->name('student.attempts.show');
+    Route::get('exam-attempts/{attempt}/status', [Student\ExamAttemptController::class, 'status'])->name('student.attempts.status');
+    Route::put('exam-attempts/{attempt}/answers/{question}', [Student\ExamAttemptController::class, 'saveAnswer'])->name('student.attempts.answer');
+    Route::post('exam-attempts/{attempt}/submit', [Student\ExamAttemptController::class, 'submit'])->name('student.attempts.submit');
+    Route::get('exam-attempts/{attempt}/result', [Student\ExamAttemptController::class, 'result'])->name('student.attempts.result');
+
     Route::get('points', [Student\PointController::class, 'index'])->name('student.points');
 
     Route::get('profile', [Student\ProfileController::class, 'edit'])->name('student.profile.edit');
