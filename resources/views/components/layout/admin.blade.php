@@ -15,6 +15,10 @@
         $nav[] = ['label' => __('nav.quizzes'), 'href' => route('admin.quizzes.index'), 'icon' => 'exam', 'active' => request()->routeIs('admin.quizzes.*')];
     }
 
+    if ($user?->hasPermission('results.view')) {
+        $nav[] = ['label' => __('nav.results'), 'href' => route('admin.results.index'), 'icon' => 'results', 'active' => request()->routeIs('admin.results.*')];
+    }
+
     $nav[] = ['label' => __('nav.audit'), 'href' => route('admin.audit.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.audit.*')];
 @endphp
 

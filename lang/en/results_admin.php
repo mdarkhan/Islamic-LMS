@@ -1,0 +1,82 @@
+<?php
+
+return [
+    'heading' => 'Results',
+    'detail' => 'Attempt detail',
+
+    // Filters
+    'filter_quiz' => 'Exam',
+    'filter_status' => 'Status',
+    'filter_kind' => 'Type',
+    'search_placeholder' => 'Search roll or name',
+    'all' => 'All',
+    'apply' => 'Filter',
+    'export_csv' => 'Export CSV',
+
+    // Columns
+    'col_student' => 'Student',
+    'col_roll' => 'Roll',
+    'col_quiz' => 'Exam',
+    'col_kind' => 'Type',
+    'col_status' => 'Status',
+    'col_calculated' => 'Calculated',
+    'col_manual' => 'Adjustment',
+    'col_final' => 'Final',
+    'col_total' => 'Total',
+    'col_time' => 'Time',
+    'col_submitted' => 'Submitted',
+    'view' => 'View',
+    'none' => 'No attempts match these filters.',
+
+    'kind_official' => 'Official',
+    'kind_practice' => 'Practice',
+    'status_in_progress' => 'In progress',
+    'status_submitted' => 'Submitted',
+    'status_expired' => 'Expired',
+    'status_voided' => 'Voided',
+
+    // Detail
+    'student' => 'Student',
+    'started' => 'Started',
+    'time_taken' => 'Time taken',
+    'scores' => 'Scores',
+    'calculated_score' => 'Calculated score',
+    'manual_adjustment' => 'Manual adjustment',
+    'final_score' => 'Final score',
+    'total_marks' => 'Total marks',
+    'answers_heading' => 'Answers',
+    'adjusted_badge' => 'Adjusted',
+    'regraded_badge' => 'Regraded',
+
+    // Manual adjustment
+    'adjust_heading' => 'Manual score adjustment',
+    'adjust_new_manual' => 'New adjustment (+/−)',
+    'adjust_reason' => 'Reason (required)',
+    'adjust_preview' => 'Calculated: :calc · Adjustment: :adj · Final: :final',
+    'adjust_save' => 'Save adjustment',
+    'adjust_saved' => 'The adjustment has been saved.',
+    'adjustment_history' => 'Adjustment history',
+    'adjusted_by' => ':name changed :old → :new',
+    'no_adjustments' => 'No manual adjustments yet.',
+
+    // Regrade
+    'regrade_action' => 'Correct answer / Regrade',
+    'regrade_heading' => 'Answer key correction & regrade',
+    'regrade_intro' => 'Correcting the key or marks re-scores every affected official attempt. Manual adjustments are preserved. Question and option wording is never changed here.',
+    'regrade_not_locked' => 'This quiz has no official attempts yet — edit the question directly in the builder.',
+    'regrade_pick_question' => 'Question',
+    'regrade_new_correct' => 'Correct answer(s)',
+    'regrade_marks' => 'Marks',
+    'regrade_type' => 'Type',
+    'regrade_type_single' => 'Single answer',
+    'regrade_type_multiple' => 'Multiple answers',
+    'regrade_explanation' => 'Explanation',
+    'regrade_reason' => 'Reason (required)',
+    'regrade_preview_btn' => 'Preview impact',
+    'regrade_confirm' => 'Confirm & regrade',
+    'regrade_impact' => 'Affected: :total · Will change: :changed · Unchanged: :unchanged · Skipped (legacy): :skipped',
+    'regrade_samples' => 'Sample affected students',
+    'regrade_from_to' => ':old → :new',
+    'regrade_done' => 'Regrade complete — :count attempt(s) changed.',
+    'regrade_history' => 'Regrade history for this attempt',
+];

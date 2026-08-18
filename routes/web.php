@@ -143,6 +143,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
         Route::post('quizzes/{quiz}/questions/{question}/duplicate', [Admin\QuizQuestionController::class, 'duplicate'])->name('quizzes.questions.duplicate');
     });
 
+    // Results management (Phase 8). export is declared before the {attempt} wildcard.
+    Route::get('results', [Admin\ResultController::class, 'index'])->name('results.index')->middleware('perm:results.view');
+    Route::get('results/export', [Admin\ResultController::class, 'export'])->name('results.export')->middleware('perm:results.view');
+    Route::get('results/{attempt}', [Admin\ResultController::class, 'show'])->name('results.show')->middleware('perm:results.view');
+    Route::post('results/{attempt}/adjust', [Admin\ResultController::class, 'adjust'])->name('results.adjust')->middleware('perm:results.adjust');
+
+    // Answer-key correction / regrade (the only sanctioned way to change a locked key).
+    Route::get('quizzes/{quiz}/regrade', [Admin\RegradeController::class, 'create'])->name('quizzes.regrade.create')->middleware('perm:results.regrade');
+    Route::post('quizzes/{quiz}/regrade/preview', [Admin\RegradeController::class, 'preview'])->name('quizzes.regrade.preview')->middleware('perm:results.regrade');
+    Route::post('quizzes/{quiz}/regrade', [Admin\RegradeController::class, 'apply'])->name('quizzes.regrade.apply')->middleware('perm:results.regrade');
+
     // Audit
     Route::get('audit', [Admin\AuditController::class, 'index'])->name('audit.index')->middleware('perm:audit.view');
 });

@@ -15,6 +15,13 @@
     @if ($scoringLocked)
         <x-ui.alert type="warning" :title="__('quizzes.scoring_locked')" class="mb-6">
             {{ __('quizzes.scoring_locked_body') }}
+            @if (auth()->user()->hasPermission('results.regrade'))
+                <div class="mt-3">
+                    <x-ui.button :href="route('admin.quizzes.regrade.create', $quiz)" variant="secondary" size="sm">
+                        {{ __('results_admin.regrade_action') }}
+                    </x-ui.button>
+                </div>
+            @endif
         </x-ui.alert>
     @endif
 

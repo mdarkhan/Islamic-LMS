@@ -1,0 +1,82 @@
+<?php
+
+return [
+    'heading' => 'ফলাফল',
+    'detail' => 'অ্যাটেম্পটের বিস্তারিত',
+
+    // Filters
+    'filter_quiz' => 'পরীক্ষা',
+    'filter_status' => 'অবস্থা',
+    'filter_kind' => 'ধরন',
+    'search_placeholder' => 'রোল বা নাম খুঁজুন',
+    'all' => 'সব',
+    'apply' => 'ফিল্টার',
+    'export_csv' => 'CSV ডাউনলোড',
+
+    // Columns
+    'col_student' => 'শিক্ষার্থী',
+    'col_roll' => 'রোল',
+    'col_quiz' => 'পরীক্ষা',
+    'col_kind' => 'ধরন',
+    'col_status' => 'অবস্থা',
+    'col_calculated' => 'গণনাকৃত',
+    'col_manual' => 'সমন্বয়',
+    'col_final' => 'চূড়ান্ত',
+    'col_total' => 'মোট',
+    'col_time' => 'সময়',
+    'col_submitted' => 'জমা',
+    'view' => 'দেখুন',
+    'none' => 'এই ফিল্টারে কোনো অ্যাটেম্পট নেই।',
+
+    'kind_official' => 'অফিসিয়াল',
+    'kind_practice' => 'অনুশীলন',
+    'status_in_progress' => 'চলমান',
+    'status_submitted' => 'জমা দেওয়া হয়েছে',
+    'status_expired' => 'সময় শেষ',
+    'status_voided' => 'বাতিল',
+
+    // Detail
+    'student' => 'শিক্ষার্থী',
+    'started' => 'শুরু',
+    'time_taken' => 'সময় লেগেছে',
+    'scores' => 'নম্বর',
+    'calculated_score' => 'গণনাকৃত নম্বর',
+    'manual_adjustment' => 'ম্যানুয়াল সমন্বয়',
+    'final_score' => 'চূড়ান্ত নম্বর',
+    'total_marks' => 'মোট নম্বর',
+    'answers_heading' => 'উত্তরসমূহ',
+    'adjusted_badge' => 'সমন্বিত',
+    'regraded_badge' => 'পুনর্মূল্যায়িত',
+
+    // Manual adjustment
+    'adjust_heading' => 'ম্যানুয়াল নম্বর সমন্বয়',
+    'adjust_new_manual' => 'নতুন সমন্বয় (+/−)',
+    'adjust_reason' => 'কারণ (আবশ্যক)',
+    'adjust_preview' => 'গণনাকৃত: :calc · সমন্বয়: :adj · চূড়ান্ত: :final',
+    'adjust_save' => 'সমন্বয় সংরক্ষণ করুন',
+    'adjust_saved' => 'সমন্বয় সংরক্ষণ করা হয়েছে।',
+    'adjustment_history' => 'সমন্বয়ের ইতিহাস',
+    'adjusted_by' => ':name পরিবর্তন করেছেন :old → :new',
+    'no_adjustments' => 'এখনও কোনো ম্যানুয়াল সমন্বয় নেই।',
+
+    // Regrade
+    'regrade_action' => 'সঠিক উত্তর / পুনর্মূল্যায়ন',
+    'regrade_heading' => 'উত্তরমালা সংশোধন ও পুনর্মূল্যায়ন',
+    'regrade_intro' => 'উত্তর বা নম্বর সংশোধন করলে সংশ্লিষ্ট প্রতিটি অফিসিয়াল অ্যাটেম্পট পুনরায় গণনা হবে। ম্যানুয়াল সমন্বয় অক্ষুণ্ণ থাকবে। প্রশ্ন বা অপশনের লেখা এখানে পরিবর্তন হয় না।',
+    'regrade_not_locked' => 'এই কুইজে এখনও কোনো অফিসিয়াল পরীক্ষা জমা পড়েনি — বিল্ডারেই সরাসরি প্রশ্ন সম্পাদনা করুন।',
+    'regrade_pick_question' => 'প্রশ্ন',
+    'regrade_new_correct' => 'সঠিক উত্তর',
+    'regrade_marks' => 'নম্বর',
+    'regrade_type' => 'ধরন',
+    'regrade_type_single' => 'একক উত্তর',
+    'regrade_type_multiple' => 'একাধিক উত্তর',
+    'regrade_explanation' => 'ব্যাখ্যা',
+    'regrade_reason' => 'কারণ (আবশ্যক)',
+    'regrade_preview_btn' => 'প্রভাব দেখুন',
+    'regrade_confirm' => 'নিশ্চিত করে পুনর্মূল্যায়ন',
+    'regrade_impact' => 'সংশ্লিষ্ট: :total · পরিবর্তন হবে: :changed · অপরিবর্তিত: :unchanged · বাদ (লিগ্যাসি): :skipped',
+    'regrade_samples' => 'প্রভাবিত কিছু শিক্ষার্থী',
+    'regrade_from_to' => ':old → :new',
+    'regrade_done' => 'পুনর্মূল্যায়ন সম্পন্ন — :count টি অ্যাটেম্পটে পরিবর্তন হয়েছে।',
+    'regrade_history' => 'এই অ্যাটেম্পটের পুনর্মূল্যায়নের ইতিহাস',
+];

@@ -106,4 +106,20 @@ class QuizScoringService
             return $attempt;
         });
     }
+
+    /**
+     * Apply an admin's manual adjustment. This is the ONLY place a manual delta and the
+     * resulting final_score are written; calculated_score is never touched, so the
+     * adjustment survives a later regrade (final = calculated + manual). Bounds are the
+     * caller's responsibility (ScoreAdjustmentService validates 0..total).
+     */
+    public function setManualAdjustment(QuizAttempt $attempt, int $manual): QuizAttempt
+    {
+        $attempt->forceFill([
+            'manual_adjustment' => $manual,
+            'final_score' => $attempt->calculated_score + $manual,
+        ])->save();
+
+        return $attempt;
+    }
 }
