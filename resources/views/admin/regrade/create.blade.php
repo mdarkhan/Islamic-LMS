@@ -30,8 +30,8 @@
 
             <x-ui.field :label="__('results_admin.regrade_pick_question')">
                 <x-ui.select x-model.number="questionId" @change="pick()">
-                    <template x-for="q in questions" :key="q.id">
-                        <option :value="q.id" x-text="'#' + q.id + ' — ' + q.body.slice(0, 60)"></option>
+                    <template x-for="(q, i) in questions" :key="q.id">
+                        <option :value="q.id" x-text="'#' + (i + 1) + ' — ' + q.body.slice(0, 60)"></option>
                     </template>
                 </x-ui.select>
             </x-ui.field>
