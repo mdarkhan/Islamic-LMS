@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\QuizAttemptFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,19 +12,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'quiz_id', 'user_id', 'kind', 'attempt_no', 'status', 'started_at', 'expires_at',
     'counts_toward_cumulative', 'is_legacy_import', 'answer_details_available',
+    'legacy_import_batch_id', 'legacy_source_key', 'legacy_quiz_id',
     'point_transaction_id', 'total_marks_snapshot',
 ])]
 class QuizAttempt extends Model
 {
-    /** @use HasFactory<\Database\Factories\QuizAttemptFactory> */
+    /** @use HasFactory<QuizAttemptFactory> */
     use HasFactory;
 
     public const KIND_OFFICIAL = 'official';
+
     public const KIND_PRACTICE = 'practice';
 
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_VOIDED = 'voided';
 
     /**

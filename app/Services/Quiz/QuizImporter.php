@@ -24,7 +24,7 @@ class QuizImporter
 
     /**
      * @param  array<string, mixed>  $parsed  output of QuizImportParser::parse()
-     * @param  array{title:string, course_id:?int, lesson_id:?int, point_cost:int}  $options
+     * @param  array{title:string, course_id:?int, lesson_id:?int, point_cost:int, legacy_import_batch_id?:?int, legacy_source_key?:?string}  $options
      */
     public function import(array $parsed, array $options, User $actor): Quiz
     {
@@ -42,12 +42,17 @@ class QuizImporter
                 'title' => $options['title'],
                 'status' => Quiz::STATUS_DRAFT,
                 'practice_enabled' => false,
+                // Historical/imported quizzes require an explicit admin decision before
+                // they can affect the modern cumulative leaderboard.
+                'counts_toward_overall' => false,
                 'point_cost' => $options['point_cost'],
                 'duration_seconds' => $config['duration_seconds'],
                 'starts_at' => $config['starts_at'],
                 'ends_at' => $config['ends_at'],
                 'max_official_attempts' => 1,
                 'created_by' => $actor->getKey(),
+                'legacy_import_batch_id' => $options['legacy_import_batch_id'] ?? null,
+                'legacy_source_key' => $options['legacy_source_key'] ?? null,
             ]);
 
             $order = 0;

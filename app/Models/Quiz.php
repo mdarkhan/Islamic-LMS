@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'practice_enabled', 'point_cost', 'duration_seconds', 'starts_at', 'ends_at',
     'result_release_at', 'results_released_at', 'leaderboard_visible',
     'counts_toward_overall', 'max_official_attempts', 'created_by',
+    'legacy_import_batch_id', 'legacy_source_key',
 ])]
 class Quiz extends Model
 {
@@ -21,8 +22,11 @@ class Quiz extends Model
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SCHEDULED = 'scheduled';
+
     public const STATUS_PUBLISHED = 'published';
+
     public const STATUS_ARCHIVED = 'archived';
 
     protected function casts(): array
@@ -45,9 +49,13 @@ class Quiz extends Model
 
     // Student-facing lifecycle states (computed from status + the clock).
     public const STATE_DRAFT = 'draft';        // admin-only, never visible
+
     public const STATE_UPCOMING = 'upcoming';  // scheduled/published, before starts_at
+
     public const STATE_OPEN = 'open';          // scheduled/published, within the window
+
     public const STATE_CLOSED = 'closed';      // scheduled/published, past ends_at
+
     public const STATE_ARCHIVED = 'archived';  // no new official attempt (practice may remain)
 
     /**

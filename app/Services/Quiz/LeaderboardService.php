@@ -116,6 +116,7 @@ class LeaderboardService
             ->whereIn('quiz_attempts.quiz_id', $quizIds)
             ->where('quiz_attempts.kind', QuizAttempt::KIND_OFFICIAL)
             ->whereIn('quiz_attempts.status', QuizAttempt::RANKABLE_STATUSES)
+            ->where('quiz_attempts.counts_toward_cumulative', true)
             ->join('users', 'users.id', '=', 'quiz_attempts.user_id')
             ->get([
                 'quiz_attempts.id', 'quiz_attempts.user_id', 'quiz_attempts.quiz_id',
@@ -204,6 +205,7 @@ class LeaderboardService
      * producing 1,2,2,4.
      *
      * @template T
+     *
      * @param  Collection<int, T>  $ordered
      * @param  callable(T, T): bool  $tie
      * @param  callable(T, int): array<string, mixed>  $row

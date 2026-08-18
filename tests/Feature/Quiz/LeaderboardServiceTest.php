@@ -192,6 +192,16 @@ class LeaderboardServiceTest extends TestCase
         $this->assertSame(50, $row['possible']);
     }
 
+    public function test_overall_excludes_an_official_attempt_marked_non_cumulative(): void
+    {
+        $quiz = $this->endedQuiz();
+        $student = $this->makeStudent();
+        $attempt = $this->attempt($quiz, $student, score: 50, time: 100, total: 50);
+        $attempt->forceFill(['counts_toward_cumulative' => false])->save();
+
+        $this->assertNull($this->service->studentOverall($student, CarbonImmutable::now()));
+    }
+
     public function test_overall_excludes_unreleased_quizzes(): void
     {
         $live = Quiz::factory()->create([

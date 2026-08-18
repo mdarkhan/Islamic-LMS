@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\Import\StudentImporter;
 use App\Services\Import\StudentSpreadsheetParser;
@@ -125,6 +126,20 @@ class StudentImportTest extends TestCase
         $this->assertTrue(Hash::check('original', $existing->fresh()->password));
     }
 
+    public function test_repeating_the_same_import_is_idempotent(): void
+    {
+        $admin = $this->makeAdmin();
+        $rows = [['row' => 2, 'roll' => '১০১', 'name' => 'আব্দুল্লাহ', 'guardian_name' => null, 'password' => 'legacy']];
+
+        $first = app(StudentImporter::class)->import($rows, $admin);
+        $second = app(StudentImporter::class)->import($rows, $admin);
+
+        $this->assertSame(1, $first['imported']);
+        $this->assertSame(0, $second['imported']);
+        $this->assertSame(1, User::query()->where('roll', '101')->count());
+        $this->assertNotNull(User::query()->where('roll', '101')->value('legacy_source_key'));
+    }
+
     public function test_import_summary_is_audited_without_row_detail(): void
     {
         $admin = $this->makeAdmin();
@@ -132,7 +147,7 @@ class StudentImportTest extends TestCase
 
         app(StudentImporter::class)->import($rows, $admin);
 
-        $log = \App\Models\AuditLog::query()->where('action', 'students.imported')->first();
+        $log = AuditLog::query()->where('action', 'students.imported')->first();
         $this->assertNotNull($log);
         $this->assertArrayHasKey('imported', $log->after);
         // No password, roll list, or name anywhere in the audit payload.

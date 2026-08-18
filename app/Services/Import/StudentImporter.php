@@ -2,6 +2,7 @@
 
 namespace App\Services\Import;
 
+use App\Models\LegacyImportBatch;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -86,14 +87,14 @@ class StudentImporter
      * @param  array<int, array<string, ?string>>  $rows
      * @return array{imported:int, skipped:int, credentials:array<int, array{roll:?string, name:?string, password:string}>}
      */
-    public function import(array $rows, User $actor): array
+    public function import(array $rows, ?User $actor = null, ?LegacyImportBatch $batch = null): array
     {
         $preview = $this->preview($rows);
 
         $imported = 0;
         $credentials = [];
 
-        DB::transaction(function () use ($preview, &$imported, &$credentials) {
+        DB::transaction(function () use ($preview, $batch, &$imported, &$credentials) {
             $studentRoleId = Role::query()->where('name', Role::STUDENT)->value('id');
 
             foreach ($preview['rows'] as $row) {
@@ -113,6 +114,8 @@ class StudentImporter
                     'status' => User::STATUS_ACTIVE,
                     'force_password_change' => true,
                     'is_legacy_import' => true,
+                    'legacy_import_batch_id' => $batch?->getKey(),
+                    'legacy_source_key' => hash('sha256', 'student'."\0".$row['roll']),
                 ]);
                 $student->roles()->syncWithoutDetaching([$studentRoleId]);
 

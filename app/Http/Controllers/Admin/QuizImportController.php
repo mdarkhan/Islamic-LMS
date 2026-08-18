@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\LegacyImportBatch;
 use App\Models\Lesson;
 use App\Models\Quiz;
 use App\Services\Import\ImportFileStore;
+use App\Services\Import\LegacyImportBatchService;
 use App\Services\Import\SpreadsheetReader;
 use App\Services\Quiz\QuizCourseMatcher;
 use App\Services\Quiz\QuizImporter;
@@ -33,6 +35,7 @@ class QuizImportController extends Controller
         private readonly QuizImportParser $parser,
         private readonly QuizCourseMatcher $matcher,
         private readonly QuizImporter $importer,
+        private readonly LegacyImportBatchService $batches,
     ) {}
 
     public function form(): View
@@ -101,13 +104,35 @@ class QuizImportController extends Controller
             return back()->with('error', 'ইমপোর্টে ত্রুটি আছে — অনুগ্রহ করে সংশোধন করে আবার চেষ্টা করুন।')->withInput();
         }
 
+        $sourceKey = hash('sha256', hash_file('sha256', $path)."\0".$data['sheet']);
+        if (Quiz::query()->where('legacy_source_key', $sourceKey)->exists()) {
+            $this->files->delete(self::KIND, $data['token']);
+
+            return redirect()->route('admin.quizzes.import.form')
+                ->with('error', 'এই একই source sheet আগে ইমপোর্ট করা হয়েছে; duplicate তৈরি করা হয়নি।');
+        }
+
+        $batch = $this->batches->start(LegacyImportBatch::TYPE_QUIZZES, $path);
+
         try {
             $quiz = $this->importer->import($parsed, [
                 'title' => $data['title'],
                 'course_id' => $data['course_id'] ?? null,
                 'lesson_id' => $data['lesson_id'] ?? null,
                 'point_cost' => $data['point_cost'],
+                'legacy_import_batch_id' => $batch->id,
+                'legacy_source_key' => $sourceKey,
             ], $request->user());
+            $this->batches->complete($batch, [
+                'source_rows' => count($rows),
+                'valid_rows' => $parsed['valid_count'],
+                'imported' => 1,
+                'skipped' => 0,
+                'failed' => 0,
+            ]);
+        } catch (\Throwable $e) {
+            $this->batches->fail($batch, $e::class);
+            throw $e;
         } finally {
             $this->files->delete(self::KIND, $data['token']);
         }

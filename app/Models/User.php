@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,7 +18,8 @@ use Illuminate\Notifications\Notifiable;
  */
 #[Fillable([
     'roll', 'name', 'guardian_name', 'email', 'phone', 'password',
-    'status', 'force_password_change', 'is_legacy_import', 'locale',
+    'status', 'force_password_change', 'is_legacy_import', 'legacy_import_batch_id',
+    'legacy_source_key', 'locale',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -26,7 +28,9 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_SUSPENDED = 'suspended';
+
     public const STATUS_ARCHIVED = 'archived';
 
     protected function casts(): array
@@ -66,7 +70,7 @@ class User extends Authenticatable
     }
 
     /** Users holding the student role — the population the admin student area manages. */
-    public function scopeStudents(\Illuminate\Database\Eloquent\Builder $query): void
+    public function scopeStudents(Builder $query): void
     {
         $query->whereHas('roles', fn ($r) => $r->where('name', Role::STUDENT));
     }

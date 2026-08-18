@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Quiz;
+use App\Services\Quiz\QuizCourseMatcher;
 use App\Services\Quiz\QuizImportParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -203,6 +204,7 @@ class QuizImportTest extends TestCase
 
         $quiz = Quiz::query()->where('title', 'সীরাত-২৭ পরীক্ষা')->firstOrFail();
         $this->assertSame('draft', $quiz->status);
+        $this->assertFalse($quiz->counts_toward_overall, 'imported quizzes need explicit overall-leaderboard approval');
         $this->assertSame(2, $quiz->point_cost);
         $this->assertSame(600, $quiz->duration_seconds);
         $this->assertSame(2, $quiz->questions()->count());
@@ -220,7 +222,7 @@ class QuizImportTest extends TestCase
     {
         $course = Course::factory()->create(['slug' => 'seerat']);
         // No lesson seerat-99 exists.
-        $matcher = app(\App\Services\Quiz\QuizCourseMatcher::class);
+        $matcher = app(QuizCourseMatcher::class);
         $result = $matcher->suggest('Seerat-99', null);
 
         $this->assertSame($course->id, $result['course_id']);
@@ -239,6 +241,31 @@ class QuizImportTest extends TestCase
         ]);
 
         $this->assertNotNull($preview->viewData('duplicate'), 'existing same-title quiz is detected');
+    }
+
+    public function test_repeating_the_same_source_sheet_does_not_create_a_duplicate_quiz(): void
+    {
+        Storage::fake('local');
+        $admin = $this->makeAdmin();
+
+        $importOnce = function () use ($admin) {
+            $preview = $this->actingAs($admin)->post(route('admin.quizzes.import.upload'), [
+                'file' => UploadedFile::fake()->createWithContent('quiz.csv', $this->csvContent()),
+            ]);
+
+            return $this->actingAs($admin)->post(route('admin.quizzes.import.confirm'), [
+                'token' => $preview->viewData('token'),
+                'sheet' => 'CSV',
+                'title' => 'Idempotent source',
+                'point_cost' => 1,
+            ]);
+        };
+
+        $importOnce()->assertRedirect();
+        $importOnce()->assertRedirect(route('admin.quizzes.import.form'));
+
+        $this->assertSame(1, Quiz::query()->where('title', 'Idempotent source')->count());
+        $this->assertNotNull(Quiz::query()->where('title', 'Idempotent source')->value('legacy_source_key'));
     }
 
     public function test_xlsx_with_multiple_sheets_prompts_for_worksheet_selection(): void
