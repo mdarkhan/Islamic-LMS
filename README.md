@@ -12,8 +12,11 @@ code to manage content.
 > decimal-safe **Zakat calculator**, and a centralised **CalendarService** (Gregorian / revised
 > Bangla / tabular Hijri with a sunset rollover + admin offset). The student/legacy-result data
 > migrations now have dry-run, provenance, reconciliation and integrity tooling. Actual production
-> imports/cPanel cutover remain blocked by private exports, hosting details and explicit production
-> access. See [CODEX_TAKEOVER_AUDIT.md](CODEX_TAKEOVER_AUDIT.md).
+> Phase 10B inspected a partial real quiz export and an 856-row legacy result SQL export in an
+> isolated MySQL scratch database. One archived quiz was staged as a draft; the `Live` sheet was
+> not imported, and no result row was imported because the current student export and explicit
+> quiz mapping approvals are still missing. Production import/cPanel cutover also require hosting
+> details and explicit authority. See [MIGRATION_RECONCILIATION.md](MIGRATION_RECONCILIATION.md).
 
 ---
 

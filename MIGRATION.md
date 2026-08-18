@@ -238,10 +238,11 @@ SELECT quiz_id, COUNT(*) AS rows_, MIN(created_at) AS first_seen, MAX(created_at
 FROM quiz_submissions GROUP BY quiz_id ORDER BY first_seen;
 ```
 
-`legacy:results:preview` auto-matches only exact normalized quiz title or slug equality and writes
-`LEGACY_QUIZ_MAPPING.csv`. Every other value remains `REVIEW`; an operator chooses a target and marks
-it `APPROVED`, or marks it `SKIP`. Dates may inform that human decision but are never used as a fuzzy
-automatic match. Rows whose mapping is not approved block import.
+`legacy:results:preview` proposes only exact normalized quiz title or slug candidates and writes
+`LEGACY_QUIZ_MAPPING.csv`. Every generated row remains `REVIEW`, including a single exact candidate;
+an operator must mark it `APPROVED`, or mark it `SKIP`. The only accepted final actions are
+`APPROVED`, `SKIP`, and `REVIEW`. Dates may inform that human decision but are never used as a fuzzy
+automatic match. Rows whose mapping is not explicitly approved block import.
 
 If several archived exams were run under the same generic Exam Name (`সীরাত`) with overlapping
 dates, those rows may be genuinely unattributable. That possibility is why this step is manual.

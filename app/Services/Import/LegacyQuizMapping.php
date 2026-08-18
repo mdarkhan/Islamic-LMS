@@ -31,8 +31,8 @@ class LegacyQuizMapping
                     'matched_quiz_id' => (int) $quiz->id,
                     'matched_quiz_title' => $quiz->title,
                     'confidence' => '1.00',
-                    'action' => 'AUTO_MATCH',
-                    'notes' => 'Exact title or slug match.',
+                    'action' => 'REVIEW',
+                    'notes' => 'Exact title or slug candidate; operator APPROVED or SKIP decision required.',
                 ];
             } else {
                 $rows[] = [

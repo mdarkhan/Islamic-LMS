@@ -51,14 +51,14 @@ class LegacyVerify extends Command
             ['Clickable # resource links', $placeholderLinks, $placeholderLinks === 0 ? 'PASS' : 'FAIL'],
             ['Invalid UTF-8 lesson fields', $invalidUnicode, $invalidUnicode === 0 ? 'PASS' : 'FAIL'],
             ['Tafsir lessons (known honest gap)', $tafsirLessons, $tafsirLessons === 0 ? 'PASS' : 'REVIEW'],
-            ['Legacy DB exports available', $exports->count(), $exports->isNotEmpty() ? 'READY' : 'BLOCKED'],
+            ['Repository-local DB exports', $exports->count(), $exports->isNotEmpty() ? 'READY' : 'EXPECTED_PRIVATE'],
             ['Current course count', Course::query()->count(), 'INFO'],
         ];
         $this->table(['Check', 'Count', 'Status'], $checks);
 
         if ($exports->isEmpty()) {
             $this->warn('Legacy result migration tooling: READY');
-            $this->warn('Actual historical result migration: BLOCKED BY EXPORT (legacy/db/ has no quiz_submissions export).');
+            $this->warn('No result export is stored in legacy/db/ (expected for private inputs); assess external sources separately.');
         }
         if ($missing !== []) {
             $this->line('Missing: '.implode(', ', $missing));

@@ -16,6 +16,7 @@ class LegacyVerifyTest extends TestCase
 
         $this->artisan('legacy:verify')
             ->expectsOutputToContain('Legacy result migration tooling: READY')
+            ->expectsOutputToContain('expected for private inputs')
             ->assertSuccessful();
     }
 }

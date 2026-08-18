@@ -44,13 +44,13 @@ class LegacyResultImportTest extends TestCase
         return $row;
     }
 
-    public function test_exact_slug_mapping_is_high_confidence(): void
+    public function test_exact_slug_mapping_is_high_confidence_but_still_requires_operator_approval(): void
     {
         $quiz = Quiz::factory()->create(['slug' => 'seerat-24', 'title' => 'সীরাত ২৪']);
 
         $mapping = app(LegacyQuizMapping::class)->build(['seerat-24']);
 
-        $this->assertSame('AUTO_MATCH', $mapping[0]['action']);
+        $this->assertSame('REVIEW', $mapping[0]['action']);
         $this->assertSame('1.00', $mapping[0]['confidence']);
         $this->assertSame($quiz->id, $mapping[0]['matched_quiz_id']);
     }
@@ -69,8 +69,7 @@ class LegacyResultImportTest extends TestCase
     public function test_missing_user_is_reported_and_not_importable(): void
     {
         Quiz::factory()->create(['slug' => 'seerat-24']);
-        $mappingRows = app(LegacyQuizMapping::class)->build(['seerat-24']);
-        $mapping = app(LegacyQuizMapping::class)->keyByLegacyId($mappingRows);
+        $mapping = $this->approvedMapping(['seerat-24']);
 
         $preview = app(LegacyResultImporter::class)->preview([$this->row()], $mapping);
 
@@ -96,8 +95,7 @@ class LegacyResultImportTest extends TestCase
     {
         $student = $this->makeStudent(['roll' => '101']);
         $quiz = Quiz::factory()->create(['slug' => 'seerat-24', 'title' => 'সীরাত ২৪']);
-        $mappingRows = app(LegacyQuizMapping::class)->build(['seerat-24']);
-        $mapping = app(LegacyQuizMapping::class)->keyByLegacyId($mappingRows);
+        $mapping = $this->approvedMapping(['seerat-24']);
         $batch = $this->batch();
         $row = $this->row();
 
@@ -120,5 +118,33 @@ class LegacyResultImportTest extends TestCase
         $this->assertSame(0, $attempt->answers()->count());
         $this->assertNull($attempt->point_transaction_id);
         $this->assertSame(0, PointTransaction::query()->count(), 'historical import never creates point movements');
+    }
+
+    public function test_stale_auto_match_action_is_not_importable(): void
+    {
+        $this->makeStudent(['roll' => '101']);
+        Quiz::factory()->create(['slug' => 'seerat-24']);
+        $mappingRows = app(LegacyQuizMapping::class)->build(['seerat-24']);
+        $mappingRows[0]['action'] = 'AUTO_MATCH';
+
+        $preview = app(LegacyResultImporter::class)->preview(
+            [$this->row()],
+            app(LegacyQuizMapping::class)->keyByLegacyId($mappingRows),
+        );
+
+        $this->assertSame('review', $preview['rows'][0]['status']);
+        $this->assertSame(1, $preview['summary']['review']);
+    }
+
+    /** @param array<int, string> $legacyIds */
+    private function approvedMapping(array $legacyIds): array
+    {
+        $rows = app(LegacyQuizMapping::class)->build($legacyIds);
+        foreach ($rows as &$row) {
+            $row['action'] = 'APPROVED';
+        }
+        unset($row);
+
+        return app(LegacyQuizMapping::class)->keyByLegacyId($rows);
     }
 }

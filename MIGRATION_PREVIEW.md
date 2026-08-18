@@ -8,9 +8,9 @@ credentials to Git. Generate real reports into a private operator directory.
 | Source | Tooling | Actual preview |
 |---|---|---|
 | Student CSV/XLSX | Ready | Awaiting current private export |
-| Quiz CSV/XLSX | Ready in Admin → Quiz Import | Awaiting workbook/export |
-| 42 course lessons | Ready and verified | 42/42 expected lessons present locally |
-| `quiz_submissions` CSV/XLSX | Ready | **Blocked by missing `legacy/db/` export** |
+| Quiz CSV/XLSX | Ready in Admin → Quiz Import | Partial real source inspected: `Live` skipped; Seerat-27 staged as draft in scratch |
+| 42 course lessons | Ready and verified | 42/42 expected lessons present in scratch |
+| `quiz_submissions` | Ready for derived CSV/XLSX | 856-row SQL export found; 623 candidates await students and owner-approved mapping |
 
 ## Commands
 
@@ -22,14 +22,15 @@ php artisan legacy:results:preview /private/imports/quiz_submissions.csv \
   --write-mapping=/private/reports/LEGACY_QUIZ_MAPPING.csv \
   --report=/private/reports/results-preview.md
 
-# After reviewing every REVIEW row and setting AUTO_MATCH/APPROVED/SKIP:
+# After reviewing every row and setting APPROVED/SKIP (leave unresolved rows as REVIEW):
 php artisan legacy:results:preview /private/imports/quiz_submissions.csv \
   --mapping=/private/reports/LEGACY_QUIZ_MAPPING.csv \
   --report=/private/reports/results-approved-preview.md
 ```
 
-Preview is read-only. Quiz auto-matching uses exact normalized title or slug equality only. Fuzzy or
-ambiguous matches remain `REVIEW`; names alone never match a student.
+Preview is read-only. Quiz candidates use exact normalized title or slug equality only, but even an
+exact candidate remains `REVIEW` until the operator changes it to `APPROVED` or `SKIP`. Fuzzy or
+ambiguous matches are never proposed automatically; names alone never match a student.
 
 ## Reconciliation fields
 

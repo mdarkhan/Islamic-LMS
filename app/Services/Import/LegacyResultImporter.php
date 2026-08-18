@@ -60,7 +60,7 @@ class LegacyResultImporter
                 $errors[] = 'This source record was imported previously.';
             } elseif ($action === 'SKIP') {
                 $status = 'skip';
-            } elseif (! in_array($action, ['AUTO_MATCH', 'APPROVED'], true) || $quizId === null || ! $quizzes->has($quizId)) {
+            } elseif ($action !== 'APPROVED' || $quizId === null || ! $quizzes->has($quizId)) {
                 $status = 'review';
                 $errors[] = 'Quiz mapping is not explicitly approved.';
             } elseif (! $users->has($row['roll'])) {

@@ -272,10 +272,12 @@ from any algorithmic calendar.
 anything done that has not been run. If a feature is incomplete, say so there
 rather than leaving a button that pretends to work.
 
-Phases 1–9 and the Phase 10 migration/production-readiness tooling are built. Actual production
-imports and cPanel cutover are not complete because private exports, hosting inputs and explicit
-production access have not been supplied. Keep `CODEX_TAKEOVER_AUDIT.md` and
-`MIGRATION_RECONCILIATION.md` honest; never turn tooling readiness into a deployment claim.
+Phases 1–9 and the Phase 10 migration/production-readiness tooling are built. Phase 10B inspected a
+partial real quiz export and an 856-row legacy result SQL export in a local MySQL scratch database;
+one archived quiz was staged as a draft and no historical result was imported. The current student
+export, complete archived quiz sources, reviewed mapping, hosting inputs, and explicit production
+access are still missing. Keep `CODEX_TAKEOVER_AUDIT.md` and `MIGRATION_RECONCILIATION.md` honest;
+never turn staging evidence into a deployment claim.
 
 The **secure live OFFICIAL exam** IS built (Phase 7): start/resume, per-question
 autosave, the authoritative server timer, expiry finalisation and a released-score

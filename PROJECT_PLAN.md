@@ -1,13 +1,14 @@
 # PROJECT_PLAN.md — Masud Alimi Islamic Learning & Examination Platform
 
-**Status:** Through Phase 9. Domain hardening, authentication, the design system, the student &
+**Status:** Through Phase 10B staging verification. Domain hardening, authentication, the design system, the student &
 admin management interfaces, the **quiz builder + CSV/XLSX importer**, the **secure live OFFICIAL
 exam**, the **post-exam & practice ecosystem**, and now the **public knowledge platform** — an
 upgraded homepage, a Blog/Fatwa/Q&A CMS (Markdown, sanitised) with SEO + sitemap + robots, admin
 notices with a server-time window, the **email-only Ask Ustaz** form (no persistence), a decimal-safe
 **Zakat calculator**, and a centralised **CalendarService** (Gregorian / Bangladesh-revised Bangla /
-tabular Hijri with sunset rollover + admin offset) — are built and tested (**342 passing tests**).
-The student/legacy-result data migrations and final cPanel deployment have not started (Phase 10).
+tabular Hijri with sunset rollover + admin offset) — are built and tested. Phase 10 tooling is built;
+a partial real quiz export and an 856-row legacy result export have been inspected in a MySQL scratch
+database. Production student/result imports and the cPanel cutover have not started.
 
 **Last updated:** 2026-08-18
 
@@ -321,7 +322,7 @@ Critical paths that must be green before any module is called complete:
 | 10 | Practice mode | **Done** (free, untimed, unranked, repeatable; safe-key availability rule; immediate review) |
 | 11 | Blog/Fatwa CMS, notices, settings | **Done** (Markdown CMS + categories + SEO/sitemap/robots; admin notices with server-time window; `SettingService` + general/zakat/calendar admin) |
 | 12 | Ask Ustaz (email-only), Zakat calculator, calendar service | **Done** (email-only Ask Ustaz with no persistence; decimal-safe `ZakatCalculatorService`; `CalendarService` — Gregorian/Bangla/Hijri + sunset rollover) |
-| 13 | Legacy data migration + verification | **Tooling done** (production imports blocked by private exports/access) |
+| 13 | Legacy data migration + verification | **Tooling done; partial real-data staging dry-run complete** (production imports blocked by student export, complete quiz mapping/content, hosting inputs, and authority) |
 | 14 | Accessibility pass, responsive QA, performance pass | Not started |
 
 ---
@@ -455,7 +456,7 @@ Independent cross-check: the importer's gap report reproduced the audit's number
     and a mail diagnostic that never reveals secrets.
   - **Error pages** — themed 403/404/419/429/500/503.
 
-**Tests: 342 passing, 990 assertions, on MySQL.** Frontend build clean. New coverage: calendar
+**Tests: see the latest reconciliation report for the current MySQL count.** Frontend build clean. Coverage includes calendar
 (sunset boundary, midnight non-transition, offset across year boundary, Pohela Boishakh, leap
 Choitro), Zakat (below/at/above Nisab, liabilities, gold vs silver, decimal safety, zero-rate),
 CMS (draft/archived/future hidden, Bengali slug, duplicate slug, filter/search, sanitisation, SEO,
@@ -467,9 +468,12 @@ Zakat live preview matching the server, dark mode.
 ### Not executed in production
 
 Phase 10 student/result tooling, exact quiz reconciliation, provenance, preflight and integrity
-verification are built and locally tested. Actual production imports and cPanel cutover require the
-private exports, hosting details, reviewed mapping and explicit access. Legacy `quiz_submissions`
-remains untouched and no Tafsir lessons are fabricated.
+verification are built and locally tested. Phase 10B found and inspected a partial quiz export plus
+an 856-row legacy result SQL export in an isolated MySQL scratch database. One archived quiz was
+staged as `draft`; the `Live` sheet and all result rows remained unimported. Actual production imports
+and cPanel cutover require the current student export, complete archived quiz content, explicit
+mapping decisions, hosting details, and production authority. The original source remains untouched
+and no Tafsir lessons or legacy answers are fabricated.
 
 ---
 
