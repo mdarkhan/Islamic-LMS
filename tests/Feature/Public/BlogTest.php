@@ -115,19 +115,27 @@ class BlogTest extends TestCase
 
     // ── XSS / sanitisation ────────────────────────────────────────────────────────
 
-    public function test_markdown_content_is_sanitised(): void
+    public function test_rich_text_content_is_sanitised(): void
     {
         $post = $this->makePost([
             'title' => 'Safe render',
-            'body' => "Normal text.\n\n<script>alert('xss')</script>\n\n<iframe src=\"evil\"></iframe>\n\n[click](javascript:alert(1))",
+            'body' => '<p>Normal <strong onclick="steal()">bold</strong> text.</p>'
+                .'<script>alert(\'xss\')</script>'
+                .'<iframe src="evil"></iframe>'
+                .'<a href="javascript:alert(1)">bad</a>'
+                .'<a href="https://good.test">good</a>',
         ]);
 
         $html = $this->get(route('blog.show', $post))->assertOk()->getContent();
 
-        // The article body must not contain executable markup or unsafe schemes.
+        // Executable markup, event handlers and unsafe schemes are stripped…
         $this->assertStringNotContainsString('<script>alert', $html);
         $this->assertStringNotContainsString('<iframe', $html);
         $this->assertStringNotContainsString('javascript:alert', $html);
+        $this->assertStringNotContainsString('steal()', $html);          // the injected handler is gone
+        // …while allow-listed formatting and safe links survive.
+        $this->assertStringContainsString('<strong>bold</strong>', $html);
+        $this->assertStringContainsString('href="https://good.test"', $html);
     }
 
     // ── SEO ───────────────────────────────────────────────────────────────────────

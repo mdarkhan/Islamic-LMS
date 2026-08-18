@@ -7,15 +7,17 @@ use App\Http\Requests\Admin\PostRequest;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Services\Audit\AuditLogger;
+use App\Support\HtmlSanitizer;
 use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Admin CMS for articles / fatwa / Q&A. Content is Markdown (rendered safely on
- * display — see App\Support\Markdown). Bengali titles get real Unicode slugs via the
- * Phase 6 Slug service, never generic post-12 slugs.
+ * Admin CMS for articles / fatwa / Q&A. The body is rich text (HTML) from the editor,
+ * reduced to a safe allow-list on save and again on display — see App\Support\HtmlSanitizer.
+ * Bengali titles get real Unicode slugs via the Phase 6 Slug service, auto-derived from
+ * the title unless the admin sets one explicitly.
  */
 class PostController extends Controller
 {
@@ -54,6 +56,7 @@ class PostController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'));
+        $data['body'] = HtmlSanitizer::clean($data['body']);
         $data['author_id'] = $request->user()->getKey();
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'));
 
@@ -75,6 +78,7 @@ class PostController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'), $post->getKey());
+        $data['body'] = HtmlSanitizer::clean($data['body']);
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'), $post);
 
         $post->update($data);

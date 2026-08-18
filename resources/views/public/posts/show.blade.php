@@ -39,7 +39,7 @@
                 </div>
             </header>
 
-            {{-- Rendered Markdown (raw HTML already stripped server-side). --}}
+            {{-- Rich-text body, reduced to a safe allow-list server-side (HtmlSanitizer). --}}
             <div class="text-ink leading-loose space-y-4 text-[1.05rem]
                         [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-ink [&_h2]:mt-8
                         [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-ink [&_h3]:mt-6

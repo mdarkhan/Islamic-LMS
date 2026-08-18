@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Support\Markdown;
+use App\Support\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'slug', 'post_category_id', 'title', 'excerpt', 'body', 'featured_image',
@@ -49,17 +50,28 @@ class Post extends Model
             && $this->published_at->lessThanOrEqualTo(now());
     }
 
-    /** Safe rendered HTML of the Markdown body (raw HTML stripped). */
+    /**
+     * The article body as safe HTML. The rich-text editor stores HTML; this passes it
+     * through the allow-list sanitiser at render time, so the output can never carry a
+     * script, event handler, style or unsafe link — no matter how the body reached the
+     * database (editor, seeder, import).
+     */
     public function renderedBody(): string
     {
-        return Markdown::render($this->body);
+        return HtmlSanitizer::clean($this->body);
     }
 
     public function excerptText(int $limit = 200): string
     {
-        return $this->excerpt !== null && trim($this->excerpt) !== ''
-            ? $this->excerpt
-            : Markdown::toText($this->body, $limit);
+        if ($this->excerpt !== null && trim($this->excerpt) !== '') {
+            return $this->excerpt;
+        }
+
+        // Derive a plain-text summary from the sanitised body: drop tags, collapse
+        // whitespace, decode entities, then trim to length.
+        $text = html_entity_decode(strip_tags($this->renderedBody()), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return Str::limit(trim(preg_replace('/\s+/u', ' ', $text) ?? ''), $limit);
     }
 
     public function metaTitle(): string

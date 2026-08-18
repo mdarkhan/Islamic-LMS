@@ -10,8 +10,33 @@ return [
     'category' => 'Category',
     'excerpt' => 'Excerpt',
     'body' => 'Content',
-    'body_hint' => 'Markdown: **bold**, *italic*, # heading, - list, > quote, [link](url).',
+    'body_hint' => 'Use the toolbar for bold, italic, headings, lists, quotes and links.',
+    'body_placeholder' => 'Write the article…',
     'featured_image' => 'Featured image URL',
+
+    // Rich-text toolbar
+    'fmt_bold' => 'Bold',
+    'fmt_italic' => 'Italic',
+    'fmt_underline' => 'Underline',
+    'fmt_h2' => 'Heading',
+    'fmt_h3' => 'Subheading',
+    'fmt_bullet' => 'Bulleted list',
+    'fmt_number' => 'Numbered list',
+    'fmt_quote' => 'Quote',
+    'fmt_link' => 'Link',
+    'fmt_clear' => 'Clear formatting',
+    'link_prompt' => 'Enter the link URL (https://…). Leave empty to remove the link.',
+
+    // Slug / permalink (WordPress-style: auto-filled from the title, editable)
+    'permalink' => 'Permalink',
+    'slug_edit' => 'Edit',
+    'slug_hint' => 'Auto-filled from the title; edit it if you want a different URL.',
+
+    // Publish panel
+    'publish_box' => 'Publish',
+    'save_draft' => 'Save draft',
+    'publish_now' => 'Publish',
+    'update_article' => 'Update',
     'seo_title' => 'SEO title',
     'seo_description' => 'SEO description',
     'status' => 'Status',
