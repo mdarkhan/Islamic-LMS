@@ -321,7 +321,7 @@ Critical paths that must be green before any module is called complete:
 | 10 | Practice mode | **Done** (free, untimed, unranked, repeatable; safe-key availability rule; immediate review) |
 | 11 | Blog/Fatwa CMS, notices, settings | **Done** (Markdown CMS + categories + SEO/sitemap/robots; admin notices with server-time window; `SettingService` + general/zakat/calendar admin) |
 | 12 | Ask Ustaz (email-only), Zakat calculator, calendar service | **Done** (email-only Ask Ustaz with no persistence; decimal-safe `ZakatCalculatorService`; `CalendarService` — Gregorian/Bangla/Hijri + sunset rollover) |
-| 13 | Legacy data migration + verification | Not started |
+| 13 | Legacy data migration + verification | **Tooling done** (production imports blocked by private exports/access) |
 | 14 | Accessibility pass, responsive QA, performance pass | Not started |
 
 ---
@@ -464,23 +464,24 @@ DB/audit record, no submission table), notices (window/audience/priority/permiss
 access boundaries. Manual browser QA: homepage desktop + 375px, live date widget (sunset rollover),
 Zakat live preview matching the server, dark mode.
 
-### Not built
+### Not executed in production
 
-The student + legacy-result data migrations (Phase 10) and final cPanel deployment. Legacy
-`quiz_submissions` is deliberately left untouched; the schema already supports legacy rows
-(`is_legacy_import`, `answer_details_available`). No Tafsir lessons are fabricated.
+Phase 10 student/result tooling, exact quiz reconciliation, provenance, preflight and integrity
+verification are built and locally tested. Actual production imports and cPanel cutover require the
+private exports, hosting details, reviewed mapping and explicit access. Legacy `quiz_submissions`
+remains untouched and no Tafsir lessons are fabricated.
 
 ---
 
 ## 12. Decisions taken and still open
 
-**D1 — Local PHP runtime. Resolved.** Side-by-side PHP 8.3.33 installed at
-`%LOCALAPPDATA%\php83` with Composer 2.10.2; both downloads checksum/signature-verified. XAMPP and
+**D1 — Local PHP runtime. Resolved.** Side-by-side PHP 8.3 is installed at
+`C:\Users\mdark\tools\php83`; XAMPP and
 its PHP 8.0 are untouched and still provide MariaDB. Reversible by deleting the folder.
 
-**D3 — Legacy results in the cumulative leaderboard. Resolved:** included, flagged as legacy with
-no answer sheet available. Implemented via `quiz_attempts.counts_toward_cumulative` +
-`is_legacy_import`, so the opposite choice remains a one-line change.
+**D3 — Legacy results in the cumulative leaderboard. Resolved:** reliable mapped attempts remain
+flagged as legacy with no answer sheet. Imported quizzes default to
+`counts_toward_overall = false`; an admin must explicitly include each reviewed historical quiz.
 
 **D2 — Production database export. Still needed.** Resolving the `quiz_id` ambiguity (§4.1) and
 sizing the legacy result migration needs a dump of `quiz_submissions` (structure + data). No

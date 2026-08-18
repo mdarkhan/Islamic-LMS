@@ -260,8 +260,8 @@ storage/, vendor/, node_modules/, public/build/
 `.gitignore` covers these. `legacy/quiz-api.reference.php` — a redacted copy safe to commit — is
 provided so the legacy logic stays reviewable in version control without the secrets.
 
-This repository is **not currently a git repository**. Run `git init` only after confirming
-`.gitignore` is in place, so the credential-bearing files are never captured in the first commit.
+This is an active Git repository. Before every commit, verify the credential-bearing ignored files,
+private exports and generated credentials remain untracked with `git status --ignored` as needed.
 
 ---
 

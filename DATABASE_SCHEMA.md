@@ -38,6 +38,8 @@ Laravel in UTC; presentation converts to Asia/Dhaka)
 | force_password_change | TINYINT(1) | default 0 |
 | points_balance | INT | default 0. Cached mirror of the ledger — see §2 invariant |
 | is_legacy_import | TINYINT(1) | default 0 |
+| legacy_import_batch_id | BIGINT UNSIGNED NULL FK→legacy_import_batches RESTRICT | Import provenance |
+| legacy_source_key | CHAR(64) NULL UNIQUE | Canonical student fingerprint |
 | last_login_at | TIMESTAMP NULL | |
 | remember_token | VARCHAR(100) NULL | |
 | created_at / updated_at | TIMESTAMP NULL | |
@@ -197,6 +199,8 @@ imported as NULL. A resource with no URL renders as plain text, not a dead link.
 | max_official_attempts | TINYINT UNSIGNED | default 1 |
 | total_marks | INT UNSIGNED | default 0. Cached sum of active question marks |
 | created_by | BIGINT UNSIGNED NULL FK→users RESTRICT | |
+| legacy_import_batch_id | BIGINT UNSIGNED NULL FK→legacy_import_batches RESTRICT | Source workbook batch |
+| legacy_source_key | CHAR(64) NULL UNIQUE | Workbook hash + sheet fingerprint |
 | published_at | TIMESTAMP NULL | |
 | created_at / updated_at | | |
 
@@ -263,6 +267,9 @@ serialised into a response while an official attempt is open.**
 | counts_toward_cumulative | TINYINT(1) | default 1. Practice → 0 |
 | is_legacy_import | TINYINT(1) | default 0 |
 | answer_details_available | TINYINT(1) | default 1. Legacy rows → 0 |
+| legacy_import_batch_id | BIGINT UNSIGNED NULL FK→legacy_import_batches RESTRICT | Source batch |
+| legacy_source_key | CHAR(64) NULL UNIQUE | Stable normalized row fingerprint |
+| legacy_quiz_id | VARCHAR(200) NULL | Original ambiguous source value, preserved |
 | point_transaction_id | BIGINT UNSIGNED NULL FK→point_transactions RESTRICT | The debit |
 | created_at / updated_at | | |
 
@@ -445,7 +452,25 @@ writer applies a redaction allow-list; this is asserted by a test.
 
 ---
 
-## 8. What is deliberately absent
+## 8. Legacy import provenance
+
+### `legacy_import_batches`
+
+```text
+id · type VARCHAR(40) · source_name VARCHAR(255) · source_sha256 CHAR(64)
+status ENUM('running','completed','failed')
+source_rows · valid_rows · imported_rows · skipped_rows · failed_rows
+summary JSON NULL · completed_at TIMESTAMP NULL · timestamps
+UNIQUE (type, source_sha256)
+```
+
+Only the basename and hash are stored, never source contents or credentials. User/quiz/attempt
+fingerprints are nullable for native records and unique when present. Re-running the same source
+therefore reports existing rows instead of duplicating them.
+
+---
+
+## 9. What is deliberately absent
 
 - **No table for Ask Ustaz submissions.** Questions are emailed and never persisted (brief §29).
   Do not add `ustaz_questions`, `inquiries` or `contact_messages`.
@@ -454,7 +479,7 @@ writer applies a redaction allow-list; this is asserted by a test.
 
 ---
 
-## 9. Legacy table
+## 10. Legacy table
 
 `quiz_submissions` (the legacy table) is **left in place, untouched and not dropped** by any
 migration. Migration reads from it; a rollback of the new schema leaves it intact. See
@@ -462,7 +487,7 @@ migration. Migration reads from it; a rollback of the new schema leaves it intac
 
 ---
 
-## 10. Index rationale summary
+## 11. Index rationale summary
 
 | Query | Index used |
 |---|---|

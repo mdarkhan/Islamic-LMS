@@ -44,15 +44,15 @@ parse → normalise (NFC) → validate → PREVIEW (no writes) → confirm → t
 | Roll No. | `roll` | NFC-normalised, trimmed, Bengali numerals → Latin |
 | Name | `name` | Trimmed, preserved as authored |
 | Father's/Husband's Name | `guardian_name` | Trimmed; empty → NULL |
-| Password | `password` | **`Hash::make()` immediately. The plaintext is never written, never logged, never kept in a variable beyond the hashing call.** |
+| Password | discarded | **Never reused.** A fresh random temporary password is generated and only its hash becomes `users.password`; the one-time plaintext export stays in private storage. |
 
 **Roll normalisation.** The legacy login compared `parseBanglaNumber(input)` against
 `parseBanglaNumber(stored)`, so `২৫` and `25` were the same student. The importer therefore stores
 the Latin-digit form as canonical, and login applies the same normalisation to input. Without this,
 students who have always typed Bengali digits would be locked out.
 
-**Duplicates.** Roll is `UNIQUE`. The preview screen lists every duplicate roll with its row numbers
-and blocks the import until resolved — it never silently keeps "the last one wins".
+**Duplicates.** Roll is `UNIQUE`. Preview lists every duplicate and existing-roll conflict with its
+row number. Import skips those rows and never silently keeps "the last one wins" or overwrites a user.
 
 **Post-import:** every imported user gets `force_password_change = 1` and `is_legacy_import = 1`.
 The legacy passwords were publicly readable (`SECURITY.md` L2), so all of them must be treated as
@@ -113,12 +113,11 @@ Rules enforced by the importer, each reported against **the exact row number**:
 **Nothing is silently corrected.** A quiz with any error cannot be committed; the preview lists
 every failing row (brief §12).
 
-### 2.3 Config-row heuristic
+### 2.3 Config-row handling
 
-Reproduces the legacy rule exactly: if the second data row has a value in any of O, P, Q, R or U it
-is the config row and questions start there; otherwise the first row is config and questions start
-at row 1. The importer *shows* which row it treated as config in the preview, because getting this
-wrong silently shifts every question by one.
+The parser finds the first data row carrying O/P/Q/R/S/T/U configuration values. That same row may
+also be the first question, so it is never skipped from question parsing. The detected row is shown
+in preview.
 
 ### 2.4 Tab naming
 
@@ -133,12 +132,10 @@ Sheet dates and times are naive local values. They are interpreted as **Asia/Dha
 to UTC on write. Getting this wrong shifts every exam by 6 hours, so the preview displays the
 resulting `starts_at`/`ends_at` back in Asia/Dhaka for the admin to confirm.
 
-### 2.6 Fallback detection
+### 2.6 No GViz fallback
 
-Google's gviz endpoint silently returns the **first** sheet when the requested tab does not exist.
-The legacy code detected this by comparing a signature of the first question against the `Live`
-sheet. The importer keeps this guard and refuses the import with `E_SHEET_FALLBACK` rather than
-importing the Live quiz under an archived quiz's name.
+The new importer reads the uploaded CSV/XLSX directly and enumerates real worksheet names. It never
+calls Google's GViz endpoint, so GViz's wrong-sheet fallback cannot occur.
 
 ---
 
@@ -241,10 +238,10 @@ SELECT quiz_id, COUNT(*) AS rows_, MIN(created_at) AS first_seen, MAX(created_at
 FROM quiz_submissions GROUP BY quiz_id ORDER BY first_seen;
 ```
 
-The date window of each distinct `quiz_id` is matched against the `starts_at`/`ends_at` of the
-imported quizzes to produce an explicit `legacy_quiz_map` (legacy value → quiz slug), reviewed by a
-human in the preview screen before anything is written. Rows whose `quiz_id` cannot be mapped are
-**not guessed** — they are listed in the report and skipped.
+`legacy:results:preview` auto-matches only exact normalized quiz title or slug equality and writes
+`LEGACY_QUIZ_MAPPING.csv`. Every other value remains `REVIEW`; an operator chooses a target and marks
+it `APPROVED`, or marks it `SKIP`. Dates may inform that human decision but are never used as a fuzzy
+automatic match. Rows whose mapping is not approved block import.
 
 If several archived exams were run under the same generic Exam Name (`সীরাত`) with overlapping
 dates, those rows may be genuinely unattributable. That possibility is why this step is manual.
@@ -257,15 +254,32 @@ legacy practice flow submitted with `userRoll = ""`.
 
 ### 4.6 Submission serial
 
-`submission_seq` is recomputed as `ROW_NUMBER() OVER (PARTITION BY quiz_id ORDER BY submitted_at)`,
-reproducing the legacy per-quiz chronological serial.
+The legacy source has no trustworthy submission serial, so imported attempts leave `submission_seq`
+NULL. Ranking uses score/time/timestamps and never fabricates this informational value.
+
+### 4.7 Commands
+
+```bash
+php artisan legacy:students:preview /private/students.xlsx --report=/private/students-preview.md
+php artisan legacy:students:import /private/students.xlsx --confirm --report=/private/students-final.md
+
+php artisan legacy:results:preview /private/quiz_submissions.csv \
+  --write-mapping=/private/LEGACY_QUIZ_MAPPING.csv
+php artisan legacy:results:preview /private/quiz_submissions.csv \
+  --mapping=/private/LEGACY_QUIZ_MAPPING.csv
+php artisan legacy:results:import /private/quiz_submissions.csv \
+  --mapping=/private/LEGACY_QUIZ_MAPPING.csv --confirm --report=/private/results-final.md
+```
+
+Without `--confirm`, import commands are dry runs. Reports and credential exports belong outside the
+web root. `legacy_import_batches` records the file hash, counts, completion time, and record links.
 
 ---
 
 ## 5. Verification
 
-Migration is not complete until all of these pass. `php artisan migrate:verify-legacy` runs them
-and prints a report.
+Migration is not complete until all of these pass. Use `php artisan app:verify-integrity` and
+`php artisan legacy:verify`, plus the generated preview/reconciliation reports.
 
 | Check | Expectation |
 |---|---|
@@ -274,21 +288,21 @@ and prints a report.
 | Attempt count | `quiz_attempts` where `is_legacy_import` = `quiz_submissions` − skipped, and skipped is itemised |
 | Score fidelity | every migrated `final_score` equals its source `score` |
 | Orphans | zero attempts with unresolved `quiz_id` or `user_id` |
-| Percentage sanity | zero attempts with `final_score > total_marks_snapshot` |
+| Source total fidelity | `total_questions` is preserved exactly; custom-mark legacy rows are reported, not silently rewritten |
 | Answer flags | every legacy attempt has `answer_details_available = 0` and zero `quiz_answers` |
 | Point ledger | `users.points_balance = SUM(point_transactions.amount)` for every user |
 | Encoding | round-trip a Bengali + Arabic + emoji string through every text column |
 | Legacy intact | `quiz_submissions` still present with its original row count |
 
-Row counts before and after are written to `legacy/db/migration-report-{timestamp}.json`.
+Write command reports to a private operator path with `--report`; never put them in `public_html`.
 
 ---
 
 ## 6. Rollback
 
-Each importer runs in a transaction and is idempotent on re-run (matching on `legacy_id` /
-`is_legacy_import` + source id). Rollback of any single import is a scoped delete of rows carrying
-that import's marker; it never touches the legacy sources.
+Each importer is transactional and idempotent through canonical unique keys, batch hashes and
+record fingerprints. For a production data rollback, restore the verified pre-cutover dump as
+documented in `ROLLBACK.md`; do not improvise scoped deletes.
 
 `php artisan migrate:rollback` on the new schema **does not drop `quiz_submissions`** — no
 migration in this project declares it, so it cannot be dropped by accident.
@@ -297,11 +311,10 @@ migration in this project declares it, so it cannot be dropped by accident.
 
 ## 7. After cutover
 
-1. Keep `quiz-api.php` reachable but **read-only** for a grace period — remove the `submit` branch
-   first, since that is the forgeable write path.
+1. Disable `quiz-api.php` as a reachable write endpoint when traffic switches. Keep only a private
+   backup outside the web root for the rollback window.
 2. Rotate the database credentials (`SECURITY.md` L1) **before** the new application goes live, so
    the new `.env` never contains the exposed pair.
-3. Restrict the two Google Sheets from "anyone with the link" to private. They remain useful as an
-   authoring surface for the quiz importer, which reads them with admin credentials — they are no
-   longer a runtime dependency (brief §42).
-4. Retire `quiz-api.php` entirely once §5 verification has held for a full exam cycle.
+3. Restrict the two Google Sheets from "anyone with the link" to private. They may remain manual
+   authoring/export sources; admins upload CSV/XLSX, and runtime code never fetches a Sheet.
+4. Remove the legacy API from public hosting entirely after the agreed rollback window.

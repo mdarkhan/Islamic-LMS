@@ -93,11 +93,11 @@ Existing migrated slugs are never regenerated (slug is set on create only).
 ## Local toolchain
 
 XAMPP's PHP is 8.0 and cannot run this app. A side-by-side PHP 8.3 lives at
-`C:\Users\mdark\AppData\Local\php83`. XAMPP itself is untouched and still provides
+`C:\Users\mdark\tools\php83`. XAMPP itself is untouched and still provides
 MariaDB.
 
 ```bash
-"$LOCALAPPDATA/php83/php.exe" artisan test
+"C:/Users/mdark/tools/php83/php.exe" artisan test
 ```
 
 | Task | Command |
@@ -105,7 +105,7 @@ MariaDB.
 | Run tests | `php artisan test` |
 | One suite | `php artisan test --testsuite=Feature` |
 | Rebuild db | `php artisan migrate:fresh --seed` |
-| Composer | `php "$LOCALAPPDATA/php83/composer.phar" ...` |
+| Composer | `php "C:/Users/mdark/tools/php83/composer.phar" ...` |
 | Start MariaDB | `/c/xampp/mysql/bin/mysqld.exe --standalone &` |
 
 Databases: `masudalimi` (dev), `masudalimi_test` (tests, configured in
@@ -272,13 +272,10 @@ from any algorithmic calendar.
 anything done that has not been run. If a feature is incomplete, say so there
 rather than leaving a button that pretends to work.
 
-Unbuilt sections show a disabled "পরবর্তী ধাপ" (later phase) nav item — do not wire
-a fake page behind them. Not yet built: **detailed answer-sheet review** (correct/wrong
-per question), Practice Mode taking UI, leaderboards, regrade UI, manual mark adjustment
-UI, blog, Ask Ustaz, Zakat calculator, Hijri calendar, and the student/legacy-result
-migrations. The Quiz Builder, quiz import (CSV/XLSX) and the student `/exams` listing
-foundation ARE built (Phase 6). `/exams` is informational only — it never starts or
-debits an attempt; `QuizAttemptService` remains the only authority for that.
+Phases 1–9 and the Phase 10 migration/production-readiness tooling are built. Actual production
+imports and cPanel cutover are not complete because private exports, hosting inputs and explicit
+production access have not been supplied. Keep `CODEX_TAKEOVER_AUDIT.md` and
+`MIGRATION_RECONCILIATION.md` honest; never turn tooling readiness into a deployment claim.
 
 The **secure live OFFICIAL exam** IS built (Phase 7): start/resume, per-question
 autosave, the authoritative server timer, expiry finalisation and a released-score

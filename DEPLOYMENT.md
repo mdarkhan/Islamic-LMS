@@ -11,12 +11,13 @@ uploaded.
 |---|---|
 | **PHP** | **8.3 or newer** (the framework requires it — verify in cPanel → MultiPHP Manager before starting) |
 | MySQL / MariaDB | MySQL 8.0+ or MariaDB 10.4+ |
-| Extensions | `openssl`, `pdo_mysql`, `mbstring`, `fileinfo`, `curl`, `zip`, `intl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath` |
+| Required extensions | `openssl`, `pdo_mysql`, `fileinfo`, `zip`, `tokenizer`, `dom`/`xmlreader`, `json`, `bcmath` |
+| Recommended native extensions | `mbstring`, `intl`, `ctype` (locked dependencies provide compatible polyfills) |
 | Composer | Available in cPanel Terminal, or upload `vendor/` built locally |
 | HTTPS | Required |
 
-`intl` is **not optional** — Bengali NFC normalisation (`Normalizer`, used by slugs and text
-comparison) depends on it. `bcmath` is **not optional** — the Zakat calculator does all money
+`Normalizer` availability is mandatory and checked directly; native `intl` is recommended because
+the lock file also provides a compatible polyfill. `bcmath` is **not optional** — the Zakat calculator does all money
 arithmetic with it. The Hijri calendar and sunset use pure PHP + the core `date` extension
 (`date_sun_info`); no prayer-time API is required.
 
@@ -135,6 +136,7 @@ cPanel → Email Accounts, create the sender, then in `.env`:
 
 ```
 MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
 MAIL_HOST=mail.<yourdomain>
 MAIL_PORT=587
 MAIL_ENCRYPTION=tls
@@ -148,6 +150,8 @@ Send a test before launch — Ask Ustaz questions are **not stored anywhere**, s
 silent mail failure loses them permanently. The admin **Settings → Mail** panel reports
 configured/incomplete for the mailer, the from-address and `USTAZ_EMAIL` (never the
 secret values), which is the quickest pre-launch check.
+
+Send the canned end-to-end diagnostic with `php artisan app:mail-test --to=owner@example.com`.
 
 ---
 
@@ -195,9 +199,8 @@ php artisan migrate:rollback --step=1     # only if the deploy added migrations
 php artisan config:cache && php artisan up
 ```
 
-For a data-affecting problem, restore the dump taken in §9. Migration imports are
-idempotent and scoped by marker columns, so a single import can be reverted
-without touching the legacy sources (`MIGRATION.md` §6).
+For a data-affecting problem, restore the verified dump taken in §9. Imports are idempotent and
+batch-traceable, but production rollback follows [ROLLBACK.md](ROLLBACK.md); do not improvise deletes.
 
 ---
 
