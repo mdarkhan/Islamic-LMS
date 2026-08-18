@@ -30,7 +30,7 @@ class StudentStoreRequest extends FormRequest
         return [
             'roll' => ['required', 'string', 'max:50', Rule::unique('users', 'roll')],
             'name' => ['required', 'string', 'max:150'],
-            'guardian_name' => ['nullable', 'string', 'max:150'],
+            'guardian_name' => ['required', 'string', 'max:150'],
             'email' => ['nullable', 'email', 'max:190', Rule::unique('users', 'email')],
             'phone' => ['nullable', 'string', 'max:30'],
             'password_mode' => ['required', Rule::in(['manual', 'generate'])],
@@ -44,6 +44,7 @@ class StudentStoreRequest extends FormRequest
             'roll.unique' => 'এই রোল নম্বরটি ইতিমধ্যে ব্যবহৃত হয়েছে।',
             'roll.required' => 'রোল নম্বর আবশ্যক।',
             'name.required' => 'নাম আবশ্যক।',
+            'guardian_name.required' => 'পিতা/স্বামীর নাম আবশ্যক।',
         ];
     }
 }

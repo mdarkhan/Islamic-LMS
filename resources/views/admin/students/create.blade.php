@@ -11,11 +11,11 @@
                 <x-ui.field :label="__('students.name')" name="name" required>
                     <x-ui.input name="name" :value="old('name')" />
                 </x-ui.field>
-                <x-ui.field :label="__('students.guardian_name')" name="guardian_name">
-                    <x-ui.input name="guardian_name" :value="old('guardian_name')" />
+                <x-ui.field :label="__('students.guardian_name')" name="guardian_name" required>
+                    <x-ui.input name="guardian_name" :value="old('guardian_name')" required />
                 </x-ui.field>
-                <x-ui.field :label="__('students.phone')" name="phone">
-                    <x-ui.input name="phone" :value="old('phone')" />
+                <x-ui.field :label="__('students.phone')" name="phone" :hint="__('ui.optional')">
+                    <x-ui.input name="phone" :value="old('phone')" inputmode="tel" />
                 </x-ui.field>
                 <x-ui.field :label="__('students.email_optional')" name="email" class="sm:col-span-2">
                     <x-ui.input name="email" type="email" :value="old('email')" />

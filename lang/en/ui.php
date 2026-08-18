@@ -14,6 +14,7 @@ return [
     'apply' => 'Apply',
     'confirm' => 'Confirm',
     'new' => 'New',
+    'optional' => 'Optional',
     'all' => 'All',
     'actions' => 'Actions',
     'close' => 'Close',

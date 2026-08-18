@@ -39,6 +39,7 @@ class StudentManagementTest extends TestCase
         $response = $this->actingAs($admin)->post(route('admin.students.store'), [
             'roll' => '201',
             'name' => 'শিক্ষার্থী',
+            'guardian_name' => 'অভিভাবক',
             'password_mode' => 'generate',
         ]);
 
@@ -46,6 +47,19 @@ class StudentManagementTest extends TestCase
         $this->assertTrue($student->force_password_change);
         $response->assertSessionHas('temp_password');
         $this->assertIsString(session('temp_password'));
+    }
+
+    public function test_guardian_name_is_required_on_create(): void
+    {
+        $admin = $this->makeAdmin();
+
+        $this->actingAs($admin)->from(route('admin.students.create'))->post(route('admin.students.store'), [
+            'roll' => '202',
+            'name' => 'শিক্ষার্থী',
+            'password_mode' => 'generate',
+        ])->assertSessionHasErrors('guardian_name');
+
+        $this->assertNull(User::query()->where('roll', '202')->first());
     }
 
     public function test_duplicate_roll_is_rejected(): void
