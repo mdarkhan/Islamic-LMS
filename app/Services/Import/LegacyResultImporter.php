@@ -11,6 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class LegacyResultImporter
 {
+    /**
+     * Mapping actions that mean "explicitly do not import this quiz's rows" — an owner
+     * decision, not an unresolved state. Any other non-APPROVED action stays `review`
+     * and continues to BLOCK the import, so an un-triaged mapping can never slip through.
+     * This lets a reviewed PARTIAL migration proceed (import APPROVED, skip these) without
+     * forcing edits to source data.
+     */
+    private const SKIP_ACTIONS = ['SKIP', 'SKIP_FOR_NOW', 'OWNER_INPUT_REQUIRED'];
+
     public function __construct(private readonly LegacyQuizMapping $quizMapping) {}
 
     /**
@@ -58,7 +67,7 @@ class LegacyResultImporter
             } elseif ($existingKeys->has($row['source_key'])) {
                 $status = 'exists';
                 $errors[] = 'This source record was imported previously.';
-            } elseif ($action === 'SKIP') {
+            } elseif (in_array($action, self::SKIP_ACTIONS, true)) {
                 $status = 'skip';
             } elseif ($action !== 'APPROVED' || $quizId === null || ! $quizzes->has($quizId)) {
                 $status = 'review';

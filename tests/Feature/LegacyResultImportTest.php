@@ -136,6 +136,54 @@ class LegacyResultImportTest extends TestCase
         $this->assertSame(1, $preview['summary']['review']);
     }
 
+    public function test_owner_skip_actions_are_explicit_skips_not_blocking_review(): void
+    {
+        $this->makeStudent(['roll' => '101']);
+        Quiz::factory()->create(['slug' => 'seerat-24']);
+
+        // Every owner "do not import" action must classify as skip, never as blocking review.
+        foreach (['SKIP', 'SKIP_FOR_NOW', 'OWNER_INPUT_REQUIRED'] as $action) {
+            $rows = app(LegacyQuizMapping::class)->build(['seerat-24']);
+            $rows[0]['action'] = $action;
+
+            $preview = app(LegacyResultImporter::class)->preview(
+                [$this->row()],
+                app(LegacyQuizMapping::class)->keyByLegacyId($rows),
+            );
+
+            $this->assertSame('skip', $preview['rows'][0]['status'], "{$action} should be an explicit skip");
+            $this->assertSame(0, $preview['summary']['review'], "{$action} must not block as review");
+            $this->assertSame(1, $preview['summary']['skip']);
+        }
+    }
+
+    public function test_reviewed_partial_import_imports_approved_and_skips_owner_skips(): void
+    {
+        $student = $this->makeStudent(['roll' => '101']);
+        $approvedQuiz = Quiz::factory()->create(['slug' => 'seerat-24', 'title' => 'সীরাত ২৪']);
+
+        // seerat-24 APPROVED (imports); seerat-01 SKIP_FOR_NOW (no source, explicitly deferred).
+        $rows = app(LegacyQuizMapping::class)->build(['seerat-24', 'seerat-01']);
+        foreach ($rows as &$r) {
+            $r['action'] = $r['legacy_quiz_id'] === 'seerat-24' ? 'APPROVED' : 'SKIP_FOR_NOW';
+        }
+        unset($r);
+        $mapping = app(LegacyQuizMapping::class)->keyByLegacyId($rows);
+
+        $input = [
+            $this->row(['legacy_quiz_id' => 'seerat-24']),
+            $this->row(['row' => 3, 'legacy_quiz_id' => 'seerat-01', 'score' => 5]),
+        ];
+
+        $result = app(LegacyResultImporter::class)->import($input, $mapping, $this->batch());
+
+        // A partial migration proceeds: the approved row imports, the deferred one is skipped,
+        // and nothing blocks. No source data was edited to achieve this.
+        $this->assertSame(1, $result['imported']);
+        $this->assertSame(1, QuizAttempt::query()->count());
+        $this->assertSame($approvedQuiz->id, QuizAttempt::query()->firstOrFail()->quiz_id);
+    }
+
     /** @param array<int, string> $legacyIds */
     private function approvedMapping(array $legacyIds): array
     {
