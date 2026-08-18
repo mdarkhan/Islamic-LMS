@@ -115,4 +115,16 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ask Ustaz recipient
+    |--------------------------------------------------------------------------
+    |
+    | Where the public "Ask Ustaz" form emails questions. Never hard-coded; set via
+    | USTAZ_EMAIL. Questions are EMAILED ONLY and never persisted (SECURITY.md §2.8).
+    |
+    */
+
+    'ustaz_email' => env('USTAZ_EMAIL'),
+
 ];
