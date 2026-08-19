@@ -155,7 +155,10 @@
                         @click="navigator.clipboard && navigator.clipboard.writeText('{{ $canonical }}').then(() => { $el.dataset.copied = '1'; setTimeout(() => $el.dataset.copied = '', 1500); })"
                         class="grid place-items-center w-9 h-9 rounded-full border border-line text-muted hover:text-brand transition-colors"
                         title="{{ __('posts.copy_link') }}" aria-label="{{ __('posts.copy_link') }}">
-                    <x-ui.icon name="import" class="w-4 h-4" />
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="9" y="9" width="11" height="11" rx="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
                 </button>
 
                 <button type="button" onclick="window.print()"
