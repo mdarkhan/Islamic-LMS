@@ -151,6 +151,27 @@ class CourseLessonTest extends TestCase
         $this->assertNull($lesson->resources()->where('label', 'লিংকহীন নোট')->value('url'), 'placeholder # → NULL');
     }
 
+    public function test_media_link_is_optional_for_a_google_drive_lesson(): void
+    {
+        $admin = $this->makeAdmin();
+        $course = Course::factory()->create();
+
+        $this->actingAs($admin)->post(route('admin.lessons.store'), [
+            'course_id' => $course->id,
+            'title' => 'লিংক ছাড়া ক্লাস',
+            'media_provider' => 'google_drive',
+            'media_url' => '',
+            'is_published' => '1',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('lessons', [
+            'course_id' => $course->id,
+            'title' => 'লিংক ছাড়া ক্লাস',
+            'media_provider' => 'google_drive',
+            'media_url' => null,
+        ]);
+    }
+
     public function test_the_date_label_is_derived_from_the_calendar_date(): void
     {
         $admin = $this->makeAdmin();

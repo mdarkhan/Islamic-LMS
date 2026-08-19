@@ -72,7 +72,6 @@
                             </div>
 
                             <p class="text-lg font-semibold text-ink leading-relaxed" x-text="q().body"></p>
-                            <p class="text-xs text-muted mt-1" x-text="hint()"></p>
 
                             <div class="mt-4 space-y-2.5">
                                 <template x-for="(opt, i) in q().options" :key="opt.id">
@@ -333,11 +332,6 @@
                 answeredCount() { return this.questions.filter((qq) => (this.answers[qq.id] || []).length).length; },
                 unansweredCount() { return this.questions.length - this.answeredCount(); },
 
-                hint() {
-                    return this.q().type === 'single'
-                        ? @js(__('exams.live_single_hint'))
-                        : @js(__('exams.live_multiple_hint'));
-                },
                 questionLabel() {
                     return @js(__('exams.live_question_of'))
                         .replace(':current', this.d(this.current + 1))

@@ -22,6 +22,25 @@ class CourseAccessTest extends TestCase
             ->assertSee('সীরাত-০১');
     }
 
+    public function test_google_drive_audio_uses_the_reliable_drive_preview_player(): void
+    {
+        // A native <audio> cannot stream Drive files, so the lesson embeds Drive's own
+        // player (its preview URL) which streams reliably.
+        $course = Course::factory()->create(['is_published' => true]);
+        $lesson = Lesson::factory()->for($course)->create([
+            'is_published' => true,
+            'media_provider' => 'google_drive',
+            'media_url' => 'https://drive.google.com/file/d/ABC123/view',
+            'media_file_id' => 'ABC123',
+        ]);
+
+        $this->actingAs($this->makeStudent())
+            ->get(route('student.courses.show', $lesson->slug))
+            ->assertOk()
+            ->assertSee('<iframe', false)
+            ->assertSee('https://drive.google.com/file/d/ABC123/preview', false);
+    }
+
     public function test_an_unpublished_lesson_is_hidden(): void
     {
         $course = Course::factory()->create(['is_published' => true]);

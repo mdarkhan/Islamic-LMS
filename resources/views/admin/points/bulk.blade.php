@@ -33,13 +33,12 @@
             {{-- Selection --}}
             <x-ui.card :padded="false" class="lg:col-span-2">
                 <div class="p-4 flex items-center justify-between border-b border-line">
-                    <label class="flex items-center gap-2 text-sm font-semibold text-ink cursor-pointer">
+                    <label class="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm font-semibold text-ink cursor-pointer">
                         <input type="checkbox" x-model="all" @change="$root.querySelectorAll('input[name=\'student_ids[]\']').forEach(c => c.checked = all)" class="rounded border-line text-brand focus:ring-brand">
                         {{ __('points.select_all') }}
                     </label>
                     <form method="GET" class="relative w-48">
-                        <x-ui.icon name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                        <input name="q" value="{{ $search }}" placeholder="{{ __('ui.search_placeholder') }}" class="w-full rounded-lg bg-surface-raised border border-line pl-9 pr-3 py-2 text-sm outline-none focus:border-brand">
+                        <input name="q" value="{{ $search }}" placeholder="{{ __('ui.search_placeholder') }}" class="w-full rounded-lg bg-surface-raised border border-line px-3 py-2 text-sm outline-none focus:border-brand">
                     </form>
                 </div>
                 <div class="max-h-[28rem] overflow-y-auto divide-y divide-line">

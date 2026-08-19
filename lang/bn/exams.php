@@ -42,8 +42,6 @@ return [
     'live_saved' => 'সংরক্ষিত',
     'live_save_failed' => 'সংরক্ষণ হয়নি — পুনরায় চেষ্টা হচ্ছে',
     'live_answered' => ':total-এর মধ্যে :count টি উত্তর দেওয়া হয়েছে',
-    'live_single_hint' => 'একটি উত্তর নির্বাচন করুন',
-    'live_multiple_hint' => 'এক বা একাধিক উত্তর নির্বাচন করুন',
     'live_prev' => 'পূর্ববর্তী',
     'live_next' => 'পরবর্তী',
     'live_submit' => 'পরীক্ষা জমা দিন',

@@ -47,7 +47,7 @@ class LessonRequest extends FormRequest
             'duration_minutes' => ['nullable', 'integer', 'min:0', 'max:6000'],
             'duration_label' => ['nullable', 'string', 'max:100'],
             'media_provider' => ['required', Rule::in(['google_drive', 'external', 'none'])],
-            'media_url' => ['nullable', 'url', 'max:500', 'required_unless:media_provider,none'],
+            'media_url' => ['nullable', 'url', 'max:500'],
             'is_published' => ['sometimes', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
 
@@ -63,7 +63,6 @@ class LessonRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'media_url.required_unless' => 'মিডিয়া লিংক আবশ্যক।',
             'resources.*.url.url' => 'রিসোর্স লিংকটি সঠিক নয়।',
         ];
     }

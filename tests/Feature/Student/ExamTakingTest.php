@@ -104,6 +104,24 @@ class ExamTakingTest extends TestCase
             ->assertDontSee('explanation');
     }
 
+    public function test_the_live_screen_does_not_show_answer_selection_hints(): void
+    {
+        $quiz = Quiz::factory()->create();
+        $builder = QuizBuilder::for($quiz);
+        $builder->question(['এক', 'দুই'], correctPositions: [1]);
+        $builder->question(['এক', 'দুই', 'তিন'], correctPositions: [1, 2]);
+        $user = $this->startedStudent($quiz->fresh());
+        $attempt = QuizAttempt::query()->where('user_id', $user->id)->first();
+
+        $this->actingAs($user)
+            ->get(route('student.attempts.show', $attempt))
+            ->assertOk()
+            ->assertDontSee('Choose one answer')
+            ->assertDontSee('Choose one or more answers')
+            ->assertDontSee('একটি উত্তর নির্বাচন করুন')
+            ->assertDontSee('এক বা একাধিক উত্তর নির্বাচন করুন');
+    }
+
     // ── Autosave ────────────────────────────────────────────────────────────────
 
     public function test_autosave_stores_the_selection_and_is_idempotent(): void

@@ -16,10 +16,12 @@
                 <h1 class="text-2xl font-black text-ink">{{ $lesson->title }}</h1>
                 @if ($lesson->description)<p class="mt-2 text-muted leading-relaxed">{{ $lesson->description }}</p>@endif
 
-                {{-- Media --}}
+                {{-- Media. Google Drive files can't be streamed into a native <audio> element
+                     (Drive serves no direct, CORS-friendly media URL), so we embed Drive's own
+                     player, which streams reliably and handles seeking. --}}
                 @if ($lesson->embedUrl())
                     <div class="mt-5 rounded-xl overflow-hidden border border-line bg-black/5">
-                        <iframe src="{{ $lesson->embedUrl() }}" class="w-full h-32" allow="autoplay" loading="lazy" title="অডিও"></iframe>
+                        <iframe src="{{ $lesson->embedUrl() }}" class="block w-full h-24" allow="autoplay" loading="lazy" title="অডিও"></iframe>
                     </div>
                     @if ($lesson->media_url)
                         <x-ui.button :href="$lesson->media_url" target="_blank" rel="noopener" variant="secondary" class="mt-3 w-full">

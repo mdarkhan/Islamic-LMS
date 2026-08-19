@@ -143,6 +143,21 @@ class QuizManagementTest extends TestCase
             ->assertOk()->assertSee('দৃশ্যমান')->assertDontSee('খসড়া কুইজ');
     }
 
+    public function test_index_does_not_show_a_lock_icon_beside_attempt_count(): void
+    {
+        $admin = $this->makeAdmin();
+        $quiz = Quiz::factory()->create();
+        QuizAttempt::factory()->for($quiz)->for($this->makeStudent())->create([
+            'kind' => QuizAttempt::KIND_OFFICIAL,
+            'status' => QuizAttempt::STATUS_SUBMITTED,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.quizzes.index'))
+            ->assertOk()
+            ->assertDontSee(__('quizzes.locked_title'));
+    }
+
     public function test_a_student_cannot_reach_quiz_admin_routes(): void
     {
         $student = $this->makeStudent();

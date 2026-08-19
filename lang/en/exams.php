@@ -42,8 +42,6 @@ return [
     'live_saved' => 'Saved',
     'live_save_failed' => 'Not saved — retrying',
     'live_answered' => ':count of :total answered',
-    'live_single_hint' => 'Choose one answer',
-    'live_multiple_hint' => 'Choose one or more answers',
     'live_prev' => 'Previous',
     'live_next' => 'Next',
     'live_submit' => 'Submit exam',

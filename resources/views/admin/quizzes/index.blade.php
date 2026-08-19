@@ -74,7 +74,6 @@
                     <td class="px-4 py-3 text-center tabular-nums hidden sm:table-cell">{{ bn($quiz->total_marks) }}</td>
                     <td class="px-4 py-3 text-center tabular-nums hidden lg:table-cell">
                         {{ bn($quiz->official_attempts_count) }}
-                        @if ($quiz->official_attempts_count > 0)<x-ui.icon name="key" class="w-3.5 h-3.5 inline text-amber-500" title="{{ __('quizzes.locked_title') }}" />@endif
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-end" x-data="{ open: false }">

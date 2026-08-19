@@ -76,6 +76,15 @@ class PointManagementTest extends TestCase
         $this->assertSame(3, $b->fresh()->points_balance);
     }
 
+    public function test_bulk_points_page_does_not_render_a_search_icon(): void
+    {
+        $this->actingAs($this->makeAdmin())
+            ->get(route('admin.points.bulk.form'))
+            ->assertOk()
+            ->assertSee('whitespace-nowrap', false)
+            ->assertDontSee('M21 21l-4.3-4.3', false);
+    }
+
     public function test_bulk_deduct_is_all_or_nothing_when_one_lacks_balance(): void
     {
         $admin = $this->makeAdmin();
