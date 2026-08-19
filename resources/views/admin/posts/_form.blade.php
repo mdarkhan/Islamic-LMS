@@ -135,7 +135,7 @@
                                 [&_blockquote]:border-s-4 [&_blockquote]:border-brand/40 [&_blockquote]:ps-4 [&_blockquote]:italic [&_blockquote]:text-muted
                                 [&_strong]:font-bold [&_b]:font-bold"></div>
                 </div>
-                <input type="hidden" name="body" :value="html" />
+                <input type="hidden" name="body" x-ref="bodyInput" value="{{ old('body', $post?->body ?? '') }}" />
             </x-ui.field>
         </x-ui.card>
 
@@ -435,6 +435,11 @@
             },
             sync() {
                 this.html = this.$refs.editor.innerHTML;
+                // Write the hidden field synchronously (do not wait for Alpine's reactive
+                // flush) so a quick "Update" click can never submit a stale body.
+                if (this.$refs.bodyInput) {
+                    this.$refs.bodyInput.value = this.html;
+                }
             },
         };
     };
