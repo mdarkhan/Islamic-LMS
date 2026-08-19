@@ -6,6 +6,9 @@
             <x-ui.field :label="__('courses.title')" name="title" required>
                 <x-ui.input name="title" :value="old('title', $course->title)" />
             </x-ui.field>
+            <x-ui.field :label="__('admin.slug')" name="slug" :hint="__('courses.slug_hint')">
+                <x-ui.input name="slug" :value="old('slug', $course->slug)" dir="ltr" />
+            </x-ui.field>
             <x-ui.field :label="__('admin.description')" name="description">
                 <x-ui.textarea name="description">{{ old('description', $course->description) }}</x-ui.textarea>
             </x-ui.field>

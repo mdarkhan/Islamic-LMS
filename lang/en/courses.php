@@ -14,6 +14,8 @@ return [
     'no_courses_admin' => 'No courses yet.',
     'create_first_course' => 'Create your first course.',
     'title' => 'Title',
+    'slug_hint' => 'The URL part. Leave blank to generate it from the title. Bengali is kept as-is.',
+    'slug_placeholder' => 'auto from title',
     'order_hint' => 'The course order is set with the up/down arrows on the course list.',
     'move_up' => 'Move up',
     'move_down' => 'Move down',

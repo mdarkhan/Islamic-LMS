@@ -37,7 +37,7 @@ class CourseController extends Controller
         $data = $request->validated();
 
         $course = Course::query()->create([
-            'slug' => $this->uniqueSlug($data['title']),
+            'slug' => $this->uniqueSlug($data['slug'] ?? '' ?: $data['title']),
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'is_published' => $request->boolean('is_published'),
@@ -56,9 +56,14 @@ class CourseController extends Controller
 
     public function update(CourseRequest $request, Course $course): RedirectResponse
     {
-        $before = $course->only(['title', 'description', 'is_published', 'sort_order']);
+        $before = $course->only(['slug', 'title', 'description', 'is_published', 'sort_order']);
+
+        // Slug is editable; an empty value regenerates it from the title. Either way it is
+        // normalised and made unique (ignoring this course, so an unchanged slug stays put).
+        $slugSource = $request->filled('slug') ? $request->input('slug') : $request->validated()['title'];
 
         $course->fill([
+            'slug' => $this->uniqueSlug($slugSource, $course->getKey()),
             'title' => $request->validated()['title'],
             'description' => $request->validated()['description'] ?? null,
             'is_published' => $request->boolean('is_published'),
@@ -68,7 +73,7 @@ class CourseController extends Controller
 
         $this->audit->log('course.updated', $course,
             before: $before,
-            after: $course->only(['title', 'description', 'is_published', 'sort_order']),
+            after: $course->only(['slug', 'title', 'description', 'is_published', 'sort_order']),
         );
 
         return redirect()->route('admin.courses.index')->with('success', 'কোর্স হালনাগাদ করা হয়েছে।');
@@ -172,11 +177,14 @@ class CourseController extends Controller
         return back()->with('success', $course->is_published ? 'কোর্স প্রকাশ করা হয়েছে।' : 'কোর্স আড়াল করা হয়েছে।');
     }
 
-    private function uniqueSlug(string $title): string
+    private function uniqueSlug(string $source, ?int $ignoreId = null): string
     {
         return Slug::unique(
-            $title,
-            fn (string $slug) => Course::query()->where('slug', $slug)->exists(),
+            $source,
+            fn (string $slug) => Course::query()
+                ->where('slug', $slug)
+                ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+                ->exists(),
             'course',
         );
     }

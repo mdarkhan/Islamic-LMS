@@ -15,6 +15,7 @@ class CourseRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:200'],
+            'slug' => ['nullable', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:2000'],
             'is_published' => ['sometimes', 'boolean'],
 

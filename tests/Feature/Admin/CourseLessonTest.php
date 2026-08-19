@@ -36,6 +36,50 @@ class CourseLessonTest extends TestCase
         $this->assertDatabaseHas('courses', ['id' => $course->id]);
     }
 
+    public function test_admin_can_edit_a_course_slug(): void
+    {
+        $admin = $this->makeAdmin();
+        $course = Course::factory()->create(['title' => 'সীরাত', 'slug' => 'seerah']);
+
+        $this->actingAs($admin)->put(route('admin.courses.update', $course), [
+            'title' => 'সীরাত', 'slug' => 'seerah-course',
+        ])->assertRedirect();
+
+        $this->assertSame('seerah-course', $course->fresh()->slug);
+    }
+
+    public function test_a_blank_slug_regenerates_from_the_title(): void
+    {
+        $admin = $this->makeAdmin();
+        $course = Course::factory()->create(['title' => 'পুরনো', 'slug' => 'old-one']);
+
+        $this->actingAs($admin)->put(route('admin.courses.update', $course), [
+            'title' => 'নতুন শিরোনাম', 'slug' => '',
+        ])->assertRedirect();
+
+        $this->assertSame('নতুন-শিরোনাম', $course->fresh()->slug);   // Bengali kept, space → hyphen
+    }
+
+    public function test_saving_an_unchanged_slug_keeps_it_and_a_collision_is_made_unique(): void
+    {
+        $admin = $this->makeAdmin();
+        Course::factory()->create(['slug' => 'fiqh']);
+        $course = Course::factory()->create(['title' => 'Fiqh Two', 'slug' => 'fiqh-two']);
+
+        // Resubmitting the same slug does not append -2 (ignores itself).
+        $this->actingAs($admin)->put(route('admin.courses.update', $course), [
+            'title' => 'Fiqh Two', 'slug' => 'fiqh-two',
+        ])->assertRedirect();
+        $this->assertSame('fiqh-two', $course->fresh()->slug);
+
+        // Taking another course's slug is made unique instead of colliding.
+        $this->actingAs($admin)->put(route('admin.courses.update', $course), [
+            'title' => 'Fiqh Two', 'slug' => 'fiqh',
+        ])->assertRedirect();
+        $this->assertNotSame('fiqh', $course->fresh()->slug);
+        $this->assertStringStartsWith('fiqh', $course->fresh()->slug);
+    }
+
     public function test_a_course_with_a_quiz_cannot_be_deleted(): void
     {
         $admin = $this->makeAdmin();
