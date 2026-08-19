@@ -180,6 +180,35 @@ class BlogTest extends TestCase
         $this->assertStringContainsString('href="https://good.test"', $html);
     }
 
+    // ── Question / answer-summary layout ──────────────────────────────────────────
+
+    public function test_question_and_summary_render_with_the_answer_heading(): void
+    {
+        $post = $this->makePost([
+            'title' => 'QA layout piece',
+            'question' => 'নামাযে সাহু সিজদা কখন দিতে হবে?',
+            'excerpt' => 'সাহু সিজদার সংক্ষিপ্ত উত্তর।',
+        ]);
+
+        $this->get(route('blog.show', $post))->assertOk()
+            ->assertSee('নামাযে সাহু সিজদা কখন দিতে হবে?')     // the question text
+            ->assertSee('সাহু সিজদার সংক্ষিপ্ত উত্তর।')          // the summary text
+            ->assertSee(__('posts.answer_summary'))              // "উত্তরের সার-সংক্ষেপ" box label
+            ->assertSee('</h2>', false);
+        // The standalone "Answer" heading appears only when there is a question.
+        $this->assertStringContainsString('উত্তর</h2>', $this->get(route('blog.show', $post))->getContent());
+    }
+
+    public function test_question_and_summary_are_optional(): void
+    {
+        // A plain article with neither shows no question box and no "Answer" heading.
+        $post = $this->makePost(['title' => 'Plain article', 'excerpt' => '']);
+        $html = $this->get(route('blog.show', $post))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('উত্তর</h2>', $html);
+        $this->assertStringNotContainsString('text-amber-700', $html);   // no question callout
+    }
+
     // ── View counter ──────────────────────────────────────────────────────────────
 
     public function test_viewing_an_article_counts_once_per_session(): void

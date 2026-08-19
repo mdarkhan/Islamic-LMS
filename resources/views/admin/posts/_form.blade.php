@@ -33,8 +33,11 @@
                 </div>
             </x-ui.field>
 
-            <x-ui.field :label="__('posts.excerpt')" name="excerpt">
-                <x-ui.textarea name="excerpt" rows="2">{{ old('excerpt', $post?->excerpt) }}</x-ui.textarea>
+            <x-ui.field :label="__('posts.question')" name="question" :hint="__('posts.question_hint')">
+                <x-ui.textarea name="question" rows="2">{{ old('question', $post?->question) }}</x-ui.textarea>
+            </x-ui.field>
+            <x-ui.field :label="__('posts.answer_summary')" name="excerpt" :hint="__('posts.answer_summary_hint')">
+                <x-ui.textarea name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</x-ui.textarea>
             </x-ui.field>
 
             {{-- Rich-text (WYSIWYG) editor. Emits HTML into a hidden input; the server

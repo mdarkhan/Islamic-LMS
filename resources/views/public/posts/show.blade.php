@@ -75,20 +75,40 @@
                 </div>
             </header>
 
-            {{-- Summary / question callout (from the excerpt) --}}
-            @if ($post->excerpt && trim($post->excerpt) !== '')
-                <div class="rounded-2xl border border-brand/25 bg-brand-tint/60 dark:bg-brand-tint/20 border-s-4 border-s-brand ps-5 pe-5 py-4 mb-6">
-                    <p class="text-xs font-bold uppercase tracking-wider text-brand-strong mb-1">{{ __('posts.summary') }}</p>
+            @php
+                $hasQuestion = $post->question && trim($post->question) !== '';
+                $hasSummary = $post->excerpt && trim($post->excerpt) !== '';
+            @endphp
+
+            {{-- Question callout (amber) --}}
+            @if ($hasQuestion)
+                <div class="rounded-2xl border border-amber-300/70 bg-amber-50 dark:bg-amber-500/10 dark:border-amber-500/30 p-5 mb-4">
+                    <p class="text-sm font-bold text-amber-700 dark:text-amber-300 mb-1.5">{{ __('posts.question_label') }} {{ bn($post->id) }}</p>
+                    <p class="text-ink/90 leading-relaxed">{{ $post->question }}</p>
+                </div>
+            @endif
+
+            {{-- Answer-summary callout (green) --}}
+            @if ($hasSummary)
+                <div class="rounded-2xl border border-brand/30 bg-brand-tint/70 dark:bg-brand-tint/20 p-5 mb-6">
+                    <p class="text-sm font-bold text-brand-strong mb-1.5">{{ __('posts.answer_summary') }}</p>
                     <p class="text-ink/90 leading-relaxed">{{ $post->excerpt }}</p>
                 </div>
             @endif
 
-            {{-- Decorative divider before the body --}}
-            <div class="flex items-center gap-3 my-7" aria-hidden="true">
-                <span class="h-px flex-1 bg-line"></span>
-                <svg class="w-3.5 h-3.5 text-brand/60" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5H22l-6 4.5 2.3 7.5L12 17l-6.3 4.5L8 14 2 9.5h7.5L12 2z"/></svg>
-                <span class="h-px flex-1 bg-line"></span>
-            </div>
+            {{-- "Answer" section header when there is a question; otherwise a decorative divider --}}
+            @if ($hasQuestion)
+                <div class="flex items-center gap-3 my-6">
+                    <h2 class="shrink-0 text-lg font-bold text-brand-strong">{{ __('posts.answer_label') }}</h2>
+                    <span class="h-px flex-1 bg-brand/30"></span>
+                </div>
+            @else
+                <div class="flex items-center gap-3 my-7" aria-hidden="true">
+                    <span class="h-px flex-1 bg-line"></span>
+                    <svg class="w-3.5 h-3.5 text-brand/60" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5H22l-6 4.5 2.3 7.5L12 17l-6.3 4.5L8 14 2 9.5h7.5L12 2z"/></svg>
+                    <span class="h-px flex-1 bg-line"></span>
+                </div>
+            @endif
 
             {{-- Rich-text body (reduced to a safe allow-list server-side — HtmlSanitizer). --}}
             <div class="article-body text-ink leading-loose space-y-4 text-[1.075rem]

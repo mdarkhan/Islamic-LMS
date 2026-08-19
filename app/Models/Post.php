@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'slug', 'post_category_id', 'title', 'excerpt', 'body', 'featured_image',
+    'slug', 'post_category_id', 'title', 'excerpt', 'question', 'body', 'featured_image',
     'author_id', 'status', 'published_at', 'seo_title', 'seo_description',
 ])]
 class Post extends Model
