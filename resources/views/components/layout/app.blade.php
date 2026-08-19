@@ -72,4 +72,34 @@
             </main>
         </div>
     </div>
+
+    {{-- Custom confirm dialog. The desktop app blocks native window.confirm() (it returns
+         false without a prompt), so any form carrying a data-confirm attribute is routed
+         through this modal instead of a native dialog. --}}
+    <div x-data="{ open: false, message: '', form: null }"
+         @app-confirm.window="message = $event.detail.message; form = $event.detail.form; open = true"
+         x-show="open" x-cloak
+         class="fixed inset-0 z-[70] grid place-items-center bg-black/50 p-4"
+         @keydown.escape.window="open = false">
+        <div class="w-full max-w-sm rounded-2xl border border-line bg-card p-6 shadow-2xl" @click.outside="open = false">
+            <p class="text-ink leading-relaxed" x-text="message"></p>
+            <div class="mt-5 flex justify-end gap-3">
+                <x-ui.button type="button" variant="ghost" @click="open = false">{{ __('ui.cancel') }}</x-ui.button>
+                <x-ui.button type="button" @click="open = false; form && form.submit()">{{ __('ui.confirm') }}</x-ui.button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Send any form with a data-confirm attribute through the custom modal. form.submit()
+        // in the modal bypasses this listener (it doesn't fire the submit event), so there's
+        // no loop.
+        document.addEventListener('submit', function (event) {
+            const form = event.target;
+            if (form instanceof HTMLFormElement && form.dataset.confirm) {
+                event.preventDefault();
+                window.dispatchEvent(new CustomEvent('app-confirm', { detail: { message: form.dataset.confirm, form } }));
+            }
+        }, true);
+    </script>
 </x-layout.base>

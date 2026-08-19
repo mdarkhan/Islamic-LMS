@@ -6,7 +6,7 @@
         <div class="flex items-center gap-2">
             <x-ui.button :href="route('admin.posts.preview', $post)" variant="secondary" size="sm" target="_blank">{{ __('posts.preview') }}</x-ui.button>
             @if ($post->status !== 'published')
-                <form method="POST" action="{{ route('admin.posts.destroy', $post) }}" onsubmit="return confirm('{{ __('posts.delete_confirm') }}')">
+                <form method="POST" action="{{ route('admin.posts.destroy', $post) }}" data-confirm="{{ __('posts.delete_confirm') }}">
                     @csrf @method('DELETE')
                     <x-ui.button type="submit" variant="danger" size="sm">{{ __('posts.delete') }}</x-ui.button>
                 </form>

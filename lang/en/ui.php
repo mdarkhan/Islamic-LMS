@@ -4,6 +4,7 @@ return [
     // Actions
     'save' => 'Save',
     'cancel' => 'Cancel',
+    'confirm' => 'Confirm',
     'create' => 'Create',
     'edit' => 'Edit',
     'delete' => 'Delete',

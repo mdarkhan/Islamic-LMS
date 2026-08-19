@@ -46,7 +46,7 @@
                             @endif
                             @if ($student->status !== 'archived')
                                 <form method="POST" action="{{ route('admin.students.status', $student) }}"
-                                      onsubmit="return confirm('{{ __('students.confirm_archive') }}')">
+                                      data-confirm="{{ __('students.confirm_archive') }}">
                                     @csrf @method('PUT')<input type="hidden" name="status" value="archived">
                                     <x-ui.button type="submit" variant="ghost" class="w-full justify-center">{{ __('students.archive_student') }}</x-ui.button>
                                 </form>
@@ -54,7 +54,7 @@
                         @endif
                         @if ($me->hasPermission('students.reset_password'))
                             <form method="POST" action="{{ route('admin.students.reset-password', $student) }}"
-                                  onsubmit="return confirm('{{ __('students.confirm_reset_password') }}')">
+                                  data-confirm="{{ __('students.confirm_reset_password') }}">
                                 @csrf
                                 <x-ui.button type="submit" variant="secondary" class="w-full justify-center"><x-ui.icon name="key" class="w-4 h-4" /> {{ __('students.reset_password') }}</x-ui.button>
                             </form>

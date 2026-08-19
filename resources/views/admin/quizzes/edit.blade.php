@@ -89,7 +89,7 @@
                                     <div class="flex items-center gap-3 mt-3 text-sm">
                                         <a href="{{ route('admin.quizzes.questions.edit', [$quiz, $question]) }}" class="text-brand font-semibold hover:underline">{{ __('quizzes.edit') }}</a>
                                         <form method="POST" action="{{ route('admin.quizzes.questions.duplicate', [$quiz, $question]) }}">@csrf<button class="text-muted hover:text-ink">{{ __('quizzes.duplicate') }}</button></form>
-                                        <form method="POST" action="{{ route('admin.quizzes.questions.destroy', [$quiz, $question]) }}" onsubmit="return confirm('{{ __('admin.confirm_delete_question') }}')">@csrf @method('DELETE')<button class="text-rose-600 hover:underline">{{ __('quizzes.delete') }}</button></form>
+                                        <form method="POST" action="{{ route('admin.quizzes.questions.destroy', [$quiz, $question]) }}" data-confirm="{{ __('admin.confirm_delete_question') }}">@csrf @method('DELETE')<button class="text-rose-600 hover:underline">{{ __('quizzes.delete') }}</button></form>
                                     </div>
                                 @endunless
                             </div>

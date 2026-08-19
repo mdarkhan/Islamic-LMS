@@ -4,6 +4,7 @@ return [
     // Actions
     'save' => 'সংরক্ষণ করুন',
     'cancel' => 'বাতিল',
+    'confirm' => 'নিশ্চিত করুন',
     'create' => 'তৈরি করুন',
     'edit' => 'সম্পাদনা',
     'delete' => 'মুছুন',

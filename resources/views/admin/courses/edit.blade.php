@@ -40,8 +40,7 @@
 
             <div class="flex justify-between gap-3 border-t border-line pt-5">
                 {{-- Delete uses a separate form (declared below) to avoid nesting. --}}
-                <x-ui.button type="submit" form="course-delete" variant="ghost" class="text-rose-600"
-                             onclick="return confirm('{{ __('admin.confirm_delete_course') }}')">{{ __('ui.delete') }}</x-ui.button>
+                <x-ui.button type="submit" form="course-delete" variant="ghost" class="text-rose-600">{{ __('ui.delete') }}</x-ui.button>
                 <div class="flex gap-3">
                     <x-ui.button :href="route('admin.courses.index')" variant="ghost">{{ __('ui.cancel') }}</x-ui.button>
                     <x-ui.button type="submit">{{ __('admin.save_changes') }}</x-ui.button>
@@ -49,7 +48,8 @@
             </div>
         </form>
 
-        <form id="course-delete" method="POST" action="{{ route('admin.courses.destroy', $course) }}" class="hidden">
+        <form id="course-delete" method="POST" action="{{ route('admin.courses.destroy', $course) }}" class="hidden"
+              data-confirm="{{ __('admin.confirm_delete_course') }}">
             @csrf @method('DELETE')
         </form>
     </x-ui.card>
@@ -59,7 +59,7 @@
         <h3 class="font-bold text-ink mb-1">{{ __('courses.award_toppers') }}</h3>
         <p class="text-xs text-muted mb-3">{{ __('courses.award_toppers_hint') }}</p>
         <form method="POST" action="{{ route('admin.courses.award-toppers', $course) }}"
-              onsubmit="return confirm('{{ __('courses.award_confirm') }}')">
+              data-confirm="{{ __('courses.award_confirm') }}">
             @csrf
             <x-ui.button type="submit" variant="secondary">{{ __('courses.award_toppers') }}</x-ui.button>
         </form>

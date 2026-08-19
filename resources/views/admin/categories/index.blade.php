@@ -33,7 +33,7 @@
                         <x-ui.button type="submit" variant="secondary" size="sm">{{ __('posts.save') }}</x-ui.button>
                     </form>
                     @if ($category->posts_count === 0)
-                        <form method="POST" action="{{ route('admin.posts.categories.destroy', $category) }}" onsubmit="return confirm('{{ __('posts.delete_confirm') }}')">
+                        <form method="POST" action="{{ route('admin.posts.categories.destroy', $category) }}" data-confirm="{{ __('posts.delete_confirm') }}">
                             @csrf @method('DELETE')
                             <x-ui.button type="submit" variant="danger" size="sm">{{ __('posts.delete') }}</x-ui.button>
                         </form>

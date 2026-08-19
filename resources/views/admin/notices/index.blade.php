@@ -56,7 +56,7 @@
                             <form method="POST" action="{{ route('admin.notices.toggle', $notice) }}">@csrf @method('PUT')
                                 <x-ui.button type="submit" variant="secondary" size="sm">{{ $notice->is_active ? __('notices.deactivate') : __('notices.activate') }}</x-ui.button>
                             </form>
-                            <form method="POST" action="{{ route('admin.notices.destroy', $notice) }}" onsubmit="return confirm('{{ __('notices.delete_confirm') }}')">
+                            <form method="POST" action="{{ route('admin.notices.destroy', $notice) }}" data-confirm="{{ __('notices.delete_confirm') }}">
                                 @csrf @method('DELETE')
                                 <x-ui.button type="submit" variant="ghost" size="sm">{{ __('notices.delete') }}</x-ui.button>
                             </form>

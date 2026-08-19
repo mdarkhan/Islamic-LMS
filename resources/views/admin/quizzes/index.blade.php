@@ -98,7 +98,7 @@
                                 @endif
                                 @if (! $quiz->official_attempts_count)
                                     <div class="border-t border-line my-1"></div>
-                                    <form method="POST" action="{{ route('admin.quizzes.destroy', $quiz) }}" onsubmit="return confirm('{{ __('admin.confirm_delete_quiz') }}')">@csrf @method('DELETE')<button class="block w-full text-left px-4 py-2 hover:bg-rose-500/10 text-rose-600">{{ __('quizzes.delete') }}</button></form>
+                                    <form method="POST" action="{{ route('admin.quizzes.destroy', $quiz) }}" data-confirm="{{ __('admin.confirm_delete_quiz') }}">@csrf @method('DELETE')<button class="block w-full text-left px-4 py-2 hover:bg-rose-500/10 text-rose-600">{{ __('quizzes.delete') }}</button></form>
                                 @endif
                             </div>
                         </div>

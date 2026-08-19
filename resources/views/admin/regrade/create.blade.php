@@ -77,7 +77,7 @@
                         <x-ui.button type="button" variant="secondary" @click="previewImpact()" x-bind:disabled="loading">
                             {{ __('results_admin.regrade_preview_btn') }}
                         </x-ui.button>
-                        <x-ui.button type="submit" x-bind:disabled="!preview || !reason">
+                        <x-ui.button type="submit" x-bind:disabled="!reason">
                             {{ __('results_admin.regrade_confirm') }}
                         </x-ui.button>
                     </div>
