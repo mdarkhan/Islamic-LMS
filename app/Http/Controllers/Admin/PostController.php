@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PostRequest;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\Tag;
 use App\Services\Audit\AuditLogger;
 use App\Support\HtmlSanitizer;
 use App\Support\Slug;
@@ -55,7 +56,7 @@ class PostController extends Controller
     public function store(PostRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['new_category']);
+        unset($data['new_category'], $data['tags']);
         $data['post_category_id'] = $this->resolveCategoryId($request);
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'));
         $data['body'] = HtmlSanitizer::clean($data['body']);
@@ -63,6 +64,7 @@ class PostController extends Controller
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'));
 
         $post = Post::query()->create($data);
+        $post->tags()->sync(Tag::resolveMany(Tag::parseInput($request->input('tags'))));
         $this->audit->log('post.created', $post, after: ['title' => $post->title, 'status' => $post->status]);
 
         return redirect()->route('admin.posts.edit', $post)->with('success', __('posts.saved'));
@@ -71,7 +73,7 @@ class PostController extends Controller
     public function edit(Post $post): View
     {
         return view('admin.posts.edit', [
-            'post' => $post,
+            'post' => $post->load('tags'),
             'categories' => $this->activeCategories(),
         ]);
     }
@@ -79,13 +81,14 @@ class PostController extends Controller
     public function update(PostRequest $request, Post $post): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['new_category']);
+        unset($data['new_category'], $data['tags']);
         $data['post_category_id'] = $this->resolveCategoryId($request);
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'), $post->getKey());
         $data['body'] = HtmlSanitizer::clean($data['body']);
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'), $post);
 
         $post->update($data);
+        $post->tags()->sync(Tag::resolveMany(Tag::parseInput($request->input('tags'))));
         $this->audit->log('post.updated', $post, after: ['title' => $post->title, 'status' => $post->status]);
 
         return redirect()->route('admin.posts.edit', $post)->with('success', __('posts.saved'));

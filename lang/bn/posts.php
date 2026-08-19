@@ -89,5 +89,17 @@ return [
     'related' => 'সম্পর্কিত লেখা',
     'back_to_articles' => 'সব লেখা',
     'copy_link' => 'লিংক কপি',
+    'summary' => 'সারসংক্ষেপ',
+    'views' => 'বার পঠিত',
+    'hijri_suffix' => 'হিজরি',
+    'share' => 'শেয়ার করুন',
+    'share_on' => ':network এ শেয়ার করুন',
+    'print' => 'প্রিন্ট / PDF',
+    'filed_under' => 'ট্যাগ',
+
+    // Admin: tags field
+    'tags' => 'ট্যাগ',
+    'tags_hint' => 'ট্যাগগুলো কমা দিয়ে আলাদা করুন।',
+    'tags_placeholder' => 'যেমন: ফিকহ, রোযা, আকীদা',
     'preview_banner' => 'প্রিভিউ — প্রকাশের পর লেখাটি এভাবে দেখা যাবে।',
 ];

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 #[Fillable([
@@ -26,7 +27,21 @@ class Post extends Model
 
     protected function casts(): array
     {
-        return ['published_at' => 'datetime'];
+        return ['published_at' => 'datetime', 'views_count' => 'integer'];
+    }
+
+    /** @return BelongsToMany<Tag, $this> */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    /** Comma-separated tag names, for pre-filling the admin form. */
+    public function tagsInput(): string
+    {
+        return $this->relationLoaded('tags') || $this->exists
+            ? $this->tags->pluck('name')->implode(', ')
+            : '';
     }
 
     /**

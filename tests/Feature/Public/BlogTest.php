@@ -180,6 +180,55 @@ class BlogTest extends TestCase
         $this->assertStringContainsString('href="https://good.test"', $html);
     }
 
+    // ── View counter ──────────────────────────────────────────────────────────────
+
+    public function test_viewing_an_article_counts_once_per_session(): void
+    {
+        $post = $this->makePost(['title' => 'Counted piece']);
+        $this->assertSame(0, $post->fresh()->views_count);
+
+        $this->get(route('blog.show', $post))->assertOk();
+        $this->assertSame(1, $post->fresh()->views_count);
+
+        // A refresh within the same session must not inflate the count.
+        $this->withSession(['viewed_posts' => [$post->id]])->get(route('blog.show', $post))->assertOk();
+        $this->assertSame(1, $post->fresh()->views_count);
+    }
+
+    // ── Tags ──────────────────────────────────────────────────────────────────────
+
+    public function test_admin_can_tag_an_article_and_readers_can_filter_by_tag(): void
+    {
+        $category = $this->makeCategory();
+
+        $this->actingAs($this->makeAdmin())->post(route('admin.posts.store'), [
+            'title' => 'Tagged article', 'post_category_id' => $category->id,
+            'body' => '<p>body</p>', 'status' => Post::STATUS_PUBLISHED, 'tags' => 'ফিকহ, রোযা, ফিকহ',
+        ])->assertRedirect();
+
+        $post = Post::query()->latest('id')->first();
+        $this->assertSame(2, $post->tags()->count());   // duplicate "ফিকহ" collapsed
+
+        // Tag pills render on the article page…
+        $this->get(route('blog.show', $post))->assertOk()->assertSee('ফিকহ')->assertSee('রোযা');
+
+        // …and filtering by a tag lists the article.
+        $tag = \App\Models\Tag::query()->where('name', 'ফিকহ')->first();
+        $this->assertSame('ফিকহ', $tag->slug);   // real Bengali slug
+        $this->get(route('blog.index', ['tag' => $tag->slug]))->assertOk()->assertSee('Tagged article');
+    }
+
+    public function test_article_page_has_share_and_print_controls(): void
+    {
+        $post = $this->makePost(['title' => 'Shareable']);
+
+        $this->get(route('blog.show', $post))->assertOk()
+            ->assertSee(__('posts.share'))
+            ->assertSee('facebook.com/sharer', false)
+            ->assertSee('wa.me', false)
+            ->assertSee(__('posts.print'));
+    }
+
     // ── SEO ───────────────────────────────────────────────────────────────────────
 
     public function test_post_detail_emits_seo_metadata(): void

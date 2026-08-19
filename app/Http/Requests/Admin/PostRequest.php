@@ -21,6 +21,7 @@ class PostRequest extends FormRequest
             // picking an existing one (resolved in the controller).
             'post_category_id' => ['required_without:new_category', 'nullable', Rule::exists('post_categories', 'id')],
             'new_category' => ['nullable', 'string', 'max:150'],
+            'tags' => ['nullable', 'string', 'max:500'],
             'slug' => ['nullable', 'string', 'max:200'],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'body' => ['required', 'string', 'max:50000'],

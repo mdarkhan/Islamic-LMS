@@ -212,6 +212,12 @@
                 @error('new_category') <p class="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
             </div>
         </x-ui.card>
+
+        <x-ui.card class="space-y-4">
+            <x-ui.field :label="__('posts.tags')" name="tags" :hint="__('posts.tags_hint')">
+                <x-ui.input name="tags" :value="old('tags', $post?->tagsInput())" placeholder="{{ __('posts.tags_placeholder') }}" />
+            </x-ui.field>
+        </x-ui.card>
     </div>
 </div>
 

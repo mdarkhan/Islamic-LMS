@@ -89,5 +89,17 @@ return [
     'related' => 'Related articles',
     'back_to_articles' => 'All articles',
     'copy_link' => 'Copy link',
+    'summary' => 'Summary',
+    'views' => 'views',
+    'hijri_suffix' => 'AH',
+    'share' => 'Share',
+    'share_on' => 'Share on :network',
+    'print' => 'Print / PDF',
+    'filed_under' => 'Tags',
+
+    // Admin: tags field
+    'tags' => 'Tags',
+    'tags_hint' => 'Separate tags with commas.',
+    'tags_placeholder' => 'e.g. fiqh, fasting, aqeedah',
     'preview_banner' => 'Preview — this is how the article will look once published.',
 ];
