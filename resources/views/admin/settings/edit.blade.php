@@ -20,6 +20,9 @@
                 <x-ui.field :label="__('settings.telegram_url')" name="telegram_url">
                     <x-ui.input name="telegram_url" value="{{ old('telegram_url', $general['telegram_url']) }}" placeholder="https://t.me/…" />
                 </x-ui.field>
+                <x-ui.field :label="__('settings.ustaz_email')" name="ustaz_email" :hint="__('settings.ustaz_email_hint')">
+                    <x-ui.input type="email" name="ustaz_email" value="{{ old('ustaz_email', $general['ustaz_email']) }}" placeholder="ustaz@example.com" dir="ltr" />
+                </x-ui.field>
                 <x-ui.button type="submit">{{ __('settings.save') }}</x-ui.button>
             </form>
         </x-ui.card>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AskUstazRequest;
 use App\Mail\AskUstazQuestion;
+use App\Services\Settings\SettingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,8 @@ class AskUstazController extends Controller
     /** Reject a submission completed impossibly fast — a simple bot heuristic. */
     private const MIN_FILL_SECONDS = 3;
 
+    public function __construct(private readonly SettingService $settings) {}
+
     public function show(): View
     {
         return view('public.ask-ustaz', ['startedAt' => now()->getTimestamp()]);
@@ -37,10 +40,11 @@ class AskUstazController extends Controller
             return redirect()->route('ask-ustaz.show')->with('success', __('ask_ustaz.sent'));
         }
 
-        $recipient = config('mail.ustaz_email');
+        // Admin-set recipient wins; fall back to the environment (config) when unset.
+        $recipient = $this->settings->get('ustaz_email') ?: config('mail.ustaz_email');
         if (empty($recipient)) {
             // Never log the question — only that the destination is unconfigured.
-            Log::warning('Ask Ustaz: USTAZ_EMAIL is not configured; question not sent.');
+            Log::warning('Ask Ustaz: recipient is not configured (setting or USTAZ_EMAIL); question not sent.');
 
             return back()->withInput($this->safeInput($request))->with('error', __('ask_ustaz.failed'));
         }

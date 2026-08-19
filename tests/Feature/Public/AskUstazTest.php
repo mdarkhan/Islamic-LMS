@@ -3,6 +3,7 @@
 namespace Tests\Feature\Public;
 
 use App\Mail\AskUstazQuestion;
+use App\Services\Settings\SettingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
@@ -46,6 +47,33 @@ class AskUstazTest extends TestCase
                 && $mail->question === 'ব্যবসার পণ্যের উপর যাকাত কীভাবে হিসাব করব?'
                 && $mail->name === 'রহিম উদ্দিন';
         });
+    }
+
+    public function test_the_admin_configured_recipient_overrides_the_environment(): void
+    {
+        Mail::fake();
+        // setUp() configured the env fallback to self::RECIPIENT; the admin sets a different one.
+        app(SettingService::class)->set(['ustaz_email' => 'panel@example.test']);
+
+        $this->post(route('ask-ustaz.store'), $this->payload())->assertSessionHas('success');
+
+        Mail::assertSent(AskUstazQuestion::class, fn (AskUstazQuestion $mail) => $mail->hasTo('panel@example.test'));
+    }
+
+    public function test_an_admin_can_set_the_recipient_in_settings(): void
+    {
+        $this->actingAs($this->makeAdmin())->put(route('admin.settings.general'), [
+            'site_title' => 'মাসউদ আলিমী',
+            'ustaz_email' => 'inbox@example.test',
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $this->assertSame('inbox@example.test', app(SettingService::class)->get('ustaz_email'));
+
+        // A bad address is rejected.
+        $this->actingAs($this->makeAdmin())->put(route('admin.settings.general'), [
+            'site_title' => 'মাসউদ আলিমী',
+            'ustaz_email' => 'not-an-email',
+        ])->assertSessionHasErrors('ustaz_email');
     }
 
     public function test_mobile_and_subject_are_optional(): void

@@ -8,6 +8,8 @@ return [
     'site_title' => 'Site name',
     'site_tagline' => 'Tagline',
     'telegram_url' => 'Telegram URL',
+    'ustaz_email' => 'Ask Ustaz — recipient email',
+    'ustaz_email_hint' => 'Questions from the Ask Ustaz form are emailed here. If left empty, the USTAZ_EMAIL environment value is used.',
 
     'zakat' => 'Zakat reference',
     'gold_price' => 'Gold price per gram',

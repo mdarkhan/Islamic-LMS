@@ -36,6 +36,9 @@ class SettingService
         'site_title' => ['default' => 'মাসউদ আলিমী', 'type' => 'string', 'group' => 'general'],
         'site_tagline' => ['default' => 'কুরআন, তাফসির ও সীরাত শিক্ষার একটি নির্ভরযোগ্য মাধ্যম', 'type' => 'string', 'group' => 'general'],
         'telegram_url' => ['default' => '', 'type' => 'string', 'group' => 'general'],
+        // Ask Ustaz recipient. A plain recipient address, NOT a secret — safe to store
+        // here (unlike SMTP credentials). Empty falls back to config('mail.ustaz_email').
+        'ustaz_email' => ['default' => '', 'type' => 'string', 'group' => 'general'],
 
         'gold_price_per_gram' => ['default' => null, 'type' => 'decimal', 'group' => 'zakat'],
         'silver_price_per_gram' => ['default' => null, 'type' => 'decimal', 'group' => 'zakat'],

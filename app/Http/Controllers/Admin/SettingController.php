@@ -33,7 +33,7 @@ class SettingController extends Controller
             'mail' => [
                 'configured' => filled(config('mail.mailer')) && filled(config('mail.mailers.smtp.host')),
                 'from' => filled(config('mail.from.address')),
-                'ustaz' => filled(config('mail.ustaz_email')),
+                'ustaz' => filled($this->settings->get('ustaz_email')) || filled(config('mail.ustaz_email')),
             ],
         ]);
     }
@@ -44,6 +44,7 @@ class SettingController extends Controller
             'site_title' => ['required', 'string', 'max:150'],
             'site_tagline' => ['nullable', 'string', 'max:250'],
             'telegram_url' => ['nullable', 'url', 'max:250'],
+            'ustaz_email' => ['nullable', 'email', 'max:190'],
         ]);
 
         $this->settings->set($data, $request->user());
