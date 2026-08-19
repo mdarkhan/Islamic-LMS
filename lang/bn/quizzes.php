@@ -56,6 +56,11 @@ return [
     'practice_enabled' => 'অনুশীলন চালু',
     'practice_timer_enabled' => 'অনুশীলনে টাইমার',
     'leaderboard_visible' => 'মেধাতালিকা দৃশ্যমান',
+    'bonus_enabled' => 'ভালো ফলাফলে বোনাস পয়েন্ট দিন',
+    'bonus_full' => 'শিক্ষার্থী পূর্ণ নম্বর পেলে',
+    'bonus_marks' => 'শিক্ষার্থী নির্ধারিত নম্বর পেলে',
+    'bonus_threshold_marks' => 'প্রয়োজনীয় নম্বর',
+    'bonus_points' => 'বোনাস পয়েন্ট',
 
     // Edit page
     'scoring_locked' => 'স্কোরিং লক',

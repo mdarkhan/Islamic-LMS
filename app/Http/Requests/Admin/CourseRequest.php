@@ -18,6 +18,11 @@ class CourseRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'is_published' => ['sometimes', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
+
+            // Course-topper rewards: position → points.
+            'topper_rewards' => ['nullable', 'array', 'max:50'],
+            'topper_rewards.*.position' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'topper_rewards.*.points' => ['nullable', 'integer', 'min:1', 'max:100000'],
         ];
     }
 }

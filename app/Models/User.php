@@ -130,4 +130,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(QuizAttempt::class);
     }
+
+    /** @return HasMany<RewardGrant, $this> */
+    public function rewardGrants(): HasMany
+    {
+        return $this->hasMany(RewardGrant::class);
+    }
 }

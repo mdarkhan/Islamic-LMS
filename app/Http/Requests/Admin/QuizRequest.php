@@ -42,6 +42,11 @@ class QuizRequest extends FormRequest
             'practice_timer_enabled' => ['sometimes', 'boolean'],
             'leaderboard_visible' => ['sometimes', 'boolean'],
             'max_official_attempts' => ['required', 'integer', 'min:1', 'max:100'],
+
+            'bonus_enabled' => ['sometimes', 'boolean'],
+            'bonus_threshold_type' => ['nullable', Rule::in([Quiz::BONUS_THRESHOLD_FULL, Quiz::BONUS_THRESHOLD_MARKS])],
+            'bonus_threshold_marks' => ['nullable', 'integer', 'min:1', 'required_if:bonus_threshold_type,marks'],
+            'bonus_points' => ['nullable', 'integer', 'min:1', 'max:100000', 'required_if:bonus_enabled,1'],
         ];
     }
 

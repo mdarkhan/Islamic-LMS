@@ -17,3 +17,8 @@ Schedule::command('imports:cleanup')->hourly();
 // were never submitted (closed tab, lost connection). The screen, autosave and
 // resume already finalise opportunistically; this catches the abandoned ones.
 Schedule::command('attempts:finalize-expired')->everyMinute()->withoutOverlapping();
+
+// Grant achievement bonus points once a bonus quiz's results are released. Idempotent,
+// so a few-minute cadence simply catches newly-released quizzes; the student sees the
+// congratulations on their next login.
+Schedule::command('rewards:award-quiz-bonuses')->everyFiveMinutes()->withoutOverlapping();

@@ -87,6 +87,7 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
     Route::get('leaderboards/{quiz}', [Student\LeaderboardController::class, 'quiz'])->name('student.leaderboards.quiz');
 
     Route::get('points', [Student\PointController::class, 'index'])->name('student.points');
+    Route::post('rewards/seen', [Student\RewardController::class, 'seen'])->name('student.rewards.seen');
 
     Route::get('profile', [Student\ProfileController::class, 'edit'])->name('student.profile.edit');
     Route::put('profile', [Student\ProfileController::class, 'update'])->name('student.profile.update');
@@ -126,6 +127,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
     Route::middleware('perm:courses.manage')->group(function () {
         Route::put('courses/reorder', [Admin\CourseController::class, 'reorder'])->name('courses.reorder');
         Route::put('courses/{course}/publish', [Admin\CourseController::class, 'togglePublish'])->name('courses.publish');
+        Route::post('courses/{course}/award-toppers', [Admin\CourseController::class, 'awardToppers'])->name('courses.award-toppers');
         Route::resource('courses', Admin\CourseController::class)->except(['show']);
     });
 

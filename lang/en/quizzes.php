@@ -56,6 +56,11 @@ return [
     'practice_enabled' => 'Practice enabled',
     'practice_timer_enabled' => 'Practice has a timer',
     'leaderboard_visible' => 'Leaderboard visible',
+    'bonus_enabled' => 'Give a bonus for a high score',
+    'bonus_full' => 'When the student gets full marks',
+    'bonus_marks' => 'When the student reaches a set mark',
+    'bonus_threshold_marks' => 'Required mark',
+    'bonus_points' => 'Bonus points',
 
     // Edit page
     'scoring_locked' => 'Scoring Locked',

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CourseRequest;
 use App\Models\Course;
 use App\Services\Audit\AuditLogger;
+use App\Services\Rewards\RewardService;
 use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,6 +62,7 @@ class CourseController extends Controller
             'description' => $request->validated()['description'] ?? null,
             'is_published' => $request->boolean('is_published'),
             'sort_order' => (int) $request->input('sort_order', $course->sort_order),
+            'topper_rewards' => $this->cleanTopperRewards($request->input('topper_rewards')),
         ])->save();
 
         $this->audit->log('course.updated', $course,
@@ -82,6 +84,43 @@ class CourseController extends Controller
         $course->delete();
 
         return redirect()->route('admin.courses.index')->with('success', 'কোর্স মুছে ফেলা হয়েছে।');
+    }
+
+    /**
+     * Grant the course's configured position → points rewards to the current toppers.
+     * Idempotent — a student who already holds this course's reward is never re-awarded —
+     * so the admin can safely press it again after more results come in.
+     */
+    public function awardToppers(Course $course, RewardService $rewards): RedirectResponse
+    {
+        if ($course->topperRewardRows() === []) {
+            return back()->with('error', 'আগে টপারদের জন্য অবস্থান ও পয়েন্ট সেট করুন।');
+        }
+
+        $granted = $rewards->awardCourseToppers($course, request()->user());
+        $this->audit->log('course.toppers_awarded', $course, after: ['granted' => $granted]);
+
+        return back()->with('success', $granted > 0
+            ? "{$granted} জন টপারকে বোনাস পয়েন্ট দেওয়া হয়েছে।"
+            : 'নতুন করে কাউকে পুরস্কার দেওয়ার নেই (হয়তো ইতিমধ্যে দেওয়া হয়েছে অথবা ফলাফল এখনো প্রকাশ হয়নি)।');
+    }
+
+    /**
+     * Keep only rows with a valid position and points, so junk from a half-filled form
+     * never reaches the JSON column.
+     *
+     * @param  mixed  $rows
+     * @return array<int, array{position:int, points:int}>
+     */
+    private function cleanTopperRewards($rows): array
+    {
+        return collect(is_array($rows) ? $rows : [])
+            ->map(fn ($r) => ['position' => (int) ($r['position'] ?? 0), 'points' => (int) ($r['points'] ?? 0)])
+            ->filter(fn ($r) => $r['position'] >= 1 && $r['points'] >= 1)
+            ->unique('position')
+            ->sortBy('position')
+            ->values()
+            ->all();
     }
 
     public function togglePublish(Course $course): RedirectResponse

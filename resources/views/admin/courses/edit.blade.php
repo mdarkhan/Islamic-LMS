@@ -18,6 +18,30 @@
                     {{ __('admin.published') }}
                 </label>
             </div>
+            {{-- Course-topper rewards: position → points --}}
+            <div class="border-t border-line pt-5 space-y-2"
+                 x-data="{ rows: @js(old('topper_rewards', $course->topperRewardRows() ?: [['position' => 1, 'points' => '']])) }">
+                <p class="text-sm font-semibold text-ink">{{ __('courses.topper_rewards') }}</p>
+                <p class="text-xs text-muted">{{ __('courses.topper_rewards_hint') }}</p>
+                <template x-for="(row, i) in rows" :key="i">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-muted w-14">{{ __('courses.position') }}</span>
+                        <input type="number" min="1" :name="'topper_rewards['+i+'][position]'" x-model="row.position"
+                               class="w-20 rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
+                        <span class="text-muted">→</span>
+                        <input type="number" min="1" :name="'topper_rewards['+i+'][points]'" x-model="row.points"
+                               placeholder="{{ __('courses.points') }}"
+                               class="w-24 rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
+                        <span class="text-xs text-muted">{{ __('courses.points') }}</span>
+                        <button type="button" @click="rows.splice(i, 1)" class="ms-1 text-muted hover:text-rose-600" aria-label="{{ __('ui.delete') }}">&times;</button>
+                    </div>
+                </template>
+                <button type="button" @click="rows.push({ position: rows.length + 1, points: '' })"
+                        class="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
+                    <span class="text-base leading-none">+</span> {{ __('courses.add_position') }}
+                </button>
+            </div>
+
             <div class="flex justify-between gap-3 border-t border-line pt-5">
                 {{-- Delete uses a separate form (declared below) to avoid nesting. --}}
                 <x-ui.button type="submit" form="course-delete" variant="ghost" class="text-rose-600"
@@ -31,6 +55,17 @@
 
         <form id="course-delete" method="POST" action="{{ route('admin.courses.destroy', $course) }}" class="hidden">
             @csrf @method('DELETE')
+        </form>
+    </x-ui.card>
+
+    {{-- Award the configured topper rewards to the current course toppers. --}}
+    <x-ui.card class="max-w-2xl mt-5">
+        <h3 class="font-bold text-ink mb-1">{{ __('courses.award_toppers') }}</h3>
+        <p class="text-xs text-muted mb-3">{{ __('courses.award_toppers_hint') }}</p>
+        <form method="POST" action="{{ route('admin.courses.award-toppers', $course) }}"
+              onsubmit="return confirm('{{ __('courses.award_confirm') }}')">
+            @csrf
+            <x-ui.button type="submit" variant="secondary">{{ __('courses.award_toppers') }}</x-ui.button>
         </form>
     </x-ui.card>
 </x-layout.admin>

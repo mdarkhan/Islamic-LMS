@@ -93,6 +93,35 @@
                     <input type="checkbox" name="leaderboard_visible" value="1" @checked(old('leaderboard_visible', $quiz->leaderboard_visible ?? true)) class="rounded border-line text-brand focus:ring-brand">
                     {{ __('quizzes.leaderboard_visible') }}
                 </label>
+
+                {{-- Achievement bonus --}}
+                <div class="border-t border-line pt-3 space-y-3"
+                     x-data="{ bonus: {{ old('bonus_enabled', $quiz->bonus_enabled ?? false) ? 'true' : 'false' }}, type: '{{ old('bonus_threshold_type', $quiz->bonus_threshold_type ?? 'full') }}' }">
+                    <label class="flex items-center gap-2 text-sm font-medium text-ink">
+                        <input type="checkbox" name="bonus_enabled" value="1" x-model="bonus" class="rounded border-line text-brand focus:ring-brand">
+                        {{ __('quizzes.bonus_enabled') }}
+                    </label>
+                    <div x-show="bonus" x-cloak class="space-y-3 ps-6">
+                        <div class="space-y-1.5">
+                            <label class="flex items-center gap-2 text-sm text-ink">
+                                <input type="radio" name="bonus_threshold_type" value="full" x-model="type" class="text-brand focus:ring-brand">
+                                {{ __('quizzes.bonus_full') }}
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-ink">
+                                <input type="radio" name="bonus_threshold_type" value="marks" x-model="type" class="text-brand focus:ring-brand">
+                                {{ __('quizzes.bonus_marks') }}
+                            </label>
+                        </div>
+                        <div x-show="type === 'marks'" x-cloak>
+                            <x-ui.field :label="__('quizzes.bonus_threshold_marks')" name="bonus_threshold_marks">
+                                <x-ui.input type="number" name="bonus_threshold_marks" min="1" :value="old('bonus_threshold_marks', $quiz->bonus_threshold_marks ?? '')" />
+                            </x-ui.field>
+                        </div>
+                        <x-ui.field :label="__('quizzes.bonus_points')" name="bonus_points">
+                            <x-ui.input type="number" name="bonus_points" min="1" :value="old('bonus_points', $quiz->bonus_points ?? '')" />
+                        </x-ui.field>
+                    </div>
+                </div>
             </div>
         </x-ui.card>
     </div>

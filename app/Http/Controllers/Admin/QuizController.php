@@ -80,6 +80,10 @@ class QuizController extends Controller
             'practice_enabled' => $request->boolean('practice_enabled'),
             'practice_timer_enabled' => $request->boolean('practice_timer_enabled'),
             'leaderboard_visible' => $request->boolean('leaderboard_visible'),
+            'bonus_enabled' => $request->boolean('bonus_enabled'),
+            'bonus_threshold_type' => $data['bonus_threshold_type'] ?? Quiz::BONUS_THRESHOLD_FULL,
+            'bonus_threshold_marks' => $data['bonus_threshold_marks'] ?? null,
+            'bonus_points' => $data['bonus_points'] ?? 0,
             'max_official_attempts' => $data['max_official_attempts'],
             'created_by' => $request->user()->id,
             'published_at' => $data['status'] === Quiz::STATUS_PUBLISHED ? now() : null,
@@ -121,6 +125,10 @@ class QuizController extends Controller
             'practice_enabled' => $request->boolean('practice_enabled'),
             'practice_timer_enabled' => $request->boolean('practice_timer_enabled'),
             'leaderboard_visible' => $request->boolean('leaderboard_visible'),
+            'bonus_enabled' => $request->boolean('bonus_enabled'),
+            'bonus_threshold_type' => $data['bonus_threshold_type'] ?? Quiz::BONUS_THRESHOLD_FULL,
+            'bonus_threshold_marks' => $data['bonus_threshold_marks'] ?? null,
+            'bonus_points' => $data['bonus_points'] ?? 0,
             'max_official_attempts' => $data['max_official_attempts'],
         ]);
 

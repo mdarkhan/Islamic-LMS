@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'practice_enabled', 'practice_timer_enabled', 'point_cost', 'duration_seconds',
     'starts_at', 'ends_at', 'result_release_at', 'results_released_at',
     'leaderboard_visible', 'counts_toward_overall', 'max_official_attempts', 'created_by',
+    'bonus_enabled', 'bonus_threshold_type', 'bonus_threshold_marks', 'bonus_points',
     'legacy_import_batch_id', 'legacy_source_key',
 ])]
 class Quiz extends Model
@@ -45,7 +46,32 @@ class Quiz extends Model
             'duration_seconds' => 'integer',
             'total_marks' => 'integer',
             'max_official_attempts' => 'integer',
+            'bonus_enabled' => 'boolean',
+            'bonus_threshold_marks' => 'integer',
+            'bonus_points' => 'integer',
         ];
+    }
+
+    public const BONUS_THRESHOLD_FULL = 'full';
+    public const BONUS_THRESHOLD_MARKS = 'marks';
+
+    /** True when this quiz grants an achievement bonus and the config is usable. */
+    public function bonusActive(): bool
+    {
+        return $this->bonus_enabled && $this->bonus_points > 0 && $this->bonusThreshold() > 0;
+    }
+
+    /**
+     * The mark a student's obtained score must reach to earn the bonus: the quiz's full
+     * marks, or the admin-set threshold when that mode is chosen.
+     */
+    public function bonusThreshold(): int
+    {
+        if ($this->bonus_threshold_type === self::BONUS_THRESHOLD_MARKS) {
+            return (int) ($this->bonus_threshold_marks ?? 0);
+        }
+
+        return (int) ($this->total_marks ?? 0);
     }
 
     // Student-facing lifecycle states (computed from status + the clock).

@@ -23,6 +23,7 @@ class PointTransaction extends Model
     public const TYPE_ADJUSTMENT = 'adjustment';
     public const TYPE_REFUND = 'refund';
     public const TYPE_IMPORT = 'import';
+    public const TYPE_BONUS = 'bonus';   // achievement / topper reward
 
     protected function casts(): array
     {

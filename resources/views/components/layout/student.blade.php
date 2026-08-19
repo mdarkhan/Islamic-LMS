@@ -11,8 +11,17 @@
         ['label' => __('nav.point_history'), 'href' => route('student.points'), 'icon' => 'points', 'active' => request()->routeIs('student.points')],
         ['label' => __('nav.profile'), 'href' => route('student.profile.edit'), 'icon' => 'profile', 'active' => request()->routeIs('student.profile.*')],
     ];
+
+    // Pending bonus-point rewards → the congratulations screen (shown after login).
+    $pendingRewards = auth()->check()
+        ? app(\App\Services\Rewards\RewardService::class)->pendingFor(auth()->user())
+        : collect();
 @endphp
 
 <x-layout.app :title="$title" :heading="$heading" :nav="$nav" :context="__('nav.context_student')">
     {{ $slot }}
+
+    @if ($pendingRewards->isNotEmpty())
+        @include('student.partials.congrats', ['rewards' => $pendingRewards])
+    @endif
 </x-layout.app>

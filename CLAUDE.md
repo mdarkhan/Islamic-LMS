@@ -241,6 +241,22 @@ goodwill mark must survive an answer-key correction — there is a test for this
 - **Resuming never re-debits.** Guarded by `quiz_attempts.point_transaction_id`.
 - Practice costs nothing and sets `counts_toward_cumulative = false`.
 
+### Reward points (bonuses)
+
+- **`RewardService` grants all bonuses, always through `PointService`** (`TYPE_BONUS`),
+  never writing `points_balance` itself. Each award creates a `reward_grants` row in the
+  SAME transaction as its ledger row — the row is the idempotency guard AND the source of
+  the student "congratulations" screen. Its only mutable field is `seen_at`.
+- **Idempotency is enforced by the DB**: `unique(user_id, quiz_id)` for quiz-achievement
+  bonuses, `unique(user_id, course_id)` for course-topper bonuses (NULLs don't collide).
+  Re-running an award (the every-5-min `rewards:award-quiz-bonuses` sweep, or the admin
+  "Award toppers" button) never double-credits.
+- **Quiz bonus** is awarded only once a quiz's results are released and the student's best
+  official attempt meets the threshold (full marks, or the admin-set mark). **Course-topper
+  bonus** reads `LeaderboardService::courseLeaderboard` (competition ranking) and pays the
+  course's configured `position → points`. Bonuses affect the spendable balance only —
+  never `final_score`, so leaderboards are unaffected.
+
 ---
 
 ## Timezone

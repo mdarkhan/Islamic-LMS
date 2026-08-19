@@ -2,6 +2,7 @@
 
 namespace App\Services\Quiz;
 
+use App\Models\Course;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\User;
@@ -108,6 +109,37 @@ class LeaderboardService
             ->filter(fn (Quiz $quiz) => $quiz->resultsReleasedAt($now))
             ->pluck('id');
 
+        return $this->aggregateStandings($quizIds);
+    }
+
+    /**
+     * Cumulative standings for a single course — every released quiz belonging to the
+     * course, best attempt per student per quiz, ranked by total obtained. Same shape and
+     * competition-ranking rules as the overall board; drives the course-topper award.
+     *
+     * @return Collection<int, array{rank:int, user_id:int, roll:?string, name:string, exams_counted:int, obtained:int, possible:int, percentage:float}>
+     */
+    public function courseLeaderboard(Course $course, ?CarbonImmutable $now = null): Collection
+    {
+        $now ??= CarbonImmutable::now();
+
+        $quizIds = $course->quizzes()
+            ->get(['id', 'ends_at', 'result_release_at', 'results_released_at'])
+            ->filter(fn (Quiz $quiz) => $quiz->resultsReleasedAt($now))
+            ->pluck('id');
+
+        return $this->aggregateStandings($quizIds);
+    }
+
+    /**
+     * Shared cumulative aggregation over a set of quiz ids: best official terminal attempt
+     * per student per quiz, summed and ranked (competition ranking).
+     *
+     * @param  Collection<int, int>  $quizIds
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function aggregateStandings(Collection $quizIds): Collection
+    {
         if ($quizIds->isEmpty()) {
             return collect();
         }
