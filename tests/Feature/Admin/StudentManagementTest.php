@@ -62,6 +62,41 @@ class StudentManagementTest extends TestCase
         $this->assertNull(User::query()->where('roll', '202')->first());
     }
 
+    public function test_the_student_list_defaults_to_roll_order_and_is_sortable(): void
+    {
+        $admin = $this->makeAdmin();
+        $this->makeStudent(['roll' => '103', 'name' => 'Zeta Student'])->forceFill(['points_balance' => 5])->save();
+        $this->makeStudent(['roll' => '101', 'name' => 'Alpha Student'])->forceFill(['points_balance' => 30])->save();
+        $this->makeStudent(['roll' => '102', 'name' => 'Beta Student'])->forceFill(['points_balance' => 10])->save();
+
+        // Default: roll ascending — 101, 102, 103 (numeric, not string).
+        $this->actingAs($admin)->get(route('admin.students.index'))
+            ->assertOk()->assertSeeInOrder(['Alpha Student', 'Beta Student', 'Zeta Student']);
+
+        // By name, descending.
+        $this->actingAs($admin)->get(route('admin.students.index', ['sort' => 'name', 'dir' => 'desc']))
+            ->assertOk()->assertSeeInOrder(['Zeta Student', 'Beta Student', 'Alpha Student']);
+
+        // By points, descending — 30, 10, 5.
+        $this->actingAs($admin)->get(route('admin.students.index', ['sort' => 'points', 'dir' => 'desc']))
+            ->assertOk()->assertSeeInOrder(['Alpha Student', 'Beta Student', 'Zeta Student']);
+    }
+
+    public function test_the_points_list_is_sortable_by_roll_name_and_points(): void
+    {
+        $admin = $this->makeAdmin();
+        $this->makeStudent(['roll' => '105', 'name' => 'Low Points'])->forceFill(['points_balance' => 2])->save();
+        $this->makeStudent(['roll' => '104', 'name' => 'High Points'])->forceFill(['points_balance' => 99])->save();
+
+        // Default roll order: 104 before 105.
+        $this->actingAs($admin)->get(route('admin.points.index'))
+            ->assertOk()->assertSeeInOrder(['High Points', 'Low Points']);
+
+        // Points descending: 99 before 2.
+        $this->actingAs($admin)->get(route('admin.points.index', ['sort' => 'points', 'dir' => 'desc']))
+            ->assertOk()->assertSeeInOrder(['High Points', 'Low Points']);
+    }
+
     public function test_duplicate_roll_is_rejected(): void
     {
         $admin = $this->makeAdmin();

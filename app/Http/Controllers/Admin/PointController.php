@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Points\InsufficientPointsException;
 use App\Services\Points\PointService;
+use App\Support\StudentSort;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,16 +26,18 @@ class PointController extends Controller
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('q', ''));
+        [$sort, $dir] = StudentSort::resolve($request);
 
-        $students = User::query()->students()
+        $query = User::query()->students()
             ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%{$search}%")
-                ->orWhere('roll', 'like', "%{$search}%")))
-            ->orderBy('name')
-            ->paginate(20)
-            ->withQueryString();
+                ->orWhere('roll', 'like', "%{$search}%")));
 
-        return view('admin.points.index', compact('students', 'search'));
+        StudentSort::apply($query, $sort, $dir);
+
+        $students = $query->paginate(20)->withQueryString();
+
+        return view('admin.points.index', compact('students', 'search', 'sort', 'dir'));
     }
 
     public function show(User $student): View

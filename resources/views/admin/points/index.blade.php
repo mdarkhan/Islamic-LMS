@@ -15,10 +15,10 @@
     @else
         <x-ui.table>
             <x-slot:head>
-                <th class="px-4 py-3">{{ __('students.name_col') }}</th>
-                <th class="px-4 py-3">{{ __('students.roll_col') }}</th>
+                <th class="px-4 py-3"><x-ui.sort-link sort="name" :current="$sort" :dir="$dir" :label="__('students.name_col')" /></th>
+                <th class="px-4 py-3"><x-ui.sort-link sort="roll" :current="$sort" :dir="$dir" :label="__('students.roll_col')" /></th>
                 <th class="px-4 py-3">{{ __('ui.status') }}</th>
-                <th class="px-4 py-3 text-right">{{ __('points.balance') }}</th>
+                <th class="px-4 py-3 text-right"><x-ui.sort-link sort="points" :current="$sort" :dir="$dir" :label="__('points.balance')" class="justify-end" /></th>
                 <th class="px-4 py-3"></th>
             </x-slot:head>
             @foreach ($students as $student)

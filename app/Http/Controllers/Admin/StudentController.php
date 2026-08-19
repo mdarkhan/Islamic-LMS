@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\StudentUpdateRequest;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Support\StudentSort;
 use App\Support\TemporaryPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,17 +26,19 @@ class StudentController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $status = $request->query('status');
+        [$sort, $dir] = StudentSort::resolve($request);
 
-        $students = User::query()->students()
+        $query = User::query()->students()
             ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%{$search}%")
                 ->orWhere('roll', 'like', "%{$search}%")))
-            ->when(in_array($status, ['active', 'suspended', 'archived'], true), fn ($q) => $q->where('status', $status))
-            ->orderBy('name')
-            ->paginate(20)
-            ->withQueryString();
+            ->when(in_array($status, ['active', 'suspended', 'archived'], true), fn ($q) => $q->where('status', $status));
 
-        return view('admin.students.index', compact('students', 'search', 'status'));
+        StudentSort::apply($query, $sort, $dir);
+
+        $students = $query->paginate(20)->withQueryString();
+
+        return view('admin.students.index', compact('students', 'search', 'status', 'sort', 'dir'));
     }
 
     public function create(): View
