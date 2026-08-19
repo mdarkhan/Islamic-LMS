@@ -125,7 +125,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
     // Courses — reorder is declared before the resource so PUT courses/reorder is
     // not captured by the {course} update route.
     Route::middleware('perm:courses.manage')->group(function () {
-        Route::put('courses/reorder', [Admin\CourseController::class, 'reorder'])->name('courses.reorder');
+        Route::put('courses/{course}/move/{direction}', [Admin\CourseController::class, 'move'])->name('courses.move')->whereIn('direction', ['up', 'down']);
         Route::put('courses/{course}/publish', [Admin\CourseController::class, 'togglePublish'])->name('courses.publish');
         Route::post('courses/{course}/award-toppers', [Admin\CourseController::class, 'awardToppers'])->name('courses.award-toppers');
         Route::resource('courses', Admin\CourseController::class)->except(['show']);

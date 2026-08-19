@@ -9,15 +9,11 @@
             <x-ui.field :label="__('admin.description')" name="description">
                 <x-ui.textarea name="description">{{ old('description', $course->description) }}</x-ui.textarea>
             </x-ui.field>
-            <div class="grid grid-cols-2 gap-4">
-                <x-ui.field :label="__('admin.order').' (sort order)'" name="sort_order">
-                    <x-ui.input name="sort_order" type="number" min="0" :value="old('sort_order', $course->sort_order)" />
-                </x-ui.field>
-                <label class="flex items-end gap-2 text-sm text-ink pb-2.5">
-                    <input type="checkbox" name="is_published" value="1" @checked(old('is_published', $course->is_published)) class="rounded border-line text-brand focus:ring-brand">
-                    {{ __('admin.published') }}
-                </label>
-            </div>
+            <label class="flex items-center gap-2 text-sm text-ink">
+                <input type="checkbox" name="is_published" value="1" @checked(old('is_published', $course->is_published)) class="rounded border-line text-brand focus:ring-brand">
+                {{ __('admin.published') }}
+            </label>
+            <p class="text-xs text-muted">{{ __('courses.order_hint') }}</p>
             {{-- Course-topper rewards: position → points --}}
             <div class="border-t border-line pt-5 space-y-2"
                  x-data="{ rows: @js(old('topper_rewards', $course->topperRewardRows() ?: [['position' => 1, 'points' => '']])) }">

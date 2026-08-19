@@ -36,6 +36,53 @@ class CourseLessonTest extends TestCase
         $this->assertDatabaseHas('courses', ['id' => $course->id]);
     }
 
+    public function test_a_course_with_a_quiz_cannot_be_deleted(): void
+    {
+        $admin = $this->makeAdmin();
+        $course = Course::factory()->create();
+        \App\Models\Quiz::factory()->create(['course_id' => $course->id]);
+
+        $this->actingAs($admin)->from(route('admin.courses.edit', $course))
+            ->delete(route('admin.courses.destroy', $course))
+            ->assertRedirect()->assertSessionHas('error');
+
+        $this->assertDatabaseHas('courses', ['id' => $course->id]);
+    }
+
+    public function test_an_empty_course_is_deleted(): void
+    {
+        $admin = $this->makeAdmin();
+        $course = Course::factory()->create();
+
+        $this->actingAs($admin)->delete(route('admin.courses.destroy', $course))
+            ->assertRedirect(route('admin.courses.index'))->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('courses', ['id' => $course->id]);
+    }
+
+    public function test_courses_are_ordered_1_based_and_reorder_with_arrows(): void
+    {
+        $admin = $this->makeAdmin();
+        foreach (['ক', 'খ', 'গ'] as $title) {
+            $this->actingAs($admin)->post(route('admin.courses.store'), ['title' => $title]);
+        }
+        $first = Course::query()->where('title', 'ক')->first();
+        $second = Course::query()->where('title', 'খ')->first();
+        $third = Course::query()->where('title', 'গ')->first();
+
+        // Orders start at 1 and are unique/sequential.
+        $this->assertSame([1, 2, 3], [$first->sort_order, $second->sort_order, $third->sort_order]);
+
+        // Moving the third up swaps it with the second.
+        $this->actingAs($admin)->put(route('admin.courses.move', [$third, 'up']))->assertRedirect();
+        $this->assertSame(2, $third->fresh()->sort_order);
+        $this->assertSame(3, $second->fresh()->sort_order);
+
+        // The top course can't move above position 1 (no-op).
+        $this->actingAs($admin)->put(route('admin.courses.move', [$first, 'up']))->assertRedirect();
+        $this->assertSame(1, $first->fresh()->sort_order);
+    }
+
     public function test_admin_creates_a_lesson_with_resources_dropping_placeholder_urls(): void
     {
         $admin = $this->makeAdmin();

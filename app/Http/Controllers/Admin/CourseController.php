@@ -10,6 +10,7 @@ use App\Services\Rewards\RewardService;
 use App\Support\Slug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CourseController extends Controller
@@ -61,7 +62,7 @@ class CourseController extends Controller
             'title' => $request->validated()['title'],
             'description' => $request->validated()['description'] ?? null,
             'is_published' => $request->boolean('is_published'),
-            'sort_order' => (int) $request->input('sort_order', $course->sort_order),
+            // sort_order is managed by the up/down arrows, never edited here.
             'topper_rewards' => $this->cleanTopperRewards($request->input('topper_rewards')),
         ])->save();
 
@@ -75,15 +76,54 @@ class CourseController extends Controller
 
     public function destroy(Course $course): RedirectResponse
     {
-        // RESTRICT on lessons: a course with content is never silently deleted.
-        if ($course->lessons()->exists()) {
-            return back()->with('error', 'এই কোর্সে ক্লাস রয়েছে, তাই এটি মুছে ফেলা যাবে না। আগে ক্লাসগুলো সরান।');
+        // RESTRICT on lessons AND quizzes: a course with content is never silently deleted
+        // (deleting one with a linked quiz would otherwise fail on the foreign key).
+        if ($course->lessons()->exists() || $course->quizzes()->exists()) {
+            return back()->with('error', 'এই কোর্সে ক্লাস বা কুইজ রয়েছে, তাই এটি মুছে ফেলা যাবে না। আগে সেগুলো সরান বা অন্য কোর্সে নিন।');
         }
 
         $this->audit->log('course.deleted', $course, before: $course->only(['slug', 'title']));
         $course->delete();
+        $this->resequence();   // close the gap so the order stays 1..N
 
         return redirect()->route('admin.courses.index')->with('success', 'কোর্স মুছে ফেলা হয়েছে।');
+    }
+
+    /**
+     * Move a course one step up or down by swapping its sort_order with its neighbour.
+     * Ordering is 1-based and unique, so the neighbour is always well defined.
+     */
+    public function move(Course $course, string $direction): RedirectResponse
+    {
+        abort_unless(in_array($direction, ['up', 'down'], true), 404);
+
+        $neighbour = Course::query()
+            ->where('sort_order', $direction === 'up' ? '<' : '>', $course->sort_order)
+            ->orderBy('sort_order', $direction === 'up' ? 'desc' : 'asc')
+            ->first();
+
+        if ($neighbour !== null) {
+            DB::transaction(function () use ($course, $neighbour) {
+                $original = $course->sort_order;
+                $course->forceFill(['sort_order' => $neighbour->sort_order])->save();
+                $neighbour->forceFill(['sort_order' => $original])->save();
+            });
+        }
+
+        return back();
+    }
+
+    /** Renumber every course to a clean 1..N sequence in its current order. */
+    private function resequence(): void
+    {
+        $position = 1;
+
+        foreach (Course::query()->orderBy('sort_order')->orderBy('id')->get() as $course) {
+            if ($course->sort_order !== $position) {
+                $course->forceFill(['sort_order' => $position])->save();
+            }
+            $position++;
+        }
     }
 
     /**
@@ -130,20 +170,6 @@ class CourseController extends Controller
         $this->audit->log('course.updated', $course, after: ['is_published' => $course->is_published]);
 
         return back()->with('success', $course->is_published ? 'কোর্স প্রকাশ করা হয়েছে।' : 'কোর্স আড়াল করা হয়েছে।');
-    }
-
-    public function reorder(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'order' => ['required', 'array'],
-            'order.*' => ['integer', 'exists:courses,id'],
-        ]);
-
-        foreach ($data['order'] as $position => $id) {
-            Course::query()->whereKey($id)->update(['sort_order' => $position]);
-        }
-
-        return back()->with('success', 'ক্রম পরিবর্তন করা হয়েছে।');
     }
 
     private function uniqueSlug(string $title): string
