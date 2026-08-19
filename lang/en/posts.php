@@ -93,7 +93,6 @@ return [
     'question' => 'Question',
     'question_hint' => 'Optional. Shown as the question box; also puts an "Answer" heading before the body.',
     'question_label' => 'Question',
-    'answer_summary' => 'Answer summary',
     'answer_summary_hint' => 'Optional. Shown in the green summary box (and used for the listing and search preview).',
     'answer_label' => 'Answer',
     'views' => 'views',

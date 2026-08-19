@@ -193,7 +193,7 @@ class BlogTest extends TestCase
         $this->get(route('blog.show', $post))->assertOk()
             ->assertSee('নামাযে সাহু সিজদা কখন দিতে হবে?')     // the question text
             ->assertSee('সাহু সিজদার সংক্ষিপ্ত উত্তর।')          // the summary text
-            ->assertSee(__('posts.answer_summary'))              // "উত্তরের সার-সংক্ষেপ" box label
+            ->assertSee(__('posts.summary'))                     // "সারসংক্ষেপ" box label
             ->assertSee('</h2>', false);
         // The standalone "Answer" heading appears only when there is a question.
         $this->assertStringContainsString('উত্তর</h2>', $this->get(route('blog.show', $post))->getContent());

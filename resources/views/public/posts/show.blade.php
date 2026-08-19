@@ -91,7 +91,7 @@
             {{-- Answer-summary callout (green) --}}
             @if ($hasSummary)
                 <div class="rounded-2xl border border-brand/30 bg-brand-tint/70 dark:bg-brand-tint/20 p-5 mb-6">
-                    <p class="text-sm font-bold text-brand-strong mb-1.5">{{ __('posts.answer_summary') }}</p>
+                    <p class="text-sm font-bold text-brand-strong mb-1.5">{{ __('posts.summary') }}</p>
                     <p class="text-ink/90 leading-relaxed">{{ $post->excerpt }}</p>
                 </div>
             @endif
