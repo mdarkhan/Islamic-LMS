@@ -50,14 +50,55 @@
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="exec('italic')" title="{{ __('posts.fmt_italic') }}" aria-label="{{ __('posts.fmt_italic') }}"><span class="italic font-serif text-[15px]">I</span></button>
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="exec('underline')" title="{{ __('posts.fmt_underline') }}" aria-label="{{ __('posts.fmt_underline') }}"><span class="underline">U</span></button>
                         {!! $div !!}
-                        <button type="button" class="{{ $btn }}" @mousedown.prevent="block('h2')" title="{{ __('posts.fmt_h2') }}" aria-label="{{ __('posts.fmt_h2') }}"><span class="font-bold text-xs">H2</span></button>
-                        <button type="button" class="{{ $btn }}" @mousedown.prevent="block('h3')" title="{{ __('posts.fmt_h3') }}" aria-label="{{ __('posts.fmt_h3') }}"><span class="font-bold text-xs">H3</span></button>
+                        <button type="button" class="{{ $btn }}" @mousedown.prevent="toggleBlock('h2')" title="{{ __('posts.fmt_h2') }}" aria-label="{{ __('posts.fmt_h2') }}"><span class="font-bold text-xs">H2</span></button>
+                        <button type="button" class="{{ $btn }}" @mousedown.prevent="toggleBlock('h3')" title="{{ __('posts.fmt_h3') }}" aria-label="{{ __('posts.fmt_h3') }}"><span class="font-bold text-xs">H3</span></button>
                         {!! $div !!}
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="exec('insertUnorderedList')" title="{{ __('posts.fmt_bullet') }}" aria-label="{{ __('posts.fmt_bullet') }}">
                             <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><circle cx="3" cy="5" r="1.3"/><circle cx="3" cy="10" r="1.3"/><circle cx="3" cy="15" r="1.3"/><rect x="7" y="4" width="11" height="2" rx="1"/><rect x="7" y="9" width="11" height="2" rx="1"/><rect x="7" y="14" width="11" height="2" rx="1"/></svg>
                         </button>
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="exec('insertOrderedList')" title="{{ __('posts.fmt_number') }}" aria-label="{{ __('posts.fmt_number') }}"><span class="font-bold text-xs tabular-nums">1.</span></button>
-                        <button type="button" class="{{ $btn }}" @mousedown.prevent="block('blockquote')" title="{{ __('posts.fmt_quote') }}" aria-label="{{ __('posts.fmt_quote') }}"><span class="text-lg leading-none">&ldquo;</span></button>
+                        <button type="button" class="{{ $btn }}" @mousedown.prevent="toggleBlock('blockquote')" title="{{ __('posts.fmt_quote') }}" aria-label="{{ __('posts.fmt_quote') }}"><span class="text-lg leading-none">&ldquo;</span></button>
+                        {!! $div !!}
+
+                        {{-- Text colour (picker + hex code). --}}
+                        <div class="relative">
+                            <button type="button" class="{{ $btn }} flex-col !gap-0" @mousedown.prevent="openColor('text')" @click.stop title="{{ __('posts.fmt_text_color') }}" aria-label="{{ __('posts.fmt_text_color') }}">
+                                <span class="font-bold leading-none">A</span>
+                                <span class="block h-1 w-4 rounded-sm" :style="'background:'+textColor"></span>
+                            </button>
+                            <div x-show="colorOpen === 'text'" x-cloak @mousedown.stop @click.outside="colorOpen = null"
+                                 class="absolute z-30 mt-1 w-56 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
+                                <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_text_color') }}</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" x-model="textColor" @change="applyColor('text')" @mousedown.stop
+                                           class="h-9 w-10 shrink-0 cursor-pointer rounded border border-line bg-transparent p-0.5" aria-label="{{ __('posts.color_pick') }}">
+                                    <input type="text" x-model="textColor" @keydown.enter.prevent="applyColor('text')" @mousedown.stop
+                                           dir="ltr" maxlength="7" placeholder="#1c1917" aria-label="{{ __('posts.color_code') }}"
+                                           class="w-full rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
+                                </div>
+                                <button type="button" @mousedown.prevent="applyColor('text')" class="w-full rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-strong">{{ __('posts.apply') }}</button>
+                            </div>
+                        </div>
+
+                        {{-- Background / highlight colour (picker + hex code). --}}
+                        <div class="relative">
+                            <button type="button" class="{{ $btn }} flex-col !gap-0" @mousedown.prevent="openColor('bg')" @click.stop title="{{ __('posts.fmt_bg_color') }}" aria-label="{{ __('posts.fmt_bg_color') }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                                <span class="block h-1 w-4 rounded-sm" :style="'background:'+bgColor"></span>
+                            </button>
+                            <div x-show="colorOpen === 'bg'" x-cloak @mousedown.stop @click.outside="colorOpen = null"
+                                 class="absolute z-30 mt-1 w-56 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
+                                <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_bg_color') }}</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" x-model="bgColor" @change="applyColor('bg')" @mousedown.stop
+                                           class="h-9 w-10 shrink-0 cursor-pointer rounded border border-line bg-transparent p-0.5" aria-label="{{ __('posts.color_pick') }}">
+                                    <input type="text" x-model="bgColor" @keydown.enter.prevent="applyColor('bg')" @mousedown.stop
+                                           dir="ltr" maxlength="7" placeholder="#fef08a" aria-label="{{ __('posts.color_code') }}"
+                                           class="w-full rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
+                                </div>
+                                <button type="button" @mousedown.prevent="applyColor('bg')" class="w-full rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-strong">{{ __('posts.apply') }}</button>
+                            </div>
+                        </div>
                         {!! $div !!}
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="link()" title="{{ __('posts.fmt_link') }}" aria-label="{{ __('posts.fmt_link') }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M10 13a5 5 0 0 0 7.07 0l1.42-1.42a5 5 0 0 0-7.07-7.07L10.29 5.6"/><path d="M14 11a5 5 0 0 0-7.07 0L5.5 12.42a5 5 0 0 0 7.07 7.07l1.13-1.12"/></svg>
@@ -68,7 +109,7 @@
                     <div x-ref="editor" x-init="$el.innerHTML = html"
                          contenteditable="true" role="textbox" aria-multiline="true"
                          data-placeholder="{{ __('posts.body_placeholder') }}"
-                         @input="sync()" @blur="sync()"
+                         @input="sync()" @blur="sync()" @paste="onPaste($event)"
                          class="rt-editor min-h-[22rem] max-h-[38rem] overflow-y-auto px-4 py-3 text-ink leading-loose
                                 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2
                                 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-3 [&_h3]:mb-1.5
@@ -161,12 +202,83 @@
 
 <script>
     window.postEditor = function (config) {
+        // ── Paste sanitiser (mirrors App\Support\HtmlSanitizer's allow-list) ──────────
+        // Cleans pasted HTML client-side so the editor keeps only safe, allow-listed
+        // formatting (bold, italic, underline, colours, lists, links) — the server
+        // re-enforces the same list on save and on display.
+        const ALLOWED = {
+            p: [], br: [], strong: [], b: [], em: [], i: [], u: [], s: [],
+            h2: [], h3: [], h4: [], ul: [], ol: [], li: [], blockquote: [],
+            code: [], pre: [], span: [], a: ['href'],
+        };
+        const STYLE_PROPS = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line'];
+
+        function filterStyle(style) {
+            const kept = [];
+            (style || '').split(';').forEach(function (decl) {
+                const i = decl.indexOf(':');
+                if (i < 0) return;
+                const prop = decl.slice(0, i).trim().toLowerCase();
+                const value = decl.slice(i + 1).trim();
+                const lower = value.toLowerCase();
+                if (! value || STYLE_PROPS.indexOf(prop) === -1) return;
+                if (lower.includes('url(') || lower.includes('expression') || lower.includes('javascript:')
+                    || value.includes('/*') || value.includes('<') || value.includes('>')) return;
+                if (! /^[#0-9a-z.,%()\- ]+$/i.test(value)) return;
+                kept.push(prop + ': ' + value);
+            });
+            return kept.join('; ');
+        }
+        function hardenLink(a) {
+            const href = (a.getAttribute('href') || '').trim();
+            const safe = href !== '' && (href.startsWith('/') || href.startsWith('#') || /^(https?:|mailto:)/i.test(href));
+            if (! safe) { a.removeAttribute('href'); return; }
+            a.setAttribute('rel', 'noopener nofollow ugc');
+            a.setAttribute('target', '_blank');
+        }
+        function sanitizeNode(node) {
+            Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+                if (child.nodeType === 3) return;               // text node
+                if (child.nodeType !== 1) { child.remove(); return; }
+                const tag = child.tagName.toLowerCase();
+                if (! (tag in ALLOWED)) {
+                    sanitizeNode(child);
+                    if (tag === 'script' || tag === 'style') { child.remove(); return; }
+                    while (child.firstChild) node.insertBefore(child.firstChild, child);
+                    child.remove();
+                    return;
+                }
+                Array.prototype.slice.call(child.attributes).forEach(function (attr) {
+                    const name = attr.name.toLowerCase();
+                    if (name === 'style') {
+                        const s = filterStyle(attr.value);
+                        s ? child.setAttribute('style', s) : child.removeAttribute('style');
+                        return;
+                    }
+                    if (ALLOWED[tag].indexOf(name) === -1) child.removeAttribute(attr.name);
+                });
+                if (tag === 'a') hardenLink(child);
+                sanitizeNode(child);
+            });
+        }
+        function sanitizeFragment(html) {
+            const doc = new DOMParser().parseFromString('<div id="__rt">' + html + '</div>', 'text/html');
+            const root = doc.getElementById('__rt');
+            if (! root) return '';
+            sanitizeNode(root);
+            return root.innerHTML;
+        }
+
         return {
             title: config.title || '',
             slug: config.slug || '',
             slugLocked: !! config.slugLocked,   // an existing slug is never auto-overwritten by title edits
             status: config.status || 'draft',
             html: config.body || '',
+            colorOpen: null,                    // 'text' | 'bg' | null
+            textColor: '#1c1917',
+            bgColor: '#fef08a',
+            savedRange: null,                   // editor selection, preserved across prompts/pop-overs
 
             // ── Slug (WordPress-style permalink) ──────────────────────────────────
             slugify(value) {
@@ -193,37 +305,86 @@
             },
 
             // ── Rich-text editor ──────────────────────────────────────────────────
+            saveSelection() {
+                const sel = window.getSelection();
+                this.savedRange = (sel && sel.rangeCount && this.$refs.editor.contains(sel.anchorNode))
+                    ? sel.getRangeAt(0).cloneRange() : null;
+            },
+            restoreSelection() {
+                if (! this.savedRange) return;
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(this.savedRange);
+            },
             exec(command, value = null) {
                 this.$refs.editor.focus();
+                document.execCommand('styleWithCSS', false, false);   // prefer <b>/<i>/<u> over inline styles
                 document.execCommand(command, false, value);
                 this.sync();
             },
-            block(tag) {
-                this.exec('formatBlock', tag);
+            // Headings and quote toggle: applying the same block again returns to a paragraph.
+            toggleBlock(tag) {
+                this.$refs.editor.focus();
+                const current = (document.queryCommandValue('formatBlock') || '').toLowerCase().replace(/[<>]/g, '');
+                document.execCommand('formatBlock', false, current === tag ? 'p' : tag);
+                this.sync();
             },
             clearFormat() {
                 this.$refs.editor.focus();
-                document.execCommand('removeFormat');
+                document.execCommand('styleWithCSS', false, true);
+                document.execCommand('removeFormat');   // clears bold/italic/underline/colours
+                document.execCommand('unlink');
                 document.execCommand('formatBlock', false, 'p');
                 this.sync();
             },
-            link() {
-                const url = window.prompt(config.linkPrompt);
-                if (url === null) {
-                    return;   // cancelled
+            openColor(which) {
+                this.saveSelection();                          // keep the selection while the pop-over has focus
+                this.colorOpen = this.colorOpen === which ? null : which;
+            },
+            applyColor(which) {
+                const color = which === 'text' ? this.textColor : this.bgColor;
+                if (! /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)) return;   // ignore an incomplete hex code
+                this.$refs.editor.focus();
+                this.restoreSelection();
+                document.execCommand('styleWithCSS', false, true);
+                if (which === 'text') {
+                    document.execCommand('foreColor', false, color);
+                } else if (! document.execCommand('hiliteColor', false, color)) {
+                    document.execCommand('backColor', false, color);   // Safari/older fallback
                 }
+                this.colorOpen = null;
+                this.sync();
+            },
+            link() {
+                this.saveSelection();
+                const url = window.prompt(config.linkPrompt, 'https://');
+                if (url === null) return;                       // cancelled
                 const clean = url.trim();
                 this.$refs.editor.focus();
-                const selection = window.getSelection();
+                this.restoreSelection();                        // window.prompt drops the selection — put it back
+                const sel = window.getSelection();
 
-                if (clean === '') {
-                    document.execCommand('unlink');   // empty URL removes the link
-                } else if (selection && selection.isCollapsed) {
+                if (clean === '' || clean === 'https://') {
+                    document.execCommand('unlink');             // empty URL removes the link
+                } else if (sel && sel.isCollapsed) {
                     const esc = clean.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
                         .replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     document.execCommand('insertHTML', false, '<a href="' + esc + '">' + esc + '</a>');
                 } else {
                     document.execCommand('createLink', false, clean);
+                }
+                this.sync();
+            },
+            onPaste(event) {
+                const data = event.clipboardData || window.clipboardData;
+                if (! data) return;                             // let the browser handle it
+                event.preventDefault();
+                this.$refs.editor.focus();
+                const html = data.getData('text/html');
+                if (html && html.trim() !== '') {
+                    document.execCommand('insertHTML', false, sanitizeFragment(html));   // keep safe formatting
+                } else {
+                    document.execCommand('insertText', false, data.getData('text/plain'));
                 }
                 this.sync();
             },

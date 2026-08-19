@@ -20,11 +20,40 @@ class HtmlSanitizerTest extends TestCase
         $this->assertStringNotContainsString('<style', $out);
     }
 
-    public function test_it_strips_event_handlers_and_other_attributes(): void
+    public function test_it_strips_event_handlers_and_disallowed_attributes(): void
     {
-        $out = HtmlSanitizer::clean('<strong onclick="x()" class="c" style="color:red">bold</strong>');
+        $out = HtmlSanitizer::clean('<strong onclick="x()" class="c" data-x="1" id="y">bold</strong>');
 
         $this->assertSame('<strong>bold</strong>', $out);
+    }
+
+    public function test_it_keeps_allow_listed_style_properties(): void
+    {
+        $out = HtmlSanitizer::clean('<span style="color: #ff0000; background-color: rgb(0,0,0); font-weight: bold">x</span>');
+
+        $this->assertStringContainsString('color: #ff0000', $out);
+        $this->assertStringContainsString('background-color: rgb(0,0,0)', $out);
+        $this->assertStringContainsString('font-weight: bold', $out);
+    }
+
+    public function test_it_drops_disallowed_or_dangerous_style_declarations(): void
+    {
+        $out = HtmlSanitizer::clean(
+            '<span style="color: red; position: fixed; background: url(javascript:alert(1)); width: 999px">x</span>'
+        );
+
+        $this->assertStringContainsString('color: red', $out);
+        $this->assertStringNotContainsString('position', $out);
+        $this->assertStringNotContainsString('url(', $out);
+        $this->assertStringNotContainsString('javascript', $out);
+        $this->assertStringNotContainsString('width', $out);
+    }
+
+    public function test_it_keeps_span_used_for_colour(): void
+    {
+        $out = HtmlSanitizer::clean('<p>a <span style="color: #123456">b</span> c</p>');
+
+        $this->assertStringContainsString('<span style="color: #123456">b</span>', $out);
     }
 
     public function test_it_neutralises_unsafe_link_schemes(): void
@@ -53,10 +82,10 @@ class HtmlSanitizerTest extends TestCase
 
     public function test_it_unwraps_disallowed_tags_but_keeps_their_text(): void
     {
-        $out = HtmlSanitizer::clean('<div><span>kept</span> text</div>');
+        $out = HtmlSanitizer::clean('<div><section>kept</section> text</div>');
 
         $this->assertStringNotContainsString('<div', $out);
-        $this->assertStringNotContainsString('<span', $out);
+        $this->assertStringNotContainsString('<section', $out);
         $this->assertStringContainsString('kept', $out);
         $this->assertStringContainsString('text', $out);
     }

@@ -25,6 +25,11 @@ return [
     'fmt_quote' => 'Quote',
     'fmt_link' => 'Link',
     'fmt_clear' => 'Clear formatting',
+    'fmt_text_color' => 'Text colour',
+    'fmt_bg_color' => 'Highlight colour',
+    'color_pick' => 'Pick a colour',
+    'color_code' => 'Colour code (hex)',
+    'apply' => 'Apply',
     'link_prompt' => 'Enter the link URL (https://…). Leave empty to remove the link.',
 
     // Slug / permalink (WordPress-style: auto-filled from the title, editable)
