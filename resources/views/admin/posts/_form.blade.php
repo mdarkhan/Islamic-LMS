@@ -109,7 +109,10 @@
                             <div x-show="popover === 'link'" x-cloak @mousedown.stop @click.outside="popover = null"
                                  class="absolute z-30 mt-1 w-72 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
                                 <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_link') }}</p>
-                                <input type="url" x-model="linkUrl" x-ref="linkInput" @keydown.enter.prevent="applyLink()" @mousedown.stop
+                                {{-- type=text (not url): a hidden type=url with a partial value would
+                                     silently block the whole form's submit. Links are validated in JS
+                                     (applyLink) and re-checked server-side (HtmlSanitizer). --}}
+                                <input type="text" inputmode="url" x-model="linkUrl" x-ref="linkInput" @keydown.enter.prevent="applyLink()" @mousedown.stop
                                        dir="ltr" placeholder="https://…" aria-label="{{ __('posts.fmt_link') }}"
                                        class="w-full rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
                                 <div class="flex items-center gap-2">
