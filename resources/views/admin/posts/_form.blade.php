@@ -66,7 +66,7 @@
                                 <span class="font-bold leading-none">A</span>
                                 <span class="block h-1 w-4 rounded-sm" :style="'background:'+textColor"></span>
                             </button>
-                            <div x-show="colorOpen === 'text'" x-cloak @mousedown.stop @click.outside="colorOpen = null"
+                            <div x-show="popover === 'text'" x-cloak @mousedown.stop @click.outside="popover = null"
                                  class="absolute z-30 mt-1 w-56 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
                                 <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_text_color') }}</p>
                                 <div class="flex items-center gap-2">
@@ -86,7 +86,7 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
                                 <span class="block h-1 w-4 rounded-sm" :style="'background:'+bgColor"></span>
                             </button>
-                            <div x-show="colorOpen === 'bg'" x-cloak @mousedown.stop @click.outside="colorOpen = null"
+                            <div x-show="popover === 'bg'" x-cloak @mousedown.stop @click.outside="popover = null"
                                  class="absolute z-30 mt-1 w-56 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
                                 <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_bg_color') }}</p>
                                 <div class="flex items-center gap-2">
@@ -100,9 +100,24 @@
                             </div>
                         </div>
                         {!! $div !!}
-                        <button type="button" class="{{ $btn }}" @mousedown.prevent="link()" title="{{ __('posts.fmt_link') }}" aria-label="{{ __('posts.fmt_link') }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M10 13a5 5 0 0 0 7.07 0l1.42-1.42a5 5 0 0 0-7.07-7.07L10.29 5.6"/><path d="M14 11a5 5 0 0 0-7.07 0L5.5 12.42a5 5 0 0 0 7.07 7.07l1.13-1.12"/></svg>
-                        </button>
+
+                        {{-- Link (inline URL field — no browser prompt, which some browsers block). --}}
+                        <div class="relative">
+                            <button type="button" class="{{ $btn }}" @mousedown.prevent="openLink()" @click.stop title="{{ __('posts.fmt_link') }}" aria-label="{{ __('posts.fmt_link') }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M10 13a5 5 0 0 0 7.07 0l1.42-1.42a5 5 0 0 0-7.07-7.07L10.29 5.6"/><path d="M14 11a5 5 0 0 0-7.07 0L5.5 12.42a5 5 0 0 0 7.07 7.07l1.13-1.12"/></svg>
+                            </button>
+                            <div x-show="popover === 'link'" x-cloak @mousedown.stop @click.outside="popover = null"
+                                 class="absolute z-30 mt-1 w-72 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
+                                <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_link') }}</p>
+                                <input type="url" x-model="linkUrl" x-ref="linkInput" @keydown.enter.prevent="applyLink()" @mousedown.stop
+                                       dir="ltr" placeholder="https://…" aria-label="{{ __('posts.fmt_link') }}"
+                                       class="w-full rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
+                                <div class="flex items-center gap-2">
+                                    <button type="button" @mousedown.prevent="applyLink()" class="flex-1 rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-strong">{{ __('posts.apply') }}</button>
+                                    <button type="button" @mousedown.prevent="removeLink()" class="rounded-lg border border-line px-3 py-1.5 text-sm text-muted hover:text-ink">{{ __('posts.link_remove') }}</button>
+                                </div>
+                            </div>
+                        </div>
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="clearFormat()" title="{{ __('posts.fmt_clear') }}" aria-label="{{ __('posts.fmt_clear') }}"><span class="text-xs">&times;</span></button>
                     </div>
 
@@ -275,10 +290,11 @@
             slugLocked: !! config.slugLocked,   // an existing slug is never auto-overwritten by title edits
             status: config.status || 'draft',
             html: config.body || '',
-            colorOpen: null,                    // 'text' | 'bg' | null
+            popover: null,                      // 'text' | 'bg' | 'link' | null (only one open at a time)
             textColor: '#1c1917',
             bgColor: '#fef08a',
-            savedRange: null,                   // editor selection, preserved across prompts/pop-overs
+            linkUrl: 'https://',
+            savedRange: null,                   // editor selection, preserved while a pop-over has focus
 
             // ── Slug (WordPress-style permalink) ──────────────────────────────────
             slugify(value) {
@@ -339,7 +355,7 @@
             },
             openColor(which) {
                 this.saveSelection();                          // keep the selection while the pop-over has focus
-                this.colorOpen = this.colorOpen === which ? null : which;
+                this.popover = this.popover === which ? null : which;
             },
             applyColor(which) {
                 const color = which === 'text' ? this.textColor : this.bgColor;
@@ -352,27 +368,50 @@
                 } else if (! document.execCommand('hiliteColor', false, color)) {
                     document.execCommand('backColor', false, color);   // Safari/older fallback
                 }
-                this.colorOpen = null;
+                this.popover = null;
                 this.sync();
             },
-            link() {
+            // Inline link pop-over (no window.prompt — some browsers block it).
+            openLink() {
                 this.saveSelection();
-                const url = window.prompt(config.linkPrompt, 'https://');
-                if (url === null) return;                       // cancelled
-                const clean = url.trim();
+                this.linkUrl = this.selectedLinkHref() || 'https://';
+                const opening = this.popover !== 'link';
+                this.popover = opening ? 'link' : null;
+                if (opening) this.$nextTick(() => this.$refs.linkInput && this.$refs.linkInput.focus());
+            },
+            selectedLinkHref() {
+                const sel = window.getSelection();
+                let node = sel && sel.anchorNode;
+                while (node && node !== this.$refs.editor) {
+                    if (node.nodeType === 1 && node.tagName === 'A') return node.getAttribute('href') || '';
+                    node = node.parentNode;
+                }
+                return '';
+            },
+            applyLink() {
+                const url = (this.linkUrl || '').trim();
                 this.$refs.editor.focus();
-                this.restoreSelection();                        // window.prompt drops the selection — put it back
+                this.restoreSelection();
                 const sel = window.getSelection();
 
-                if (clean === '' || clean === 'https://') {
-                    document.execCommand('unlink');             // empty URL removes the link
+                if (url === '' || url === 'https://') {
+                    document.execCommand('unlink');
                 } else if (sel && sel.isCollapsed) {
-                    const esc = clean.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                    // No text selected: insert the URL itself as a linked label.
+                    const esc = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
                         .replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     document.execCommand('insertHTML', false, '<a href="' + esc + '">' + esc + '</a>');
                 } else {
-                    document.execCommand('createLink', false, clean);
+                    document.execCommand('createLink', false, url);
                 }
+                this.popover = null;
+                this.sync();
+            },
+            removeLink() {
+                this.$refs.editor.focus();
+                this.restoreSelection();
+                document.execCommand('unlink');
+                this.popover = null;
                 this.sync();
             },
             onPaste(event) {
