@@ -63,47 +63,6 @@
                         <button type="button" class="{{ $btn }}" @mousedown.prevent="toggleBlock('blockquote')" title="{{ __('posts.fmt_quote') }}" aria-label="{{ __('posts.fmt_quote') }}"><span class="text-lg leading-none">&ldquo;</span></button>
                         {!! $div !!}
 
-                        {{-- Text colour (picker + hex code). --}}
-                        <div class="relative">
-                            <button type="button" class="{{ $btn }} flex-col !gap-0" @mousedown.prevent="openColor('text')" @click.stop title="{{ __('posts.fmt_text_color') }}" aria-label="{{ __('posts.fmt_text_color') }}">
-                                <span class="font-bold leading-none">A</span>
-                                <span class="block h-1 w-4 rounded-sm" :style="'background:'+textColor"></span>
-                            </button>
-                            <div x-show="popover === 'text'" x-cloak @mousedown.stop @click.outside="popover = null"
-                                 class="absolute z-30 mt-1 w-56 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
-                                <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_text_color') }}</p>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" x-model="textColor" @change="applyColor('text')" @mousedown.stop
-                                           class="h-9 w-10 shrink-0 cursor-pointer rounded border border-line bg-transparent p-0.5" aria-label="{{ __('posts.color_pick') }}">
-                                    <input type="text" x-model="textColor" @keydown.enter.prevent="applyColor('text')" @mousedown.stop
-                                           dir="ltr" maxlength="7" placeholder="#1c1917" aria-label="{{ __('posts.color_code') }}"
-                                           class="w-full rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
-                                </div>
-                                <button type="button" @mousedown.prevent="applyColor('text')" class="w-full rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-strong">{{ __('posts.apply') }}</button>
-                            </div>
-                        </div>
-
-                        {{-- Background / highlight colour (picker + hex code). --}}
-                        <div class="relative">
-                            <button type="button" class="{{ $btn }} flex-col !gap-0" @mousedown.prevent="openColor('bg')" @click.stop title="{{ __('posts.fmt_bg_color') }}" aria-label="{{ __('posts.fmt_bg_color') }}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-                                <span class="block h-1 w-4 rounded-sm" :style="'background:'+bgColor"></span>
-                            </button>
-                            <div x-show="popover === 'bg'" x-cloak @mousedown.stop @click.outside="popover = null"
-                                 class="absolute z-30 mt-1 w-56 rounded-xl border border-line bg-card p-3 shadow-lg space-y-2">
-                                <p class="text-xs font-semibold text-muted">{{ __('posts.fmt_bg_color') }}</p>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" x-model="bgColor" @change="applyColor('bg')" @mousedown.stop
-                                           class="h-9 w-10 shrink-0 cursor-pointer rounded border border-line bg-transparent p-0.5" aria-label="{{ __('posts.color_pick') }}">
-                                    <input type="text" x-model="bgColor" @keydown.enter.prevent="applyColor('bg')" @mousedown.stop
-                                           dir="ltr" maxlength="7" placeholder="#fef08a" aria-label="{{ __('posts.color_code') }}"
-                                           class="w-full rounded-lg border border-line bg-surface-raised px-2 py-1.5 text-sm text-ink outline-none focus:border-brand">
-                                </div>
-                                <button type="button" @mousedown.prevent="applyColor('bg')" class="w-full rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-ink hover:bg-brand-strong">{{ __('posts.apply') }}</button>
-                            </div>
-                        </div>
-                        {!! $div !!}
-
                         {{-- Link (inline URL field — no browser prompt, which some browsers block). --}}
                         <div class="relative">
                             <button type="button" class="{{ $btn }}" @mousedown.prevent="openLink()" @click.stop title="{{ __('posts.fmt_link') }}" aria-label="{{ __('posts.fmt_link') }}">
@@ -238,7 +197,7 @@
             h2: [], h3: [], h4: [], ul: [], ol: [], li: [], blockquote: [],
             code: [], pre: [], span: [], a: ['href'],
         };
-        const STYLE_PROPS = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line'];
+        const STYLE_PROPS = ['font-weight', 'font-style', 'text-decoration', 'text-decoration-line'];   // colours excluded: they don't adapt to the theme
 
         function filterStyle(style) {
             const kept = [];
@@ -302,9 +261,7 @@
             slugLocked: !! config.slugLocked,   // an existing slug is never auto-overwritten by title edits
             status: config.status || 'draft',
             html: config.body || '',
-            popover: null,                      // 'text' | 'bg' | 'link' | null (only one open at a time)
-            textColor: '#1c1917',
-            bgColor: '#fef08a',
+            popover: null,                      // 'link' | null
             linkUrl: 'https://',
             savedRange: null,                   // editor selection, preserved while a pop-over has focus
 
@@ -363,24 +320,6 @@
                 document.execCommand('removeFormat');   // clears bold/italic/underline/colours
                 document.execCommand('unlink');
                 document.execCommand('formatBlock', false, 'p');
-                this.sync();
-            },
-            openColor(which) {
-                this.saveSelection();                          // keep the selection while the pop-over has focus
-                this.popover = this.popover === which ? null : which;
-            },
-            applyColor(which) {
-                const color = which === 'text' ? this.textColor : this.bgColor;
-                if (! /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)) return;   // ignore an incomplete hex code
-                this.$refs.editor.focus();
-                this.restoreSelection();
-                document.execCommand('styleWithCSS', false, true);
-                if (which === 'text') {
-                    document.execCommand('foreColor', false, color);
-                } else if (! document.execCommand('hiliteColor', false, color)) {
-                    document.execCommand('backColor', false, color);   // Safari/older fallback
-                }
-                this.popover = null;
                 this.sync();
             },
             // Inline link pop-over (no window.prompt — some browsers block it).

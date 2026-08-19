@@ -15,10 +15,10 @@ use DOMText;
  * unwrapped (its safe text kept) or dropped. Bengali and Arabic text pass through
  * untouched.
  *
- * A limited `style` attribute survives — but only an allow-list of presentational CSS
- * properties (colour, background, bold/italic/underline) with values screened for
- * `url()`, `expression`, scripts and angle brackets. That is what lets the editor's
- * colour controls and pasted formatting keep working without opening a CSS-injection hole.
+ * A limited `style` attribute survives — but only theme-safe presentational properties
+ * (bold / italic / underline) with values screened for `url()`, `expression`, scripts and
+ * angle brackets. Colours are intentionally NOT allowed: an absolute colour cannot adapt
+ * to the light/dark theme, so it would turn text invisible against one background.
  *
  * Applied at RENDER time, so a body is safe no matter how it reached the database
  * (editor, seeder, import, or a hand-made model in a test).
@@ -33,10 +33,14 @@ class HtmlSanitizer
         'span' => [], 'a' => ['href'],
     ];
 
-    /** Presentational CSS properties permitted inside a `style` attribute. */
+    /**
+     * Presentational CSS properties permitted inside a `style` attribute. Deliberately
+     * excludes `color` / `background-color`: an absolute colour does not adapt to the
+     * light/dark theme, so admin- or paste-supplied colours turn invisible against one
+     * of the two backgrounds. Body text always uses the theme's readable ink instead.
+     */
     private const STYLE_PROPS = [
-        'color', 'background-color', 'font-weight', 'font-style',
-        'text-decoration', 'text-decoration-line',
+        'font-weight', 'font-style', 'text-decoration', 'text-decoration-line',
     ];
 
     public static function clean(?string $html): string

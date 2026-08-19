@@ -27,33 +27,35 @@ class HtmlSanitizerTest extends TestCase
         $this->assertSame('<strong>bold</strong>', $out);
     }
 
-    public function test_it_keeps_allow_listed_style_properties(): void
+    public function test_it_keeps_theme_safe_style_properties(): void
     {
-        $out = HtmlSanitizer::clean('<span style="color: #ff0000; background-color: rgb(0,0,0); font-weight: bold">x</span>');
+        $out = HtmlSanitizer::clean('<span style="font-weight: bold; font-style: italic; text-decoration: underline">x</span>');
 
-        $this->assertStringContainsString('color: #ff0000', $out);
-        $this->assertStringContainsString('background-color: rgb(0,0,0)', $out);
+        $this->assertStringContainsString('font-weight: bold', $out);
+        $this->assertStringContainsString('font-style: italic', $out);
+        $this->assertStringContainsString('text-decoration: underline', $out);
+    }
+
+    public function test_it_drops_colours_so_text_stays_readable_in_both_themes(): void
+    {
+        // Absolute colours cannot adapt to light/dark, so they are stripped (the text
+        // then uses the theme's readable ink). Bold survives.
+        $out = HtmlSanitizer::clean('<span style="color: #1c1917; background-color: #000; font-weight: bold">x</span>');
+
+        $this->assertStringNotContainsString('color', $out);
+        $this->assertStringNotContainsString('#1c1917', $out);
         $this->assertStringContainsString('font-weight: bold', $out);
     }
 
-    public function test_it_drops_disallowed_or_dangerous_style_declarations(): void
+    public function test_it_drops_dangerous_style_declarations(): void
     {
         $out = HtmlSanitizer::clean(
-            '<span style="color: red; position: fixed; background: url(javascript:alert(1)); width: 999px">x</span>'
+            '<span style="position: fixed; text-decoration: underline; width: 999px">x</span>'
         );
 
-        $this->assertStringContainsString('color: red', $out);
+        $this->assertStringContainsString('text-decoration: underline', $out);
         $this->assertStringNotContainsString('position', $out);
-        $this->assertStringNotContainsString('url(', $out);
-        $this->assertStringNotContainsString('javascript', $out);
         $this->assertStringNotContainsString('width', $out);
-    }
-
-    public function test_it_keeps_span_used_for_colour(): void
-    {
-        $out = HtmlSanitizer::clean('<p>a <span style="color: #123456">b</span> c</p>');
-
-        $this->assertStringContainsString('<span style="color: #123456">b</span>', $out);
     }
 
     public function test_it_neutralises_unsafe_link_schemes(): void
