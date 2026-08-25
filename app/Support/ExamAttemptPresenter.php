@@ -10,10 +10,13 @@ use Carbon\CarbonImmutable;
 /**
  * Builds the ONLY question payload a student may see during a live official exam.
  *
- * This is a strict allow-list. It emits question id, type and body plus each
+ * This is a strict allow-list. It emits question id and body plus each
  * option's id and body — nothing else. It NEVER emits is_correct, marks or
- * explanation, because any of those reaching the browser while an attempt is open
- * would leak the answer key or steer the student toward high-value questions
+ * explanation. It also withholds the authored question type so every question uses
+ * the same multi-select interaction and students cannot infer the answer cardinality.
+ * Correctness still comes from server-side exact-set scoring.
+ * Any answer-key field reaching the browser while an attempt is open would leak the
+ * key or steer the student toward high-value questions
  * (CLAUDE.md rules 2 & 7, SECURITY.md §2.3). Grading reads those fields
  * server-side; they must never travel to the client.
  */
@@ -22,7 +25,7 @@ class ExamAttemptPresenter
     /**
      * The active questions for the attempt's quiz, answer-key stripped.
      *
-     * @return array<int, array{id:int, type:string, body:string, options:array<int, array{id:int, body:string}>}>
+     * @return array<int, array{id:int, body:string, options:array<int, array{id:int, body:string}>}>
      */
     public static function questions(QuizAttempt $attempt): array
     {
@@ -34,7 +37,6 @@ class ExamAttemptPresenter
             ->get()
             ->map(fn (QuizQuestion $question): array => [
                 'id' => (int) $question->id,
-                'type' => $question->type,
                 'body' => $question->body,
                 // Only id + body. is_correct is deliberately absent (not merely
                 // #[Hidden]) so it cannot leak through this path.
@@ -53,7 +55,7 @@ class ExamAttemptPresenter
     /**
      * The student's own current selections, so a resumed attempt restores state.
      *
-     * @return array<int, array<int, int>>  question_id => [selected option ids]
+     * @return array<int, array<int, int>> question_id => [selected option ids]
      */
     public static function selections(QuizAttempt $attempt): array
     {

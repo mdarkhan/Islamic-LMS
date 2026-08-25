@@ -7,6 +7,7 @@ use App\Models\Quiz;
 use App\Models\QuizAnswerOption;
 use App\Models\QuizAttempt;
 use App\Models\User;
+use App\Support\ExamAttemptPresenter;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\QuizBuilder;
@@ -113,9 +114,15 @@ class ExamTakingTest extends TestCase
         $user = $this->startedStudent($quiz->fresh());
         $attempt = QuizAttempt::query()->where('user_id', $user->id)->first();
 
+        foreach (ExamAttemptPresenter::questions($attempt) as $question) {
+            $this->assertArrayNotHasKey('type', $question);
+        }
+
         $this->actingAs($user)
             ->get(route('student.attempts.show', $attempt))
             ->assertOk()
+            ->assertSee('sel.indexOf(oid) !== -1 ? sel.filter((x) => x !== oid) : sel.concat([oid])', false)
+            ->assertDontSee('question.type', false)
             ->assertDontSee('Choose one answer')
             ->assertDontSee('Choose one or more answers')
             ->assertDontSee('একটি উত্তর নির্বাচন করুন')

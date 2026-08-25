@@ -196,8 +196,10 @@ password-reset, point credit/deduct/bulk, course & lesson create/update/delete, 
 
 ### 2.12 Phase 7–8 specifics (live exam, results, practice, leaderboards, regrade)
 
-- **The live exam payload is allow-listed.** `ExamAttemptPresenter` emits only question id/type/body
-  and option id/body — never `is_correct`, `marks` or `explanation`. `AttemptReviewPresenter` (which
+- **The live exam payload is allow-listed.** `ExamAttemptPresenter` emits only question id/body
+  and option id/body — never question type, `is_correct`, `marks` or `explanation`. Withholding type
+  lets every question use the same multi-select interaction without revealing answer cardinality.
+  `AttemptReviewPresenter` (which
   *does* reveal the key) is used only for terminal attempts the caller has already release-gated.
 - **Result release is enforced server-side on every path**, not by hiding buttons. A score,
   percentage, rank, correctness or answer sheet is exposed only when `Quiz::resultsReleasedAt($now)`;

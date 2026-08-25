@@ -2,10 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Course;
+use App\Models\Lesson;
 use App\Models\Permission;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\QuizBuilder;
 use Tests\TestCase;
@@ -63,9 +64,9 @@ class QuizManagementTest extends TestCase
     public function test_a_lesson_must_belong_to_the_chosen_course(): void
     {
         $admin = $this->makeAdmin();
-        $courseA = \App\Models\Course::factory()->create();
-        $courseB = \App\Models\Course::factory()->create();
-        $lessonB = \App\Models\Lesson::factory()->for($courseB)->create();
+        $courseA = Course::factory()->create();
+        $courseB = Course::factory()->create();
+        $lessonB = Lesson::factory()->for($courseB)->create();
 
         $this->actingAs($admin)->from(route('admin.quizzes.create'))->post(route('admin.quizzes.store'), $this->payload([
             'course_id' => $courseA->id,
@@ -135,12 +136,14 @@ class QuizManagementTest extends TestCase
     public function test_index_filters_by_status_and_course(): void
     {
         $admin = $this->makeAdmin();
-        $course = \App\Models\Course::factory()->create(['slug' => 'seerat-course']);
+        $course = Course::factory()->create(['slug' => 'seerat-course']);
         Quiz::factory()->create(['title' => 'দৃশ্যমান', 'status' => 'published', 'course_id' => $course->id]);
         Quiz::factory()->draft()->create(['title' => 'খসড়া কুইজ']);
 
-        $this->actingAs($admin)->get(route('admin.quizzes.index', ['status' => 'published']))
-            ->assertOk()->assertSee('দৃশ্যমান')->assertDontSee('খসড়া কুইজ');
+        $response = $this->actingAs($admin)->get(route('admin.quizzes.index', ['status' => 'published']));
+
+        $response->assertOk()->assertSee('দৃশ্যমান')->assertDontSee('খসড়া কুইজ');
+        $this->assertSame(2, substr_count($response->getContent(), 'text-center align-middle'));
     }
 
     public function test_index_does_not_show_a_lock_icon_beside_attempt_count(): void

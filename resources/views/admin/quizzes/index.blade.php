@@ -45,7 +45,7 @@
             <x-slot:head>
                 <th class="px-4 py-3">{{ __('quizzes.title_col') }}</th>
                 <th class="px-4 py-3 hidden md:table-cell">{{ __('quizzes.course_lesson') }}</th>
-                <th class="px-4 py-3">{{ __('ui.status') }}</th>
+                <th class="px-4 py-3 text-center align-middle">{{ __('ui.status') }}</th>
                 <th class="px-4 py-3 text-center hidden sm:table-cell">{{ __('quizzes.questions_col') }}</th>
                 <th class="px-4 py-3 text-center hidden sm:table-cell">{{ __('quizzes.marks_col') }}</th>
                 <th class="px-4 py-3 text-center hidden lg:table-cell">{{ __('quizzes.attempts_col') }}</th>
@@ -69,7 +69,7 @@
                         {{ $quiz->course?->title ?? '—' }}
                         @if ($quiz->lesson)<span class="block text-xs">{{ $quiz->lesson->title }}</span>@endif
                     </td>
-                    <td class="px-4 py-3"><x-ui.badge :color="$color">{{ $label }}</x-ui.badge></td>
+                    <td class="px-4 py-3 text-center align-middle"><x-ui.badge :color="$color">{{ $label }}</x-ui.badge></td>
                     <td class="px-4 py-3 text-center tabular-nums hidden sm:table-cell">{{ bn($quiz->questions_count) }}</td>
                     <td class="px-4 py-3 text-center tabular-nums hidden sm:table-cell">{{ bn($quiz->total_marks) }}</td>
                     <td class="px-4 py-3 text-center tabular-nums hidden lg:table-cell">

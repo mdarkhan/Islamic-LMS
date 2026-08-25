@@ -58,6 +58,7 @@ class LeaderboardController extends Controller
     private function visibleQuizzes(CarbonImmutable $now): Collection
     {
         return Quiz::query()
+            ->with('course:id,title')
             ->where('status', '!=', Quiz::STATUS_DRAFT)
             ->where('leaderboard_visible', true)
             ->orderByDesc('ends_at')

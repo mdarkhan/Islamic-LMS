@@ -96,7 +96,8 @@ class LeaderboardService
      *
      * @return Collection<int, array{
      *     rank:int, user_id:int, roll:?string, name:string,
-     *     exams_counted:int, obtained:int, possible:int, percentage:float
+     *     exams_counted:int, time_taken_seconds:?int,
+     *     obtained:int, possible:int, percentage:float
      * }>
      */
     public function overallLeaderboard(?CarbonImmutable $now = null): Collection
@@ -117,7 +118,7 @@ class LeaderboardService
      * course, best attempt per student per quiz, ranked by total obtained. Same shape and
      * competition-ranking rules as the overall board; drives the course-topper award.
      *
-     * @return Collection<int, array{rank:int, user_id:int, roll:?string, name:string, exams_counted:int, obtained:int, possible:int, percentage:float}>
+     * @return Collection<int, array{rank:int, user_id:int, roll:?string, name:string, exams_counted:int, time_taken_seconds:?int, obtained:int, possible:int, percentage:float}>
      */
     public function courseLeaderboard(Course $course, ?CarbonImmutable $now = null): Collection
     {
@@ -172,6 +173,9 @@ class LeaderboardService
                     'roll' => $first->roll,
                     'name' => $first->name,
                     'exams_counted' => $bestPerQuiz->count(),
+                    'time_taken_seconds' => $bestPerQuiz->contains(fn ($a) => $a->time_taken_seconds === null)
+                        ? null
+                        : (int) $bestPerQuiz->sum(fn ($a) => (int) $a->time_taken_seconds),
                     'obtained' => (int) $bestPerQuiz->sum(fn ($a) => (int) $a->final_score),
                     'possible' => (int) $bestPerQuiz->sum(fn ($a) => (int) $a->total_marks_snapshot),
                 ];
@@ -194,6 +198,7 @@ class LeaderboardService
                 'roll' => $a->roll,
                 'name' => $a->name,
                 'exams_counted' => $a->exams_counted,
+                'time_taken_seconds' => $a->time_taken_seconds,
                 'obtained' => $a->obtained,
                 'possible' => $a->possible,
                 'percentage' => $this->percentage($a->obtained, $a->possible),
@@ -206,7 +211,7 @@ class LeaderboardService
      * counted attempt yet. Used by the dashboard and results page so the number there is
      * exactly the leaderboard's, never a parallel calculation (brief §24).
      *
-     * @return array{rank:int, user_id:int, roll:?string, name:string, exams_counted:int, obtained:int, possible:int, percentage:float}|null
+     * @return array{rank:int, user_id:int, roll:?string, name:string, exams_counted:int, time_taken_seconds:?int, obtained:int, possible:int, percentage:float}|null
      */
     public function studentOverall(User $user, ?CarbonImmutable $now = null): ?array
     {

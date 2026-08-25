@@ -166,9 +166,10 @@ class QuizAttemptService
      * Persist the selection for one question. Idempotent: repeated or retried saves
      * upsert the same row rather than accumulating duplicates.
      *
-     * Fails closed. A submitted option that does not belong to the question, or more
-     * than one option for a single-choice question, is rejected — never silently
-     * dropped or truncated. An empty selection clears the answer (unanswered).
+     * Fails closed when a submitted option does not belong to the question. Any
+     * number of valid options is accepted for every question so the student-facing
+     * interaction does not reveal answer cardinality; exact-set scoring remains
+     * authoritative. An empty selection clears the answer (unanswered).
      *
      * @param  array<int, int>  $optionIds
      * @return QuizAnswer|null  null when the selection was cleared
@@ -214,12 +215,6 @@ class QuizAttemptService
             // are not part of this question is malformed and must not be half-applied.
             throw new InvalidAnswerSelectionException(
                 'নির্বাচিত অপশনটি এই প্রশ্নের অন্তর্ভুক্ত নয়।'
-            );
-        }
-
-        if ($question->type === QuizQuestion::TYPE_SINGLE && count($requested) > 1) {
-            throw new InvalidAnswerSelectionException(
-                'এই প্রশ্নের জন্য একটির বেশি উত্তর নির্বাচন করা যাবে না।'
             );
         }
 

@@ -6,8 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Validates the shape of an autosave payload only. Ownership of the attempt and
- * the legality of the selection (foreign options, single-choice arity) are
- * enforced downstream — ownership in the controller, selection in
+ * the legality of the selection (including foreign options) is enforced
+ * downstream — ownership in the controller, selection in
  * QuizAttemptService::saveAnswer, which fails closed.
  */
 class SaveAnswerRequest extends FormRequest

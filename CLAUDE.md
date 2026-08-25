@@ -30,9 +30,10 @@ accident. Full reasoning lives in `PROJECT_PLAN.md`, `DATABASE_SCHEMA.md`,
    transition. A late `submit()` on a still-in-progress attempt past its deadline is
    recorded as `expired` (with the authoritative deadline timestamps), never as an
    on-time submission. Only `finalise()` may make an attempt terminal.
-9. **`saveAnswer` fails closed.** A foreign option id, or more than one option for a
-   single-choice question, throws — it is never silently dropped or truncated. An
-   empty selection clears the answer.
+9. **`saveAnswer` fails closed.** A foreign option id throws — it is never silently
+   dropped or truncated. The live payload withholds question type and every question
+   accepts multiple selections so answer cardinality is not revealed; server-side
+   exact-set scoring remains authoritative. An empty selection clears the answer.
 10. **`startOfficial` creates the attempt before debiting**, then debits with the
     attempt as the ledger reference. Never revert to updating a `point_transactions`
     row after the fact — the ledger is append-only.

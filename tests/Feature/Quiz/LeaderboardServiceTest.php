@@ -168,6 +168,7 @@ class LeaderboardServiceTest extends TestCase
         $this->assertSame([$alice->id, $bob->id], $rows->pluck('user_id')->all());
         $aliceRow = $rows->firstWhere('user_id', $alice->id);
         $this->assertSame(2, $aliceRow['exams_counted']);
+        $this->assertSame(1000, $aliceRow['time_taken_seconds']);
         $this->assertSame(85, $aliceRow['obtained']);
         $this->assertSame(100, $aliceRow['possible']);
         $this->assertSame(85.0, $aliceRow['percentage']);

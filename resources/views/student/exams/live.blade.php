@@ -193,7 +193,7 @@
                     }
                 },
 
-                q() { return this.questions[this.current] || { id: 0, options: [], type: 'single', body: '' }; },
+                q() { return this.questions[this.current] || { id: 0, options: [], body: '' }; },
 
                 // ── selection ────────────────────────────────────────────────
                 isSelected(qid, oid) { return (this.answers[qid] || []).indexOf(oid) !== -1; },
@@ -201,11 +201,7 @@
                 toggle(question, oid) {
                     const qid = question.id;
                     let sel = (this.answers[qid] || []).slice();
-                    if (question.type === 'single') {
-                        sel = sel.indexOf(oid) !== -1 ? [] : [oid];
-                    } else {
-                        sel = sel.indexOf(oid) !== -1 ? sel.filter((x) => x !== oid) : sel.concat([oid]);
-                    }
+                    sel = sel.indexOf(oid) !== -1 ? sel.filter((x) => x !== oid) : sel.concat([oid]);
                     this.answers[qid] = sel;
                     this.queueSave(qid);
                 },

@@ -2,12 +2,10 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\PointTransaction;
 use App\Models\Permission;
+use App\Models\PointTransaction;
 use App\Models\Quiz;
-use App\Models\QuizAttempt;
 use App\Models\QuizQuestion;
-use App\Models\User;
 use App\Services\Points\PointService;
 use App\Services\Quiz\LeaderboardService;
 use App\Services\Quiz\QuizAttemptService;
@@ -39,7 +37,9 @@ class AdminResultsTest extends TestCase
         [$quiz, $attempt] = $this->lockedQuizWithAttempt();
         $admin = $this->makeAdmin();
 
-        $this->actingAs($admin)->get(route('admin.results.index'))->assertOk()->assertSee($quiz->title);
+        $index = $this->actingAs($admin)->get(route('admin.results.index'));
+        $index->assertOk()->assertSee($quiz->title);
+        $this->assertSame(14, substr_count($index->getContent(), 'text-center align-middle'));
         $this->actingAs($admin)->get(route('admin.results.show', $attempt))
             ->assertOk()
             ->assertSee(__('results_admin.scores'))

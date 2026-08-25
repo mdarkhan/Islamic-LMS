@@ -146,23 +146,17 @@ class QuizAttemptTest extends TestCase
         $this->assertSame([$b], $attempt->answers()->first()->selectedOptionIds());
     }
 
-    public function test_single_choice_rejects_more_than_one_option(): void
+    public function test_single_choice_accepts_multiple_selections_without_changing_exact_set_scoring(): void
     {
-        // Fail closed: do not silently truncate to one option.
         [$quiz, $question] = $this->quizWithOneQuestion();
         $user = User::factory()->withPoints(5)->create();
         $attempt = $this->attempts->startOfficial($quiz, $user);
 
-        try {
-            $this->attempts->saveAnswer($attempt, $question->id, [
-                $question->options[0]->id,
-                $question->options[1]->id,
-            ]);
-            $this->fail('Expected InvalidAnswerSelectionException.');
-        } catch (InvalidAnswerSelectionException) {
-            // The malformed request must leave no partial answer behind.
-            $this->assertSame(0, $attempt->answers()->count());
-        }
+        $ids = [$question->options[0]->id, $question->options[1]->id];
+        $this->attempts->saveAnswer($attempt, $question->id, $ids);
+
+        $this->assertSame($ids, $attempt->answers()->first()->selectedOptionIds());
+        $this->assertSame(0, $this->attempts->submit($attempt)->final_score);
     }
 
     public function test_multiple_choice_accepts_a_valid_multi_selection(): void

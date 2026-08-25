@@ -35,28 +35,28 @@
             <table class="w-full text-sm">
                 <thead class="bg-surface-raised text-muted">
                     <tr>
-                        <th scope="col" class="px-4 py-2.5 text-start font-semibold">{{ __('results_admin.col_student') }}</th>
-                        <th scope="col" class="px-4 py-2.5 text-start font-semibold">{{ __('results_admin.col_quiz') }}</th>
-                        <th scope="col" class="px-4 py-2.5 text-start font-semibold">{{ __('results_admin.col_status') }}</th>
-                        <th scope="col" class="px-4 py-2.5 text-end font-semibold">{{ __('results_admin.col_final') }}</th>
-                        <th scope="col" class="px-4 py-2.5 text-end font-semibold">{{ __('results_admin.col_total') }}</th>
-                        <th scope="col" class="px-4 py-2.5 text-end font-semibold">{{ __('results_admin.col_submitted') }}</th>
-                        <th scope="col" class="px-4 py-2.5"><span class="sr-only">{{ __('results_admin.view') }}</span></th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle font-semibold">{{ __('results_admin.col_student') }}</th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle font-semibold">{{ __('results_admin.col_quiz') }}</th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle font-semibold">{{ __('results_admin.col_status') }}</th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle font-semibold">{{ __('results_admin.col_final') }}</th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle font-semibold">{{ __('results_admin.col_total') }}</th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle font-semibold">{{ __('results_admin.col_submitted') }}</th>
+                        <th scope="col" class="px-4 py-2.5 text-center align-middle"><span class="sr-only">{{ __('results_admin.view') }}</span></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-line">
                     @foreach ($attempts as $a)
                         <tr class="hover:bg-surface-raised/50">
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center align-middle">
                                 <div class="font-medium text-ink">{{ $a->user->name }}</div>
                                 <div class="text-xs text-muted tabular-nums">{{ $a->user->roll ? bn($a->user->roll) : '—' }}</div>
                             </td>
-                            <td class="px-4 py-3">{{ $a->quiz->title }}</td>
-                            <td class="px-4 py-3"><x-ui.badge :color="$statusTone[$a->status] ?? 'neutral'">{{ __('results_admin.status_'.$a->status) }}</x-ui.badge></td>
-                            <td class="px-4 py-3 text-end font-semibold text-ink tabular-nums">{{ bn($a->final_score) }}</td>
-                            <td class="px-4 py-3 text-end text-muted tabular-nums">{{ bn($a->total_marks_snapshot) }}</td>
-                            <td class="px-4 py-3 text-end text-muted tabular-nums whitespace-nowrap">{{ $a->submitted_at?->format('d/m/Y H:i') ?? '—' }}</td>
-                            <td class="px-4 py-3 text-end">
+                            <td class="px-4 py-3 text-center align-middle">{{ $a->quiz->title }}</td>
+                            <td class="px-4 py-3 text-center align-middle"><x-ui.badge :color="$statusTone[$a->status] ?? 'neutral'">{{ __('results_admin.status_'.$a->status) }}</x-ui.badge></td>
+                            <td class="px-4 py-3 text-center align-middle font-semibold text-ink tabular-nums">{{ bn($a->final_score) }}</td>
+                            <td class="px-4 py-3 text-center align-middle text-muted tabular-nums">{{ bn($a->total_marks_snapshot) }}</td>
+                            <td class="px-4 py-3 text-center align-middle text-muted tabular-nums whitespace-nowrap">{{ $a->submitted_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                            <td class="px-4 py-3 text-center align-middle">
                                 <x-ui.button :href="route('admin.results.show', $a)" variant="secondary" size="sm">{{ __('results_admin.view') }}</x-ui.button>
                             </td>
                         </tr>
