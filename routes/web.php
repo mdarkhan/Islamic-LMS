@@ -89,6 +89,12 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
     Route::get('points', [Student\PointController::class, 'index'])->name('student.points');
     Route::post('rewards/seen', [Student\RewardController::class, 'seen'])->name('student.rewards.seen');
 
+    // Messaging with the ustaz. The thread is always resolved from the authenticated
+    // student, so there is no conversation id a student could tamper with.
+    Route::get('messages', [Student\MessageController::class, 'index'])->name('student.messages.index');
+    Route::get('messages/poll', [Student\MessageController::class, 'poll'])->name('student.messages.poll');
+    Route::post('messages', [Student\MessageController::class, 'store'])->name('student.messages.store')->middleware('throttle:30,1');
+
     Route::get('profile', [Student\ProfileController::class, 'edit'])->name('student.profile.edit');
     Route::put('profile', [Student\ProfileController::class, 'update'])->name('student.profile.update');
     Route::put('profile/password', [Student\ProfileController::class, 'updatePassword'])->name('student.profile.password');
@@ -203,6 +209,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
         Route::put('notices/{notice}', [Admin\NoticeController::class, 'update'])->name('notices.update');
         Route::put('notices/{notice}/toggle', [Admin\NoticeController::class, 'toggle'])->name('notices.toggle');
         Route::delete('notices/{notice}', [Admin\NoticeController::class, 'destroy'])->name('notices.destroy');
+    });
+
+    // Messaging — the ustaz-side shared inbox. `start` is declared before the
+    // {conversation} wildcard so it is never captured as an id.
+    Route::middleware('perm:messages.view')->group(function () {
+        Route::get('messages', [Admin\MessageController::class, 'index'])->name('messages.index');
+        Route::post('messages/start', [Admin\MessageController::class, 'start'])->name('messages.start');
+        Route::get('messages/{conversation}', [Admin\MessageController::class, 'show'])->name('messages.show');
+        Route::get('messages/{conversation}/poll', [Admin\MessageController::class, 'poll'])->name('messages.poll');
+        Route::post('messages/{conversation}', [Admin\MessageController::class, 'store'])->name('messages.store')->middleware('throttle:60,1');
+        Route::delete('messages/{conversation}', [Admin\MessageController::class, 'destroy'])->name('messages.destroy');
     });
 
     // Settings (general / zakat / calendar). Secrets are never editable here.

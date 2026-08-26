@@ -23,6 +23,12 @@
         $nav[] = ['label' => __('nav.posts'), 'href' => route('admin.posts.index'), 'icon' => 'book', 'active' => request()->routeIs('admin.posts.*')];
     }
 
+    // Unread student messages across every thread — the shared-inbox badge.
+    if ($user?->hasPermission('messages.view')) {
+        $unreadMessages = app(\App\Services\Messaging\MessageService::class)->unreadCountFor($user);
+        $nav[] = ['label' => __('nav.messages'), 'href' => route('admin.messages.index'), 'icon' => 'message', 'active' => request()->routeIs('admin.messages.*'), 'badge' => $unreadMessages ?: null];
+    }
+
     if ($user?->hasPermission('notices.manage')) {
         $nav[] = ['label' => __('nav.notices'), 'href' => route('admin.notices.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.notices.*')];
     }

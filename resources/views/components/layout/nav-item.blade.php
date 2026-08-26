@@ -24,6 +24,9 @@
        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors {{ $cls }}">
         <x-ui.icon :name="$icon" />
         <span class="truncate">{{ $label }}</span>
-        @if ($badge)<span class="ml-auto text-xs font-semibold">{{ $badge }}</span>@endif
+        @if ($badge)
+            {{-- Unread count. Numeric badges render in the UI locale's digits. --}}
+            <span class="ml-auto shrink-0 min-w-5 px-1.5 py-0.5 rounded-full bg-brand text-brand-ink text-[11px] font-bold text-center tabular-nums">{{ is_numeric($badge) ? bn($badge) : $badge }}</span>
+        @endif
     </a>
 @endif

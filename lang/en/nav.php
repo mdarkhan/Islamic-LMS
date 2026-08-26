@@ -13,6 +13,7 @@ return [
     'practice' => 'Practice',
     'leaderboard' => 'Leaderboard',
     'point_history' => 'Point History',
+    'messages' => 'Messages',
     'profile' => 'Profile',
     'logout' => 'Log out',
     'later_phase' => 'Later phase',

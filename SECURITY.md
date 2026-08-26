@@ -247,6 +247,29 @@ password-reset, point credit/deduct/bulk, course & lesson create/update/delete, 
   `date_sun_info` for the configured institutional location; no paid prayer-time API, no visitor
   geolocation.
 
+### 2.14 Student ↔ ustaz messaging
+
+- **This is not Ask Ustaz.** The public form stays email-only and unpersisted (§2.13 and CLAUDE.md
+  rule 1). Messaging is a separate, authenticated surface whose threads ARE stored, because a
+  conversation cannot exist otherwise. An Ask Ustaz submission must never be routed into
+  `conversations` / `messages`.
+- **A student can only ever reach their own thread.** The student routes take no conversation id at
+  all — it is resolved from the authenticated user — so there is no identifier to tamper with and no
+  IDOR surface. A test asserts one student's poll never returns another's messages.
+- **The ustaz-side inbox is permission-gated** (`perm:messages.view`), not hidden-button-gated. A
+  test revokes the permission and asserts the route 403s, so the inbox can be narrowed to specific
+  admins later without code changes. Students receive 403 on every admin messaging route.
+- **Message bodies are untrusted from BOTH sides** (students and admins both author them). They are
+  stored as plain text and always rendered escaped — `{{ }}` server-side, `x-text` in Alpine — never
+  as HTML or Markdown. A test posts `<script>` and asserts it renders escaped.
+- **`MessagePresenter` allow-lists the client payload**: id, body, author name, timestamp and which
+  side wrote it. A sender's email, phone, roll or any other account field never travels to the
+  client, matching the leaderboard privacy rule (§2.12).
+- **Flooding is throttled** per route (`throttle:30,1` student, `throttle:60,1` admin).
+- **Deletion is real and audited.** The ustaz may delete a thread; messages cascade. The audit row
+  (`message.thread_deleted`) records who, when and how many — never the message bodies, so deleting
+  for privacy does not simply move the content into the audit table.
+
 ---
 
 ## 3. Files that must never be committed

@@ -19,6 +19,7 @@ class RoleSeeder extends Seeder
         'quizzes' => ['quizzes.view', 'quizzes.create', 'quizzes.update', 'quizzes.publish', 'quizzes.import'],
         'results' => ['results.view', 'results.adjust', 'results.regrade', 'results.release'],
         'content' => ['posts.manage', 'notices.manage'],
+        'messages' => ['messages.view'],
         'system' => ['settings.manage', 'audit.view'],
     ];
 

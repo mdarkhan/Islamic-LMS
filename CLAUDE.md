@@ -11,6 +11,11 @@ accident. Full reasoning lives in `PROJECT_PLAN.md`, `DATABASE_SCHEMA.md`,
 1. **Never store Ask Ustaz submissions.** No `ustaz_questions` / `inquiries` /
    `contact_messages` table, no retained queue payload, no logging of the question
    body. Validate → rate-limit → email → discard. Recipient from `USTAZ_EMAIL`.
+   **This rule is about the PUBLIC, anonymous form only.** The authenticated
+   student↔ustaz messaging feature (`conversations` / `messages`, `MessageService`)
+   does store its threads — a conversation cannot exist otherwise — but it is a
+   separate surface: logged-in, identified students only. Never route an Ask Ustaz
+   submission into those tables, and never add a persistence path to the public form.
 2. **Never send the answer key to the browser during a live official exam.**
    `quiz_options.is_correct` is in `#[Hidden]` for exactly this reason. Do not
    remove it, and do not add `is_correct`, `marks` or `explanation` to a payload
@@ -379,3 +384,29 @@ Ustaz, Zakat calculator and the calendar. Conventions, all centralised:
 - **SEO/indexing:** the public `x-layout.base` accepts `description`/`canonical`/`ogImage`; the
   authenticated `x-layout.app` sets `:noindex`. `robots.txt` + `sitemap.xml` are dynamic
   (`SitemapController`) and the sitemap lists only `Post::scopePublic()` rows.
+
+## Student ↔ ustaz messaging
+
+A chat-style thread between a logged-in student and the ustaz side. **Distinct from the public
+Ask Ustaz form** (rule 1) — see the note there before touching either.
+
+- **`MessageService` is the only writer** of `conversations` / `messages`. One conversation per
+  student (`conversations.user_id` is unique), so "the thread" is unambiguous from either end.
+- **Sides are derived from data, never from roles.** A message is the student's when
+  `sender_id === conversations.user_id`, and the ustaz's otherwise. Read/unread logic depends on
+  that comparison alone, so it stays correct no matter which admin replies.
+- **The ustaz side is a SHARED inbox** gated by `perm:messages.view` (every admin holds it via the
+  admin role today; revoking the permission narrows it without a schema change). The first admin to
+  open a thread marks it read for all of them — deliberate, so a question is not eternally "new".
+- **Unread is derived** from `messages.read_at`, never a counter column: there is no cached total to
+  drift. The sidebar badge comes from `MessageService::unreadCountFor()`.
+- **No WebSockets** (no queue worker; `BROADCAST_CONNECTION=log`). The thread **polls every 10s**,
+  the same approach as the live exam screen. Do not add a broadcast driver expecting cPanel to run one.
+- **Student routes carry no conversation id** — the thread is always resolved from the authenticated
+  user, so there is nothing to tamper with. Admin routes address a thread by id behind the permission.
+- **Bodies are plain text and always escaped** (`{{ }}` / `x-text`), never HTML or Markdown: both
+  sides are untrusted authors. `MessagePresenter` allow-lists what reaches the client (id, body,
+  author name, timestamp, side) — never a sender's email, phone or roll.
+- **Thread deletion is real** (messages cascade) and is the ustaz's call. The *fact* is audited
+  (`message.thread_deleted` with a count); the message bodies are deliberately never copied into
+  the audit payload.
