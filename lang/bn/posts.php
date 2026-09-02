@@ -40,6 +40,7 @@ return [
 
     // Publish panel
     'publish_box' => 'প্রকাশনা',
+    'is_featured' => 'হোমপেজে ফিচার করুন (প্রশ্নোত্তর)',
     'save_draft' => 'খসড়া সংরক্ষণ',
     'publish_now' => 'প্রকাশ করুন',
     'update_article' => 'হালনাগাদ',

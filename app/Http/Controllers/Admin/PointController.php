@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse as BaseStreamedResponse;
 
 class PointController extends Controller
 {
@@ -38,6 +39,32 @@ class PointController extends Controller
         $students = $query->paginate(20)->withQueryString();
 
         return view('admin.points.index', compact('students', 'search', 'sort', 'dir'));
+    }
+
+    /** Filtered CSV export of the balance overview — not the full ledger. */
+    public function export(Request $request): BaseStreamedResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        $query = User::query()->students()
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('roll', 'like', "%{$search}%")))
+            ->orderBy('name');
+
+        return response()->streamDownload(function () use ($query) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['Name', 'Roll', 'Status', 'Balance']);
+
+            $query->chunk(500, function ($chunk) use ($out) {
+                foreach ($chunk as $student) {
+                    fputcsv($out, [$student->name, $student->roll, $student->status, $student->points_balance]);
+                }
+            });
+
+            fclose($out);
+        }, 'points-'.now()->format('Ymd-His').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function show(User $student): View

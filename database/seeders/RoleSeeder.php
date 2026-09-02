@@ -15,10 +15,10 @@ class RoleSeeder extends Seeder
     private const PERMISSIONS = [
         'students' => ['students.view', 'students.create', 'students.update', 'students.suspend', 'students.reset_password'],
         'points' => ['points.view', 'points.grant', 'points.deduct'],
-        'catalog' => ['courses.manage', 'lessons.manage'],
+        'catalog' => ['courses.manage', 'lessons.manage', 'books.manage'],
         'quizzes' => ['quizzes.view', 'quizzes.create', 'quizzes.update', 'quizzes.publish', 'quizzes.import'],
         'results' => ['results.view', 'results.adjust', 'results.regrade', 'results.release'],
-        'content' => ['posts.manage', 'notices.manage'],
+        'content' => ['posts.manage', 'notices.manage', 'faqs.manage'],
         'messages' => ['messages.view'],
         'system' => ['settings.manage', 'audit.view'],
     ];

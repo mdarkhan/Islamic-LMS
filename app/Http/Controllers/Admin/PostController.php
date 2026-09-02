@@ -61,6 +61,7 @@ class PostController extends Controller
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'));
         $data['body'] = HtmlSanitizer::clean($data['body']);
         $data['author_id'] = $request->user()->getKey();
+        $data['is_featured'] = $request->boolean('is_featured');
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'));
 
         $post = Post::query()->create($data);
@@ -85,6 +86,7 @@ class PostController extends Controller
         $data['post_category_id'] = $this->resolveCategoryId($request);
         $data['slug'] = $this->uniqueSlug($request->input('slug') ?: $request->input('title'), $post->getKey());
         $data['body'] = HtmlSanitizer::clean($data['body']);
+        $data['is_featured'] = $request->boolean('is_featured');
         $data['published_at'] = $this->resolvePublishedAt($data['status'], $request->input('published_at'), $post);
 
         $post->update($data);

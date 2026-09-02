@@ -3,6 +3,8 @@
 return [
     'heading' => 'ফলাফল',
     'detail' => 'অ্যাটেম্পটের বিস্তারিত',
+    'pending_release_heading' => 'ফলাফল প্রকাশ বাকি',
+    'release_now' => 'এখনই প্রকাশ করুন',
 
     // Filters
     'filter_quiz' => 'পরীক্ষা',

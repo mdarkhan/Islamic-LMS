@@ -29,8 +29,13 @@
                 <a href="{{ route('student.courses.show', $lesson->slug) }}"
                    class="group bg-card border border-line rounded-[--radius-card] shadow-[--shadow-soft] p-5 hover:border-brand/40 hover:-translate-y-0.5 transition-all">
                     <div class="flex items-center justify-between mb-3">
-                        <x-ui.badge color="neutral">{{ $lesson->course->title }}</x-ui.badge>
-                        <span class="text-xs text-muted flex items-center gap-1"><x-ui.icon name="clock" class="w-3.5 h-3.5" />{{ $lesson->duration_label ?? '—' }}</span>
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <x-ui.badge color="neutral">{{ $lesson->course->title }}</x-ui.badge>
+                            @if ($lesson->video_url)
+                                <x-ui.badge color="brand"><x-ui.icon name="video" class="w-3 h-3" /></x-ui.badge>
+                            @endif
+                        </div>
+                        <span class="text-xs text-muted flex items-center gap-1 shrink-0"><x-ui.icon name="clock" class="w-3.5 h-3.5" />{{ $lesson->duration_label ?? '—' }}</span>
                     </div>
                     <h3 class="font-bold text-ink group-hover:text-brand transition-colors">{{ $lesson->title }}</h3>
                     @if ($lesson->description)<p class="mt-1.5 text-sm text-muted line-clamp-2">{{ $lesson->description }}</p>@endif

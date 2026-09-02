@@ -10,6 +10,19 @@ class PointManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_the_points_csv_export_lists_the_current_balance(): void
+    {
+        $admin = $this->makeAdmin();
+        $student = $this->makeStudent(['name' => 'পয়েন্ট শিক্ষার্থী']);
+        $student->forceFill(['points_balance' => 42])->save();
+
+        $csv = $this->actingAs($admin)->get(route('admin.points.export'))
+            ->assertOk()->streamedContent();
+
+        $this->assertStringContainsString('পয়েন্ট শিক্ষার্থী', $csv);
+        $this->assertStringContainsString('42', $csv);
+    }
+
     public function test_admin_credits_points_with_a_reason(): void
     {
         $admin = $this->makeAdmin();
@@ -76,13 +89,18 @@ class PointManagementTest extends TestCase
         $this->assertSame(3, $b->fresh()->points_balance);
     }
 
-    public function test_bulk_points_page_does_not_render_a_search_icon(): void
+    public function test_bulk_points_pages_local_student_filter_has_no_icon(): void
     {
-        $this->actingAs($this->makeAdmin())
+        $html = $this->actingAs($this->makeAdmin())
             ->get(route('admin.points.bulk.form'))
             ->assertOk()
             ->assertSee('whitespace-nowrap', false)
-            ->assertDontSee('M21 21l-4.3-4.3', false);
+            ->getContent();
+
+        // Exactly one search icon on the page — the global admin-search icon in the
+        // header (every admin page has one). The compact local student-filter box
+        // here deliberately has none of its own.
+        $this->assertSame(1, substr_count($html, 'M21 21l-4.3-4.3'));
     }
 
     public function test_bulk_deduct_is_all_or_nothing_when_one_lacks_balance(): void

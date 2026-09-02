@@ -3,6 +3,7 @@
     'heading' => null,
     'nav' => [],
     'context' => null,   // small label under the brand, e.g. "শিক্ষার্থী" / "অ্যাডমিন"
+    'searchRoute' => null,   // optional header search icon (admin-wide search)
 ])
 
 @php $user = auth()->user(); @endphp
@@ -51,6 +52,11 @@
                     <h1 class="font-bold text-ink truncate">{{ $heading ?? $title }}</h1>
                 </div>
                 <div class="flex items-center gap-1 sm:gap-2">
+                    @if ($searchRoute)
+                        <a href="{{ $searchRoute }}" class="p-2 rounded-lg text-muted hover:text-ink hover:bg-ink/5" aria-label="{{ __('ui.search') }}">
+                            <x-ui.icon name="search" class="w-5 h-5" />
+                        </a>
+                    @endif
                     <x-ui.locale-toggle />
                     <x-ui.theme-toggle />
                     <div class="hidden sm:flex items-center gap-2 pl-2 ml-1 border-l border-line">

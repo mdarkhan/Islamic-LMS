@@ -19,6 +19,7 @@ return [
     'order_hint' => 'The course order is set with the up/down arrows on the course list.',
     'move_up' => 'Move up',
     'move_down' => 'Move down',
+    'completions_col' => 'Completed by',
     'topper_rewards' => 'Course-topper rewards',
     'topper_rewards_hint' => 'Bonus points by final position across this course’s exams. Save the course first, then award.',
     'position' => 'Position',

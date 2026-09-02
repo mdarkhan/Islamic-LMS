@@ -20,14 +20,19 @@ return [
 
     'posts' => 'Articles',
     'notices' => 'Notices',
+    'faqs' => 'FAQ',
     'settings' => 'Settings',
+    'staff' => 'Staff',
+    'roles' => 'Roles & Permissions',
 
     // Public site
     'home' => 'Home',
+    'books' => 'Books',
     'articles' => 'Articles',
     'fatwa' => 'Fatwa & Q&A',
     'zakat' => 'Zakat Calculator',
     'ask_ustaz' => 'Ask Ustaz',
+    'contact' => 'Contact',
     'login' => 'Login',
 
     'context_student' => 'Student',

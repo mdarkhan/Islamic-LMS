@@ -172,6 +172,20 @@ class QuizController extends Controller
         return back()->with('success', 'কুইজের অবস্থা পরিবর্তন করা হয়েছে।');
     }
 
+    /**
+     * Release results immediately, overriding a still-pending `result_release_at`.
+     * The admin can already achieve this by editing that field to a past time — this
+     * is the one-click shortcut, and it's audited the same as any other release.
+     */
+    public function releaseNow(Quiz $quiz): RedirectResponse
+    {
+        $quiz->forceFill(['results_released_at' => now()])->save();
+
+        $this->audit->log('quiz.results_released', $quiz, after: ['results_released_at' => $quiz->results_released_at]);
+
+        return back()->with('success', 'ফলাফল প্রকাশ করা হয়েছে।');
+    }
+
     public function duplicate(Quiz $quiz, QuizDuplicator $duplicator): RedirectResponse
     {
         $copy = $duplicator->duplicate($quiz);

@@ -144,4 +144,67 @@ class CalendarServiceTest extends TestCase
         $this->assertSame(18, $sunset->hour);      // ~18:29 for Dhaka on this date
         $this->assertNotSame(0, $sunset->minute);   // not a hard-coded 18:00
     }
+
+    // ── Upcoming Islamic occasions ────────────────────────────────────────────────
+
+    public function test_upcoming_occasions_are_strictly_ordered_soonest_first(): void
+    {
+        $events = $this->calendar->upcomingIslamicOccasions(6, $this->at('2026-08-18 12:00'));
+
+        $this->assertCount(6, $events);
+        $days = array_column($events, 'days_until');
+        $sorted = $days;
+        sort($sorted);
+        $this->assertSame($sorted, $days, 'events must already be soonest-first');
+    }
+
+    public function test_every_returned_occasion_really_maps_back_to_its_claimed_hijri_date(): void
+    {
+        $now = $this->at('2026-08-18 12:00');
+        $events = $this->calendar->upcomingIslamicOccasions(6, $now);
+
+        $expected = [
+            'event_hijri_new_year' => [1, 1],
+            'event_ashura' => [1, 10],
+            'event_ramadan_begins' => [9, 1],
+            'event_eid_fitr' => [10, 1],
+            'event_arafah' => [12, 9],
+            'event_eid_adha' => [12, 10],
+        ];
+
+        foreach ($events as $event) {
+            [$expectedMonth, $expectedDay] = $expected[$event['key']];
+            $hijriOnThatDay = $this->calendar->hijri($event['date']->setTime(12, 0));
+
+            $this->assertSame($expectedMonth, $hijriOnThatDay['month'], "{$event['key']} resolved to the wrong Hijri month");
+            $this->assertSame($expectedDay, $hijriOnThatDay['day'], "{$event['key']} resolved to the wrong Hijri day");
+            $this->assertGreaterThanOrEqual(0, $event['days_until']);
+            $this->assertLessThan(355, $event['days_until'], 'must find the NEXT occurrence, not one a full year away');
+        }
+    }
+
+    public function test_an_occasion_that_is_today_has_zero_days_remaining(): void
+    {
+        // Locate the next Hijri New Year (1 Muharram) from a known reference point using
+        // the SAME already-tested hijri() oracle the production code relies on — this is
+        // an independent consistency check of upcomingIslamicOccasions()'s selection and
+        // days_until arithmetic, not a re-derivation of the conversion itself.
+        $reference = $this->at('2026-08-18 12:00');
+        $newYearDate = null;
+        for ($i = 0; $i <= 400; $i++) {
+            $candidate = $reference->addDays($i);
+            $h = $this->calendar->hijri($candidate);
+            if ($h['month'] === 1 && $h['day'] === 1) {
+                $newYearDate = $candidate;
+                break;
+            }
+        }
+        $this->assertNotNull($newYearDate, 'a Hijri New Year must occur within 400 days');
+
+        $events = collect($this->calendar->upcomingIslamicOccasions(6, $newYearDate->setTime(12, 0)));
+        $newYearEvent = $events->firstWhere('key', 'event_hijri_new_year');
+
+        $this->assertNotNull($newYearEvent);
+        $this->assertSame(0, $newYearEvent['days_until']);
+    }
 }

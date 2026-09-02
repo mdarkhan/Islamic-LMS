@@ -20,7 +20,7 @@ class CourseController extends Controller
     public function index(): View
     {
         $courses = Course::query()
-            ->withCount('lessons')
+            ->withCount(['lessons', 'completions'])
             ->orderBy('sort_order')
             ->get();
 

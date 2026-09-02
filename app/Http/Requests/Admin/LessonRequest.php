@@ -48,6 +48,7 @@ class LessonRequest extends FormRequest
             'duration_label' => ['nullable', 'string', 'max:100'],
             'media_provider' => ['required', Rule::in(['google_drive', 'external', 'none'])],
             'media_url' => ['nullable', 'url', 'max:500'],
+            'video_url' => ['nullable', 'url', 'max:500'],
             'is_published' => ['sometimes', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
 

@@ -20,6 +20,7 @@ return [
     'actions' => 'Actions',
     'close' => 'Close',
     'details' => 'Details',
+    'you' => 'You',
 
     // Pagination
     'previous' => 'Previous',

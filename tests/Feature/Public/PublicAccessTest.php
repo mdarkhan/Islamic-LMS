@@ -18,6 +18,8 @@ class PublicAccessTest extends TestCase
         $this->get(route('blog.index'))->assertOk();
         $this->get(route('zakat.index'))->assertOk();
         $this->get(route('ask-ustaz.show'))->assertOk();
+        $this->get(route('contact.show'))->assertOk();
+        $this->get(route('search.index'))->assertOk();
         $this->get(route('sitemap'))->assertOk();
         $this->get(route('robots'))->assertOk();
     }

@@ -40,6 +40,13 @@ class ResultController extends Controller
             $quiz = $attempt->quiz;
             $released = $quiz->resultsReleasedAt($now);
 
+            // The student is looking at their score right here in the list, so this is
+            // "seen" — clears the unseen-result nudge on the dashboard without requiring
+            // a separate click into the detail page.
+            if ($released && $attempt->results_seen_at === null) {
+                $attempt->forceFill(['results_seen_at' => $now])->save();
+            }
+
             // Exactly one bucket per attempt, by precedence.
             $group = match (true) {
                 $attempt->is_legacy_import => 'legacy',

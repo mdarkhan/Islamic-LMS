@@ -10,6 +10,10 @@
         ['label' => __('nav.lessons'), 'href' => route('admin.lessons.index'), 'icon' => 'lessons', 'active' => request()->routeIs('admin.lessons.*')],
     ];
 
+    if ($user?->hasPermission('books.manage')) {
+        $nav[] = ['label' => __('nav.books'), 'href' => route('admin.books.index'), 'icon' => 'book', 'active' => request()->routeIs('admin.books.*')];
+    }
+
     // Quiz section only for users who may view quizzes.
     if ($user?->hasPermission('quizzes.view')) {
         $nav[] = ['label' => __('nav.quizzes'), 'href' => route('admin.quizzes.index'), 'icon' => 'exam', 'active' => request()->routeIs('admin.quizzes.*')];
@@ -33,13 +37,24 @@
         $nav[] = ['label' => __('nav.notices'), 'href' => route('admin.notices.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.notices.*')];
     }
 
+    if ($user?->hasPermission('faqs.manage')) {
+        $nav[] = ['label' => __('nav.faqs'), 'href' => route('admin.faqs.index'), 'icon' => 'message', 'active' => request()->routeIs('admin.faqs.*')];
+    }
+
     if ($user?->hasPermission('settings.manage')) {
         $nav[] = ['label' => __('nav.settings'), 'href' => route('admin.settings.edit'), 'icon' => 'settings', 'active' => request()->routeIs('admin.settings.*')];
     }
 
     $nav[] = ['label' => __('nav.audit'), 'href' => route('admin.audit.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.audit.*')];
+
+    // Staff & role management — super_admin only, deliberately not a perm: gate (see
+    // routes/web.php): a regular admin must never see or reach this area.
+    if ($user?->hasRole(\App\Models\Role::SUPER_ADMIN)) {
+        $nav[] = ['label' => __('nav.staff'), 'href' => route('admin.staff.index'), 'icon' => 'students', 'active' => request()->routeIs('admin.staff.*')];
+        $nav[] = ['label' => __('nav.roles'), 'href' => route('admin.roles.index'), 'icon' => 'key', 'active' => request()->routeIs('admin.roles.*')];
+    }
 @endphp
 
-<x-layout.app :title="$title" :heading="$heading" :nav="$nav" :context="__('nav.context_admin')">
+<x-layout.app :title="$title" :heading="$heading" :nav="$nav" :context="__('nav.context_admin')" :search-route="route('admin.search.index')">
     {{ $slot }}
 </x-layout.app>

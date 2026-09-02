@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -181,5 +182,87 @@ class StudentManagementTest extends TestCase
         $otherAdmin = $this->makeAdmin();
 
         $this->actingAs($admin)->get(route('admin.students.show', $otherAdmin))->assertNotFound();
+    }
+
+    public function test_the_student_profile_offers_to_start_a_conversation_when_none_exists(): void
+    {
+        $admin = $this->makeAdmin();
+        $student = $this->makeStudent();
+
+        $this->actingAs($admin)->get(route('admin.students.show', $student))
+            ->assertOk()
+            ->assertSee(__('messages.start'))
+            ->assertDontSee(__('messages.view_thread'));
+    }
+
+    public function test_the_student_profile_links_straight_to_an_existing_conversation(): void
+    {
+        $admin = $this->makeAdmin();
+        $student = $this->makeStudent();
+        $conversation = \App\Models\Conversation::query()->create(['user_id' => $student->id]);
+
+        $this->actingAs($admin)->get(route('admin.students.show', $student))
+            ->assertOk()
+            ->assertSee(__('messages.view_thread'))
+            ->assertSee(route('admin.messages.show', $conversation), false);
+    }
+
+    public function test_visiting_a_student_profile_never_creates_a_conversation(): void
+    {
+        $admin = $this->makeAdmin();
+        $student = $this->makeStudent();
+
+        $this->actingAs($admin)->get(route('admin.students.show', $student))->assertOk();
+
+        $this->assertDatabaseMissing('conversations', ['user_id' => $student->id]);
+    }
+
+    public function test_the_csv_export_reflects_the_current_filter(): void
+    {
+        $admin = $this->makeAdmin();
+        $this->makeStudent(['name' => 'সক্রিয় ছাত্র', 'status' => User::STATUS_ACTIVE]);
+        $this->makeStudent(['name' => 'স্থগিত ছাত্র', 'status' => User::STATUS_SUSPENDED]);
+
+        $csv = $this->actingAs($admin)->get(route('admin.students.export', ['status' => 'active']))
+            ->assertOk()->streamedContent();
+
+        $this->assertStringContainsString('সক্রিয় ছাত্র', $csv);
+        $this->assertStringNotContainsString('স্থগিত ছাত্র', $csv);
+    }
+
+    public function test_bulk_status_suspends_the_selected_students_and_ends_their_sessions(): void
+    {
+        $admin = $this->makeAdmin();
+        $a = $this->makeStudent();
+        $b = $this->makeStudent();
+        DB::table('sessions')->insert([
+            ['id' => 's1', 'user_id' => $a->id, 'payload' => 'x', 'last_activity' => time()],
+            ['id' => 's2', 'user_id' => $b->id, 'payload' => 'x', 'last_activity' => time()],
+        ]);
+
+        $this->actingAs($admin)->put(route('admin.students.bulk-status'), [
+            'student_ids' => [$a->id, $b->id], 'status' => 'suspended',
+        ])->assertRedirect();
+
+        $this->assertSame('suspended', $a->fresh()->status);
+        $this->assertSame('suspended', $b->fresh()->status);
+        $this->assertDatabaseMissing('sessions', ['user_id' => $a->id]);
+        $this->assertDatabaseMissing('sessions', ['user_id' => $b->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'student.bulk_status_changed']);
+    }
+
+    public function test_bulk_status_never_includes_the_acting_admin_even_if_submitted(): void
+    {
+        $admin = $this->makeAdmin();
+        $student = $this->makeStudent();
+
+        // The admin's own id is not a student anyway, but the query must still exclude
+        // it defensively rather than trust the submitted list blindly.
+        $this->actingAs($admin)->put(route('admin.students.bulk-status'), [
+            'student_ids' => [$admin->id, $student->id], 'status' => 'suspended',
+        ])->assertRedirect();
+
+        $this->assertSame('active', $admin->fresh()->status);
+        $this->assertSame('suspended', $student->fresh()->status);
     }
 }

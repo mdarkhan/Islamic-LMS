@@ -5,6 +5,22 @@
 
 <x-layout.admin :title="__('results_admin.heading')" :heading="__('results_admin.heading')">
 
+    @if ($pendingRelease->isNotEmpty() && auth()->user()->hasPermission('results.release'))
+        <x-ui.alert type="warning" :title="__('results_admin.pending_release_heading')" class="mb-6">
+            <div class="space-y-2">
+                @foreach ($pendingRelease as $quiz)
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span>{{ $quiz->title }}</span>
+                        <form method="POST" action="{{ route('admin.quizzes.release', $quiz) }}">
+                            @csrf @method('PUT')
+                            <x-ui.button type="submit" size="sm" variant="secondary">{{ __('results_admin.release_now') }}</x-ui.button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        </x-ui.alert>
+    @endif
+
     {{-- Filters (official attempts only — practice is not retained) --}}
     <form method="GET" action="{{ route('admin.results.index') }}" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-5">
         <x-ui.select name="quiz_id">

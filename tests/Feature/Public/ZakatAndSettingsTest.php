@@ -5,7 +5,9 @@ namespace Tests\Feature\Public;
 use App\Models\Permission;
 use App\Services\Settings\SettingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ZakatAndSettingsTest extends TestCase
@@ -43,6 +45,44 @@ class ZakatAndSettingsTest extends TestCase
 
         $this->assertSame('8000', app(SettingService::class)->get('gold_price_per_gram'));
         $this->assertDatabaseHas('audit_logs', ['action' => 'settings.zakat_updated']);
+    }
+
+    public function test_admin_updates_the_about_bio_and_photo_and_it_shows_on_the_homepage(): void
+    {
+        Storage::fake('public');
+        $admin = $this->makeAdmin();
+
+        $this->actingAs($admin)->put(route('admin.settings.about'), [
+            'about_bio' => 'একজন শিক্ষক ও দাঈ।',
+            'about_photo' => UploadedFile::fake()->image('ustaz.jpg'),
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $settings = app(SettingService::class);
+        $this->assertSame('একজন শিক্ষক ও দাঈ।', $settings->get('about_bio'));
+        Storage::disk('public')->assertExists($settings->get('about_photo'));
+        $this->assertDatabaseHas('audit_logs', ['action' => 'settings.about_updated']);
+
+        $this->get(route('home'))->assertOk()->assertSee('একজন শিক্ষক ও দাঈ।');
+    }
+
+    public function test_replacing_the_about_photo_deletes_the_old_file(): void
+    {
+        Storage::fake('public');
+        $admin = $this->makeAdmin();
+        $old = UploadedFile::fake()->image('old.jpg')->store('about', 'public');
+        app(SettingService::class)->set(['about_photo' => $old]);
+
+        $this->actingAs($admin)->put(route('admin.settings.about'), [
+            'about_bio' => 'বায়ো', 'about_photo' => UploadedFile::fake()->image('new.jpg'),
+        ])->assertRedirect();
+
+        Storage::disk('public')->assertMissing($old);
+        Storage::disk('public')->assertExists(app(SettingService::class)->get('about_photo'));
+    }
+
+    public function test_the_about_section_is_hidden_when_no_bio_is_set(): void
+    {
+        $this->get(route('home'))->assertOk()->assertDontSee(__('public.about_heading'));
     }
 
     public function test_calendar_offset_is_bounded(): void

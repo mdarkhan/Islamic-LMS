@@ -23,11 +23,18 @@ return [
     'when' => 'When',
     'object' => 'Object',
     'changes' => 'Changes',
+    'view_full' => 'View full',
     'none' => '—',
+    'export_csv' => 'Export CSV',
+    'date_from' => 'From date',
+    'date_to' => 'To date',
+    'search_placeholder' => 'Search students, quizzes, courses, books or articles...',
+    'search_prompt' => 'Start typing to search.',
 
     // Confirm dialogs
     'confirm_delete_course' => 'Delete this course?',
     'confirm_delete_lesson' => 'Delete this lesson?',
+    'confirm_delete_book' => 'Delete this book?',
     'confirm_delete_quiz' => 'Delete this quiz?',
     'confirm_delete_question' => 'Delete this question?',
 

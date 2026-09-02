@@ -3,6 +3,8 @@
 return [
     'heading' => 'Results',
     'detail' => 'Attempt detail',
+    'pending_release_heading' => 'Results pending release',
+    'release_now' => 'Release now',
 
     // Filters
     'filter_quiz' => 'Exam',

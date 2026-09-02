@@ -86,6 +86,9 @@
                 <x-ui.field :label="__('lessons.media_link')" name="media_url">
                     <x-ui.input name="media_url" :value="old('media_url', $lesson->media_url ?? '')" placeholder="https://drive.google.com/..." />
                 </x-ui.field>
+                <x-ui.field :label="__('lessons.video_url')" name="video_url" :hint="__('lessons.video_url_hint')">
+                    <x-ui.input name="video_url" :value="old('video_url', $lesson->video_url ?? '')" placeholder="https://www.youtube.com/watch?v=..." />
+                </x-ui.field>
                 <label class="flex items-center gap-2 text-sm text-ink pt-1">
                     <input type="checkbox" name="is_published" value="1" @checked(old('is_published', $lesson->is_published ?? true)) class="rounded border-line text-brand focus:ring-brand">
                     {{ __('admin.published') }}

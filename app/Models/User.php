@@ -75,6 +75,12 @@ class User extends Authenticatable
         $query->whereHas('roles', fn ($r) => $r->where('name', Role::STUDENT));
     }
 
+    /** Users holding any non-student role — the population the Staff admin area manages. */
+    public function scopeStaff(Builder $query): void
+    {
+        $query->whereHas('roles', fn ($r) => $r->where('name', '!=', Role::STUDENT));
+    }
+
     public function isStudent(): bool
     {
         return $this->hasRole(Role::STUDENT);

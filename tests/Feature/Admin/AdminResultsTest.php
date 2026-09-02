@@ -173,4 +173,71 @@ class AdminResultsTest extends TestCase
         $this->assertSame(1, $ranks[$challenger->id]['rank']);   // now shares the top rank
         $this->assertSame(1, $ranks[$leader->id]['rank']);
     }
+
+    // ── Pending release / release now ───────────────────────────────────────────
+
+    public function test_a_quiz_awaiting_a_delayed_release_appears_in_the_pending_list(): void
+    {
+        $admin = $this->makeAdmin();
+        Quiz::factory()->create([
+            'title' => 'বিলম্বিত ফলাফল',
+            'starts_at' => now()->subDays(2), 'ends_at' => now()->subHour(),
+            'result_release_at' => now()->addDay(),
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.results.index'))
+            ->assertOk()
+            ->assertSee(__('results_admin.pending_release_heading'))
+            ->assertSee('বিলম্বিত ফলাফল');
+    }
+
+    public function test_an_already_released_quiz_never_appears_as_pending(): void
+    {
+        $admin = $this->makeAdmin();
+        Quiz::factory()->create([
+            'title' => 'প্রকাশিত ফলাফল',
+            'starts_at' => now()->subDays(2), 'ends_at' => now()->subHour(),
+        ]);   // no result_release_at → released the moment the window ends
+
+        $this->actingAs($admin)->get(route('admin.results.index'))
+            ->assertOk()
+            ->assertDontSee(__('results_admin.pending_release_heading'));
+    }
+
+    public function test_a_still_open_quiz_never_appears_as_pending(): void
+    {
+        $admin = $this->makeAdmin();
+        Quiz::factory()->create(['title' => 'চলমান পরীক্ষা']);   // default: open window
+
+        $this->actingAs($admin)->get(route('admin.results.index'))
+            ->assertOk()
+            ->assertDontSee(__('results_admin.pending_release_heading'));
+    }
+
+    public function test_release_now_overrides_the_delay_and_is_audited(): void
+    {
+        $admin = $this->makeAdmin();
+        $quiz = Quiz::factory()->create([
+            'starts_at' => now()->subDays(2), 'ends_at' => now()->subHour(),
+            'result_release_at' => now()->addDay(),
+        ]);
+
+        $this->assertFalse($quiz->resultsReleasedAt(now()));
+
+        $this->actingAs($admin)->put(route('admin.quizzes.release', $quiz))->assertRedirect();
+
+        $this->assertTrue($quiz->fresh()->resultsReleasedAt(now()));
+        $this->assertDatabaseHas('audit_logs', ['action' => 'quiz.results_released', 'auditable_id' => $quiz->id]);
+    }
+
+    public function test_release_now_requires_the_release_permission(): void
+    {
+        $quiz = Quiz::factory()->create(['ends_at' => now()->subHour(), 'result_release_at' => now()->addDay()]);
+        $admin = $this->makeAdmin();
+        $admin->roles()->first()->permissions()->detach(
+            Permission::query()->where('name', 'results.release')->pluck('id')
+        );
+
+        $this->actingAs($admin->fresh())->put(route('admin.quizzes.release', $quiz))->assertForbidden();
+    }
 }

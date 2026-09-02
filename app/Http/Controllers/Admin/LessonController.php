@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LessonRequest;
 use App\Models\Course;
 use App\Models\Lesson;
+use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Import\BengaliText;
 use App\Support\Slug;
@@ -24,7 +25,7 @@ class LessonController extends Controller
 
         $lessons = Lesson::query()
             ->with('course')
-            ->withCount('resources')
+            ->withCount(['resources', 'views'])
             ->when($courseFilter, fn ($q) => $q->whereHas('course', fn ($c) => $c->where('slug', $courseFilter)))
             ->orderBy('course_id')
             ->orderBy('sort_order')
@@ -35,6 +36,9 @@ class LessonController extends Controller
             'lessons' => $lessons,
             'courses' => Course::query()->orderBy('sort_order')->get(),
             'courseFilter' => $courseFilter,
+            // The denominator for each lesson's "viewed by" figure — how many active
+            // students exist to view it at all.
+            'activeStudentCount' => User::query()->students()->where('status', User::STATUS_ACTIVE)->count(),
         ]);
     }
 
@@ -66,6 +70,7 @@ class LessonController extends Controller
                 'media_provider' => $data['media_provider'],
                 'media_url' => $data['media_url'] ?? null,
                 'media_file_id' => $this->driveFileId($data['media_url'] ?? null),
+                'video_url' => $data['video_url'] ?? null,
                 'is_published' => $request->boolean('is_published'),
                 'sort_order' => (int) ($data['sort_order'] ?? (Lesson::query()->where('course_id', $data['course_id'])->max('sort_order') + 1)),
             ]);
@@ -109,6 +114,7 @@ class LessonController extends Controller
                 'media_provider' => $data['media_provider'],
                 'media_url' => $data['media_url'] ?? null,
                 'media_file_id' => $this->driveFileId($data['media_url'] ?? null),
+                'video_url' => $data['video_url'] ?? null,
                 'is_published' => $request->boolean('is_published'),
                 'sort_order' => (int) ($data['sort_order'] ?? $lesson->sort_order),
             ])->save();

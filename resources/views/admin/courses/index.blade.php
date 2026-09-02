@@ -12,6 +12,7 @@
                 <th class="px-4 py-3">{{ __('courses.title') }}</th>
                 <th class="px-4 py-3 hidden sm:table-cell">{{ __('admin.slug') }}</th>
                 <th class="px-4 py-3 text-right">{{ __('nav.lessons') }}</th>
+                <th class="px-4 py-3 text-right">{{ __('courses.completions_col') }}</th>
                 <th class="px-4 py-3">{{ __('ui.status') }}</th>
                 <th class="px-4 py-3"></th>
             </x-slot:head>
@@ -43,6 +44,7 @@
                     <td class="px-4 py-3 font-semibold text-ink">{{ $course->title }}</td>
                     <td class="px-4 py-3 text-muted hidden sm:table-cell font-mono text-xs">{{ $course->slug }}</td>
                     <td class="px-4 py-3 text-right text-ink tabular-nums">{{ bn($course->lessons_count) }}</td>
+                    <td class="px-4 py-3 text-right text-muted tabular-nums">{{ bn($course->completions_count) }}</td>
                     <td class="px-4 py-3">
                         <x-ui.badge :color="$course->is_published ? 'success' : 'neutral'">{{ $course->is_published ? __('admin.published') : __('admin.draft') }}</x-ui.badge>
                     </td>

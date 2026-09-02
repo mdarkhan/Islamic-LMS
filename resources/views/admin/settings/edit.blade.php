@@ -17,11 +17,52 @@
                 <x-ui.field :label="__('settings.site_tagline')" name="site_tagline">
                     <x-ui.input name="site_tagline" value="{{ old('site_tagline', $general['site_tagline']) }}" />
                 </x-ui.field>
-                <x-ui.field :label="__('settings.telegram_url')" name="telegram_url">
-                    <x-ui.input name="telegram_url" value="{{ old('telegram_url', $general['telegram_url']) }}" placeholder="https://t.me/…" />
-                </x-ui.field>
+                <div class="border-t border-line pt-4 space-y-4">
+                    <div>
+                        <p class="text-sm font-semibold text-ink">{{ __('settings.social_links') }}</p>
+                        <p class="text-xs text-muted">{{ __('settings.social_links_hint') }}</p>
+                    </div>
+                    <x-ui.field :label="__('settings.telegram_url')" name="telegram_url">
+                        <x-ui.input name="telegram_url" value="{{ old('telegram_url', $general['telegram_url']) }}" placeholder="https://t.me/…" dir="ltr" />
+                    </x-ui.field>
+                    <x-ui.field :label="__('settings.whatsapp_url')" name="whatsapp_url">
+                        <x-ui.input name="whatsapp_url" value="{{ old('whatsapp_url', $general['whatsapp_url']) }}" placeholder="https://wa.me/8801XXXXXXXXX" dir="ltr" />
+                    </x-ui.field>
+                    <x-ui.field :label="__('settings.facebook_page_url')" name="facebook_page_url">
+                        <x-ui.input name="facebook_page_url" value="{{ old('facebook_page_url', $general['facebook_page_url']) }}" placeholder="https://facebook.com/…" dir="ltr" />
+                    </x-ui.field>
+                    <x-ui.field :label="__('settings.facebook_group_url')" name="facebook_group_url">
+                        <x-ui.input name="facebook_group_url" value="{{ old('facebook_group_url', $general['facebook_group_url']) }}" placeholder="https://facebook.com/groups/…" dir="ltr" />
+                    </x-ui.field>
+                </div>
                 <x-ui.field :label="__('settings.ustaz_email')" name="ustaz_email" :hint="__('settings.ustaz_email_hint')">
                     <x-ui.input type="email" name="ustaz_email" value="{{ old('ustaz_email', $general['ustaz_email']) }}" placeholder="ustaz@example.com" dir="ltr" />
+                </x-ui.field>
+                <x-ui.field :label="__('settings.contact_email')" name="contact_email" :hint="__('settings.contact_email_hint')">
+                    <x-ui.input type="email" name="contact_email" value="{{ old('contact_email', $general['contact_email']) }}" placeholder="contact@example.com" dir="ltr" />
+                </x-ui.field>
+                <x-ui.button type="submit">{{ __('settings.save') }}</x-ui.button>
+            </form>
+        </x-ui.card>
+
+        {{-- About / Ustaz bio --}}
+        <x-ui.card>
+            <h2 class="font-bold text-ink mb-1">{{ __('settings.about_heading') }}</h2>
+            <p class="text-xs text-muted mb-4">{{ __('settings.about_hint') }}</p>
+            <form method="POST" action="{{ route('admin.settings.about') }}" enctype="multipart/form-data" class="space-y-4">
+                @csrf @method('PUT')
+                @if ($about['about_photo'])
+                    <div>
+                        <p class="text-xs text-muted mb-1.5">{{ __('settings.current_photo') }}</p>
+                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($about['about_photo']) }}" alt="" class="w-20 h-20 rounded-xl object-cover border border-line">
+                    </div>
+                @endif
+                <x-ui.field :label="__('settings.about_photo')" name="about_photo">
+                    <input type="file" name="about_photo" accept="image/png,image/jpeg,image/webp"
+                           class="w-full text-sm text-ink file:me-3 file:rounded-lg file:border-0 file:bg-brand-tint file:text-brand-strong file:px-3 file:py-1.5 file:text-sm file:font-semibold">
+                </x-ui.field>
+                <x-ui.field :label="__('settings.about_bio')" name="about_bio">
+                    <x-ui.textarea name="about_bio" rows="5">{{ old('about_bio', $about['about_bio']) }}</x-ui.textarea>
                 </x-ui.field>
                 <x-ui.button type="submit">{{ __('settings.save') }}</x-ui.button>
             </form>
@@ -99,6 +140,10 @@
                 <div class="flex items-center justify-between">
                     <dt class="text-muted">{{ __('settings.ustaz_recipient') }}</dt>
                     <dd><x-ui.badge :color="$mail['ustaz'] ? 'success' : 'warning'">{{ $mail['ustaz'] ? __('settings.set') : __('settings.missing') }}</x-ui.badge></dd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <dt class="text-muted">{{ __('settings.contact_recipient') }}</dt>
+                    <dd><x-ui.badge :color="$mail['contact'] ? 'success' : 'warning'">{{ $mail['contact'] ? __('settings.set') : __('settings.missing') }}</x-ui.badge></dd>
                 </div>
             </dl>
             <p class="text-xs text-muted mt-4">{{ __('settings.mail_note') }}</p>

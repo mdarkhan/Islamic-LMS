@@ -245,4 +245,28 @@ class CourseLessonTest extends TestCase
         $this->actingAs($this->makeStudent())->get(route('admin.courses.index'))->assertForbidden();
         $this->actingAs($this->makeStudent())->post(route('admin.courses.store'), ['title' => 'x'])->assertForbidden();
     }
+
+    public function test_the_lessons_list_shows_how_many_students_viewed_each_lesson(): void
+    {
+        $admin = $this->makeAdmin();
+        $viewer = $this->makeStudent();
+        $lesson = Lesson::factory()->create(['is_published' => true]);
+        \App\Models\LessonView::query()->create(['user_id' => $viewer->id, 'lesson_id' => $lesson->id, 'viewed_at' => now()]);
+
+        $this->actingAs($admin)->get(route('admin.lessons.index'))
+            ->assertOk()
+            ->assertSee(bn(1).'/'.bn(1));   // 1 active student, 1 of whom viewed it
+    }
+
+    public function test_the_courses_list_shows_how_many_students_completed_each_course(): void
+    {
+        $admin = $this->makeAdmin();
+        $student = $this->makeStudent();
+        $course = Course::factory()->create();
+        \App\Models\CourseCompletion::query()->create(['user_id' => $student->id, 'course_id' => $course->id, 'completed_at' => now()]);
+
+        $this->actingAs($admin)->get(route('admin.courses.index'))
+            ->assertOk()
+            ->assertSee(bn(1));
+    }
 }

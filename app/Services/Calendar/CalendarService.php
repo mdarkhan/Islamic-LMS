@@ -200,6 +200,71 @@ class CalendarService
         return $localNow->getTimestamp() >= $this->sunsetAt($localNow)->getTimestamp();
     }
 
+    // ── Upcoming Islamic occasions widget ────────────────────────────────────────
+
+    /**
+     * (Hijri month, Hijri day, Bengali label key, English label key). Deliberately
+     * limited to occasions universally observed across schools of thought — no Mawlid
+     * or similar, which different traditions treat differently; this site does not take
+     * a position on those.
+     *
+     * @var array<int, array{0:int,1:int,2:string,3:string}>
+     */
+    private const EVENTS = [
+        [1, 1, 'event_hijri_new_year', 'Hijri New Year'],
+        [1, 10, 'event_ashura', 'Ashura'],
+        [9, 1, 'event_ramadan_begins', 'Ramadan begins'],
+        [10, 1, 'event_eid_fitr', 'Eid al-Fitr'],
+        [12, 9, 'event_arafah', 'Day of Arafah'],
+        [12, 10, 'event_eid_adha', 'Eid al-Adha'],
+    ];
+
+    /**
+     * The next occurrence of each occasion in {@see self::EVENTS}, soonest first.
+     *
+     * Finds "the next Gregorian day whose Hijri date is month/day" via a bounded forward
+     * scan through the already-tested {@see self::hijri()} conversion (checked at local
+     * noon, so the sunset rollover within a single calendar day never matters here) —
+     * deliberately NOT a hand-derived Islamic→JDN inverse formula. A civil Islamic year is
+     * ~354–355 days, so 400 days always finds every occasion at least once.
+     *
+     * @return array<int, array{key:string, label_en:string, date:CarbonImmutable, days_until:int}>
+     */
+    public function upcomingIslamicOccasions(int $count = 3, ?CarbonImmutable $now = null): array
+    {
+        $today = $this->localNow($now)->startOfDay();
+
+        $occurrences = collect(self::EVENTS)->map(function (array $event) use ($today) {
+            [$month, $day, $labelKey, $labelEn] = $event;
+            $date = $this->nextOccurrenceOf($month, $day, $today);
+
+            return [
+                'key' => $labelKey,
+                'label_en' => $labelEn,
+                'date' => $date,
+                'days_until' => (int) $today->diffInDays($date),
+            ];
+        });
+
+        return $occurrences->sortBy('days_until')->take($count)->values()->all();
+    }
+
+    /** The soonest date (today or later) whose Hijri date is $month/$day. */
+    private function nextOccurrenceOf(int $month, int $day, CarbonImmutable $fromDate): CarbonImmutable
+    {
+        for ($i = 0; $i <= 400; $i++) {
+            $candidate = $fromDate->addDays($i);
+            $h = $this->hijri($candidate->setTime(12, 0));
+
+            if ($h['month'] === $month && $h['day'] === $day) {
+                return $candidate;
+            }
+        }
+
+        // Unreachable: every Hijri (month, day) recurs within one civil year (~355 days).
+        return $fromDate;
+    }
+
     // ── Everything, for the widget ───────────────────────────────────────────────
 
     /** @return array<string, mixed> */

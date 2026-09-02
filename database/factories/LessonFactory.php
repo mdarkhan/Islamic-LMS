@@ -29,4 +29,9 @@ class LessonFactory extends Factory
     {
         return $this->state(fn () => ['is_published' => false]);
     }
+
+    public function withVideo(string $url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'): static
+    {
+        return $this->state(fn () => ['video_url' => $url]);
+    }
 }

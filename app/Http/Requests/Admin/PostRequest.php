@@ -30,6 +30,7 @@ class PostRequest extends FormRequest
             'seo_title' => ['nullable', 'string', 'max:250'],
             'seo_description' => ['nullable', 'string', 'max:500'],
             'status' => ['required', Rule::in([Post::STATUS_DRAFT, Post::STATUS_PUBLISHED, Post::STATUS_ARCHIVED])],
+            'is_featured' => ['sometimes', 'boolean'],
             'published_at' => ['nullable', 'date'],
         ];
     }

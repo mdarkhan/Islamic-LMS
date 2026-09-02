@@ -36,14 +36,27 @@ class SettingService
         'site_title' => ['default' => 'মাসউদ আলিমী', 'type' => 'string', 'group' => 'general'],
         'site_tagline' => ['default' => 'কুরআন, তাফসির ও সীরাত শিক্ষার একটি নির্ভরযোগ্য মাধ্যম', 'type' => 'string', 'group' => 'general'],
         'telegram_url' => ['default' => '', 'type' => 'string', 'group' => 'general'],
+        // Other social channels shown in the public footer — same shape as telegram_url.
+        // Blank by default; a channel with no URL configured simply isn't shown.
+        'whatsapp_url' => ['default' => '', 'type' => 'string', 'group' => 'general'],
+        'facebook_page_url' => ['default' => '', 'type' => 'string', 'group' => 'general'],
+        'facebook_group_url' => ['default' => '', 'type' => 'string', 'group' => 'general'],
         // Ask Ustaz recipient. A plain recipient address, NOT a secret — safe to store
         // here (unlike SMTP credentials). Empty falls back to config('mail.ustaz_email').
         'ustaz_email' => ['default' => '', 'type' => 'string', 'group' => 'general'],
+        // General Contact form recipient. Empty falls back to ustaz_email, then
+        // config('mail.ustaz_email') — so Contact works even before it is explicitly set.
+        'contact_email' => ['default' => '', 'type' => 'string', 'group' => 'general'],
 
         'gold_price_per_gram' => ['default' => null, 'type' => 'decimal', 'group' => 'zakat'],
         'silver_price_per_gram' => ['default' => null, 'type' => 'decimal', 'group' => 'zakat'],
         'nisab_basis' => ['default' => 'silver', 'type' => 'string', 'group' => 'zakat'],
         'currency_label' => ['default' => '৳', 'type' => 'string', 'group' => 'zakat'],
+
+        // Homepage "About the Ustaz" section. about_photo is a path on the public disk
+        // (same pattern as Book covers), not a secret.
+        'about_bio' => ['default' => '', 'type' => 'string', 'group' => 'about'],
+        'about_photo' => ['default' => '', 'type' => 'string', 'group' => 'about'],
 
         'hijri_offset_days' => ['default' => 0, 'type' => 'integer', 'group' => 'calendar'],
         'calendar_latitude' => ['default' => '23.8103', 'type' => 'decimal', 'group' => 'calendar'],

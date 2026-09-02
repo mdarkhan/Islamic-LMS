@@ -7,6 +7,7 @@ use App\Services\Audit\AuditLogger;
 use App\Services\Settings\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /**
@@ -25,6 +26,7 @@ class SettingController extends Controller
     {
         return view('admin.settings.edit', [
             'general' => $this->settings->group('general'),
+            'about' => $this->settings->group('about'),
             'zakat' => $this->settings->group('zakat'),
             'calendar' => $this->settings->group('calendar'),
             'goldUpdatedAt' => $this->settings->updatedAt('gold_price_per_gram'),
@@ -34,6 +36,7 @@ class SettingController extends Controller
                 'configured' => filled(config('mail.mailer')) && filled(config('mail.mailers.smtp.host')),
                 'from' => filled(config('mail.from.address')),
                 'ustaz' => filled($this->settings->get('ustaz_email')) || filled(config('mail.ustaz_email')),
+                'contact' => filled($this->settings->get('contact_email')) || filled($this->settings->get('ustaz_email')) || filled(config('mail.ustaz_email')),
             ],
         ]);
     }
@@ -44,11 +47,41 @@ class SettingController extends Controller
             'site_title' => ['required', 'string', 'max:150'],
             'site_tagline' => ['nullable', 'string', 'max:250'],
             'telegram_url' => ['nullable', 'url', 'max:250'],
+            'whatsapp_url' => ['nullable', 'url', 'max:250'],
+            'facebook_page_url' => ['nullable', 'url', 'max:250'],
+            'facebook_group_url' => ['nullable', 'url', 'max:250'],
             'ustaz_email' => ['nullable', 'email', 'max:190'],
+            'contact_email' => ['nullable', 'email', 'max:190'],
         ]);
 
         $this->settings->set($data, $request->user());
         $this->audit->log('settings.general_updated', null, after: ['keys' => array_keys($data)]);
+
+        return back()->with('success', __('settings.saved'));
+    }
+
+    public function updateAbout(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'about_bio' => ['nullable', 'string', 'max:5000'],
+            'about_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $oldPhoto = $this->settings->get('about_photo');
+        $values = ['about_bio' => $data['about_bio'] ?? ''];
+
+        if ($request->hasFile('about_photo')) {
+            $values['about_photo'] = $request->file('about_photo')->store('about', 'public');
+        }
+
+        $this->settings->set($values, $request->user());
+
+        // Only remove the old file once the new one is safely saved, and only if it changed.
+        if ($oldPhoto && ($values['about_photo'] ?? $oldPhoto) !== $oldPhoto) {
+            Storage::disk('public')->delete($oldPhoto);
+        }
+
+        $this->audit->log('settings.about_updated', null, after: ['keys' => array_keys($values)]);
 
         return back()->with('success', __('settings.saved'));
     }

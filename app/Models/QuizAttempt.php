@@ -46,6 +46,7 @@ class QuizAttempt extends Model
             'started_at' => 'datetime',
             'expires_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'results_seen_at' => 'datetime',
             'calculated_score' => 'integer',
             'manual_adjustment' => 'integer',
             'final_score' => 'integer',

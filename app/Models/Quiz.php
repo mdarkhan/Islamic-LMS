@@ -180,6 +180,19 @@ class Quiz extends Model
         return $this->practice_timer_enabled && $this->duration_seconds !== null && $this->duration_seconds > 0;
     }
 
+    /**
+     * True when the official window has closed but results still aren't visible —
+     * an admin action item (a delayed `result_release_at` hasn't arrived yet). Never
+     * true while the window is still open, since that's a different situation
+     * entirely (no release decision to make yet).
+     */
+    public function isPendingRelease(\DateTimeInterface $now): bool
+    {
+        return $this->status !== self::STATUS_DRAFT
+            && ! $this->isOpenAt($now)
+            && ! $this->resultsReleasedAt($now);
+    }
+
     public function resultsReleasedAt(\DateTimeInterface $now): bool
     {
         if ($this->results_released_at !== null) {

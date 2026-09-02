@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'admin_heading' => 'Staff Management',
+    'new_staff' => 'New staff',
+    'edit_staff' => 'Edit staff',
+    'no_staff' => 'No staff yet.',
+    'name_col' => 'Name',
+    'email_col' => 'Email',
+    'role_col' => 'Role',
+    'status_col' => 'Status',
+    'name' => 'Name',
+    'email' => 'Email',
+    'role' => 'Role',
+    'create_staff' => 'Create staff',
+    'details' => 'Details',
+    'account_heading' => 'Account',
+    'suspend' => 'Suspend',
+    'reactivate' => 'Reactivate',
+    'archive_staff' => 'Archive',
+    'confirm_archive' => 'Archive this staff account?',
+    'reset_password' => 'Reset password',
+    'confirm_reset_password' => 'Generate a new temporary password? Their current sessions will be ended.',
+    'cannot_change_self' => 'Your own account cannot be changed from here.',
+];

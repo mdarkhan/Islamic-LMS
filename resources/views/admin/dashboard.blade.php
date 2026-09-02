@@ -1,4 +1,28 @@
 <x-layout.admin :title="__('nav.dashboard')" :heading="__('dashboard.admin_heading')">
+    @php $me = auth()->user(); @endphp
+
+    {{-- Needs attention --}}
+    @if ($unreadMessages > 0 || $pendingReleaseCount > 0)
+        <div class="space-y-3 mb-6">
+            @if ($unreadMessages > 0 && $me->hasPermission('messages.view'))
+                <x-ui.alert type="info" :title="__('dashboard.attention_messages_heading')">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <span>{{ __('dashboard.attention_messages_body', ['count' => bn($unreadMessages)]) }}</span>
+                        <x-ui.button :href="route('admin.messages.index')" size="sm" variant="secondary">{{ __('nav.messages') }}</x-ui.button>
+                    </div>
+                </x-ui.alert>
+            @endif
+            @if ($pendingReleaseCount > 0 && $me->hasPermission('results.release'))
+                <x-ui.alert type="warning" :title="__('dashboard.attention_release_heading')">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <span>{{ __('dashboard.attention_release_body', ['count' => bn($pendingReleaseCount)]) }}</span>
+                        <x-ui.button :href="route('admin.results.index')" size="sm" variant="secondary">{{ __('nav.results') }}</x-ui.button>
+                    </div>
+                </x-ui.alert>
+            @endif
+        </div>
+    @endif
+
     <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
         <x-ui.stat :label="__('dashboard.active_students')" :value="bn($activeStudents)" tone="brand" />
         <x-ui.stat :label="__('dashboard.suspended_students')" :value="bn($suspendedStudents)" tone="rose" />
@@ -15,6 +39,12 @@
                 <x-ui.button :href="route('admin.students.import.form')" variant="secondary" class="justify-start"><x-ui.icon name="import" class="w-4 h-4" /> {{ __('dashboard.import') }}</x-ui.button>
                 <x-ui.button :href="route('admin.points.bulk.form')" variant="secondary" class="justify-start"><x-ui.icon name="points" class="w-4 h-4" /> {{ __('dashboard.bulk_points') }}</x-ui.button>
                 <x-ui.button :href="route('admin.lessons.create')" variant="secondary" class="justify-start"><x-ui.icon name="plus" class="w-4 h-4" /> {{ __('dashboard.new_lesson') }}</x-ui.button>
+                @if ($me->hasPermission('quizzes.create'))
+                    <x-ui.button :href="route('admin.quizzes.create')" variant="secondary" class="justify-start"><x-ui.icon name="plus" class="w-4 h-4" /> {{ __('dashboard.new_quiz') }}</x-ui.button>
+                @endif
+                @if ($me->hasPermission('notices.manage'))
+                    <x-ui.button :href="route('admin.notices.index')" variant="secondary" class="justify-start"><x-ui.icon name="plus" class="w-4 h-4" /> {{ __('dashboard.new_notice') }}</x-ui.button>
+                @endif
             </div>
         </x-ui.card>
 

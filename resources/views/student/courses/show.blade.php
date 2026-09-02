@@ -16,16 +16,38 @@
                 <h1 class="text-2xl font-black text-ink">{{ $lesson->title }}</h1>
                 @if ($lesson->description)<p class="mt-2 text-muted leading-relaxed">{{ $lesson->description }}</p>@endif
 
-                {{-- Media. Google Drive files can't be streamed into a native <audio> element
-                     (Drive serves no direct, CORS-friendly media URL), so we embed Drive's own
-                     player, which streams reliably and handles seeking. --}}
+                {{-- Video (YouTube) --}}
+                @if ($lesson->youtubeEmbedUrl())
+                    <div class="mt-5 rounded-2xl overflow-hidden border border-line shadow-sm bg-black">
+                        <div class="relative w-full" style="padding-bottom:56.25%">
+                            <iframe
+                                src="{{ $lesson->youtubeEmbedUrl() }}?rel=0&modestbranding=1&playsinline=1"
+                                class="absolute inset-0 w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                                allowfullscreen
+                                loading="lazy"
+                                title="{{ $lesson->title }}"
+                            ></iframe>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Audio (Google Drive / external). Google Drive files can't be streamed
+                     into a native <audio> element (Drive serves no direct, CORS-friendly
+                     media URL), so we embed Drive's own player. --}}
                 @if ($lesson->embedUrl())
-                    <div class="mt-5 rounded-xl overflow-hidden border border-line bg-black/5">
-                        <iframe src="{{ $lesson->embedUrl() }}" class="block w-full h-24" allow="autoplay" loading="lazy" title="অডিও"></iframe>
+                    <div class="{{ $lesson->youtubeEmbedUrl() ? 'mt-4' : 'mt-5' }}">
+                        <div class="flex items-center gap-2 mb-2">
+                            <x-ui.icon name="volume" class="w-4 h-4 text-brand" />
+                            <span class="text-sm font-semibold text-ink">{{ __('lessons.audio') }}</span>
+                        </div>
+                        <div class="rounded-xl overflow-hidden border border-line bg-surface-raised">
+                            <iframe src="{{ $lesson->embedUrl() }}" class="block w-full h-24" allow="autoplay" loading="lazy" title="{{ __('lessons.audio') }}"></iframe>
+                        </div>
                     </div>
                     @if ($lesson->media_url)
                         <x-ui.button :href="$lesson->media_url" target="_blank" rel="noopener" variant="secondary" class="mt-3 w-full">
-                            <x-ui.icon name="download" class="w-4 h-4" /> ড্রাইভে খুলুন / ডাউনলোড
+                            <x-ui.icon name="download" class="w-4 h-4" /> {{ __('lessons.open_in_drive') }}
                         </x-ui.button>
                     @endif
                 @endif
@@ -75,4 +97,28 @@
             </x-ui.card>
         </div>
     </div>
+
+    {{-- Previous / next class navigation --}}
+    @if ($previousLesson || $nextLesson)
+        <div class="mt-6 flex items-center gap-3">
+            @if ($previousLesson)
+                <x-ui.button :href="route('student.courses.show', $previousLesson->slug)" variant="secondary" class="flex-1 justify-start">
+                    <x-ui.icon name="chevron" class="w-4 h-4 rotate-180" />
+                    <span class="min-w-0 text-left">
+                        <span class="block text-xs text-muted font-normal">{{ __('lessons.previous_lesson') }}</span>
+                        <span class="block truncate">{{ $previousLesson->title }}</span>
+                    </span>
+                </x-ui.button>
+            @endif
+            @if ($nextLesson)
+                <x-ui.button :href="route('student.courses.show', $nextLesson->slug)" class="flex-1 justify-end">
+                    <span class="min-w-0 text-right">
+                        <span class="block text-xs text-brand-ink/70 font-normal">{{ __('lessons.next_lesson') }}</span>
+                        <span class="block truncate">{{ $nextLesson->title }}</span>
+                    </span>
+                    <x-ui.icon name="chevron" class="w-4 h-4" />
+                </x-ui.button>
+            @endif
+        </div>
+    @endif
 </x-layout.student>

@@ -34,6 +34,12 @@ class Course extends Model
         return $this->hasMany(Quiz::class);
     }
 
+    /** @return HasMany<CourseCompletion, $this> */
+    public function completions(): HasMany
+    {
+        return $this->hasMany(CourseCompletion::class);
+    }
+
     /**
      * The configured position → points rewards, cleaned and sorted by position. Each row
      * is { position:int, points:int } with position ≥ 1 and points ≥ 1.

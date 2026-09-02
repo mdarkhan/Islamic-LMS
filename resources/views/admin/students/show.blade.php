@@ -63,6 +63,25 @@
                     @error('status')<p class="text-xs text-rose-600 mt-2">{{ $message }}</p>@enderror
                 </x-ui.card>
             @endif
+
+            @if ($me->hasPermission('messages.view'))
+                <x-ui.card>
+                    <h3 class="font-bold text-ink mb-3">{{ __('nav.messages') }}</h3>
+                    @if ($conversation)
+                        <x-ui.button :href="route('admin.messages.show', $conversation)" variant="secondary" class="w-full justify-center">
+                            <x-ui.icon name="message" class="w-4 h-4" /> {{ __('messages.view_thread') }}
+                        </x-ui.button>
+                    @else
+                        <form method="POST" action="{{ route('admin.messages.start') }}">
+                            @csrf
+                            <input type="hidden" name="student_id" value="{{ $student->id }}">
+                            <x-ui.button type="submit" variant="secondary" class="w-full justify-center">
+                                <x-ui.icon name="message" class="w-4 h-4" /> {{ __('messages.start') }}
+                            </x-ui.button>
+                        </form>
+                    @endif
+                </x-ui.card>
+            @endif
         </div>
 
         {{-- History --}}

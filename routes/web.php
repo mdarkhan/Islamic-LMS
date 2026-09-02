@@ -5,7 +5,10 @@ use App\Http\Controllers\AskUstazController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Student;
 use App\Http\Controllers\ZakatController;
@@ -22,12 +25,20 @@ Route::post('locale', [\App\Http\Controllers\LocaleController::class, 'update'])
 Route::get('articles', [BlogController::class, 'index'])->name('blog.index');
 Route::get('articles/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 
+Route::get('books/{book:slug}', [BookController::class, 'show'])->name('books.show');
+
+Route::get('search', [SearchController::class, 'index'])->name('search.index');
+
 Route::get('zakat-calculator', [ZakatController::class, 'index'])->name('zakat.index');
 Route::post('zakat-calculator', [ZakatController::class, 'calculate'])->name('zakat.calculate');
 
 Route::get('ask-ustaz', [AskUstazController::class, 'show'])->name('ask-ustaz.show');
 // Email-only; rate-limited per IP. The question is never persisted.
 Route::post('ask-ustaz', [AskUstazController::class, 'store'])->name('ask-ustaz.store')->middleware('throttle:5,10');
+
+Route::get('contact', [ContactController::class, 'show'])->name('contact.show');
+// Email-only; rate-limited per IP. The message is never persisted.
+Route::post('contact', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,10');
 
 Route::get('sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
 Route::get('robots.txt', [SitemapController::class, 'robots'])->name('robots');
@@ -105,10 +116,13 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
  */
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 'role:super_admin,admin'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('search', [Admin\SearchController::class, 'index'])->name('search.index');
 
     // Students — literal routes are declared before the {student} wildcard so
     // /students/create and /students/import are never captured as an id.
     Route::get('students', [Admin\StudentController::class, 'index'])->name('students.index')->middleware('perm:students.view');
+    Route::get('students/export', [Admin\StudentController::class, 'export'])->name('students.export')->middleware('perm:students.view');
+    Route::put('students/bulk-status', [Admin\StudentController::class, 'bulkStatus'])->name('students.bulk-status')->middleware('perm:students.suspend');
     Route::get('students/create', [Admin\StudentController::class, 'create'])->name('students.create')->middleware('perm:students.create');
     Route::post('students', [Admin\StudentController::class, 'store'])->name('students.store')->middleware('perm:students.create');
     Route::get('students/import', [Admin\StudentImportController::class, 'form'])->name('students.import.form')->middleware('perm:students.create');
@@ -123,6 +137,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
 
     // Points
     Route::get('points', [Admin\PointController::class, 'index'])->name('points.index')->middleware('perm:points.view');
+    Route::get('points/export', [Admin\PointController::class, 'export'])->name('points.export')->middleware('perm:points.view');
     Route::get('points/bulk', [Admin\PointController::class, 'bulkForm'])->name('points.bulk.form')->middleware('perm:points.grant');
     Route::post('points/bulk', [Admin\PointController::class, 'bulkStore'])->name('points.bulk.store')->middleware('perm:points.grant');
     Route::get('points/{student}', [Admin\PointController::class, 'show'])->name('points.show')->middleware('perm:points.view');
@@ -143,6 +158,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
         Route::resource('lessons', Admin\LessonController::class)->except(['show']);
     });
 
+    // Books
+    Route::middleware('perm:books.manage')->group(function () {
+        Route::put('books/{book}/move/{direction}', [Admin\BookController::class, 'move'])->name('books.move')->whereIn('direction', ['up', 'down']);
+        Route::put('books/{book}/publish', [Admin\BookController::class, 'togglePublish'])->name('books.publish');
+        Route::resource('books', Admin\BookController::class)->except(['show']);
+    });
+
     // Quizzes — literal routes (create, import) are declared before the {quiz}
     // wildcard so they are never captured as an id.
     Route::get('quizzes', [Admin\QuizController::class, 'index'])->name('quizzes.index')->middleware('perm:quizzes.view');
@@ -160,6 +182,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
     Route::get('quizzes/{quiz}/preview', [Admin\QuizController::class, 'preview'])->name('quizzes.preview')->middleware('perm:quizzes.view');
     Route::post('quizzes/{quiz}/duplicate', [Admin\QuizController::class, 'duplicate'])->name('quizzes.duplicate')->middleware('perm:quizzes.create');
     Route::put('quizzes/{quiz}/status', [Admin\QuizController::class, 'updateStatus'])->name('quizzes.status')->middleware('perm:quizzes.publish');
+    Route::put('quizzes/{quiz}/release', [Admin\QuizController::class, 'releaseNow'])->name('quizzes.release')->middleware('perm:results.release');
 
     // Questions (nested). reorder is declared before the {question} wildcard.
     Route::middleware('perm:quizzes.update')->group(function () {
@@ -211,6 +234,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
         Route::delete('notices/{notice}', [Admin\NoticeController::class, 'destroy'])->name('notices.destroy');
     });
 
+    // FAQ
+    Route::middleware('perm:faqs.manage')->group(function () {
+        Route::get('faqs', [Admin\FaqController::class, 'index'])->name('faqs.index');
+        Route::post('faqs', [Admin\FaqController::class, 'store'])->name('faqs.store');
+        Route::put('faqs/{faq}', [Admin\FaqController::class, 'update'])->name('faqs.update');
+        Route::put('faqs/{faq}/toggle', [Admin\FaqController::class, 'togglePublish'])->name('faqs.toggle');
+        Route::delete('faqs/{faq}', [Admin\FaqController::class, 'destroy'])->name('faqs.destroy');
+    });
+
     // Messaging — the ustaz-side shared inbox. `start` is declared before the
     // {conversation} wildcard so it is never captured as an id.
     Route::middleware('perm:messages.view')->group(function () {
@@ -228,8 +260,29 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
         Route::put('settings/general', [Admin\SettingController::class, 'updateGeneral'])->name('settings.general');
         Route::put('settings/zakat', [Admin\SettingController::class, 'updateZakat'])->name('settings.zakat');
         Route::put('settings/calendar', [Admin\SettingController::class, 'updateCalendar'])->name('settings.calendar');
+        Route::put('settings/about', [Admin\SettingController::class, 'updateAbout'])->name('settings.about');
     });
 
     // Audit
     Route::get('audit', [Admin\AuditController::class, 'index'])->name('audit.index')->middleware('perm:audit.view');
+
+    // Staff & role management — super_admin only, deliberately gated by role: rather
+    // than perm:. Creating another admin, or editing what a role may do, is a
+    // super-user capability that must never be delegable by handing out a permission.
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('staff', [Admin\StaffController::class, 'index'])->name('staff.index');
+        Route::get('staff/create', [Admin\StaffController::class, 'create'])->name('staff.create');
+        Route::post('staff', [Admin\StaffController::class, 'store'])->name('staff.store');
+        Route::get('staff/{staff}/edit', [Admin\StaffController::class, 'edit'])->name('staff.edit');
+        Route::put('staff/{staff}', [Admin\StaffController::class, 'update'])->name('staff.update');
+        Route::put('staff/{staff}/status', [Admin\StaffController::class, 'updateStatus'])->name('staff.status');
+        Route::post('staff/{staff}/reset-password', [Admin\StaffController::class, 'resetPassword'])->name('staff.reset-password');
+
+        Route::get('roles', [Admin\RoleController::class, 'index'])->name('roles.index');
+        Route::get('roles/create', [Admin\RoleController::class, 'create'])->name('roles.create');
+        Route::post('roles', [Admin\RoleController::class, 'store'])->name('roles.store');
+        Route::get('roles/{role}/edit', [Admin\RoleController::class, 'edit'])->name('roles.edit');
+        Route::put('roles/{role}', [Admin\RoleController::class, 'update'])->name('roles.update');
+        Route::delete('roles/{role}', [Admin\RoleController::class, 'destroy'])->name('roles.destroy');
+    });
 });

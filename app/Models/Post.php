@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'slug', 'post_category_id', 'title', 'excerpt', 'question', 'body', 'featured_image',
-    'author_id', 'status', 'published_at', 'seo_title', 'seo_description',
+    'author_id', 'status', 'is_featured', 'published_at', 'seo_title', 'seo_description',
 ])]
 class Post extends Model
 {
@@ -27,7 +27,7 @@ class Post extends Model
 
     protected function casts(): array
     {
-        return ['published_at' => 'datetime', 'views_count' => 'integer'];
+        return ['published_at' => 'datetime', 'views_count' => 'integer', 'is_featured' => 'boolean'];
     }
 
     /** @return BelongsToMany<Tag, $this> */

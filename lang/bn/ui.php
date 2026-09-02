@@ -20,6 +20,7 @@ return [
     'actions' => 'অ্যাকশন',
     'close' => 'বন্ধ করুন',
     'details' => 'বিস্তারিত',
+    'you' => 'আপনি',
 
     // Pagination
     'previous' => 'পূর্ববর্তী',

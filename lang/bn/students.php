@@ -8,6 +8,9 @@ return [
     'status_archived' => 'সংরক্ষণাগার',
     'new' => 'নতুন',
     'no_students' => 'কোনো শিক্ষার্থী পাওয়া যায়নি।',
+    'selected_suffix' => 'জন নির্বাচিত',
+    'apply_bulk' => 'প্রয়োগ করুন',
+    'confirm_bulk_status' => 'নির্বাচিত শিক্ষার্থীদের স্ট্যাটাস পরিবর্তন করতে চান?',
 
     'name_col' => 'নাম',
     'roll_col' => 'রোল',

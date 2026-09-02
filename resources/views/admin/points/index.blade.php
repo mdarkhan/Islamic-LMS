@@ -5,9 +5,14 @@
             <input name="q" value="{{ $search }}" placeholder="{{ __('students.search_placeholder') }}"
                    class="w-full rounded-xl bg-surface-raised border border-line pl-9 pr-4 py-2.5 text-sm outline-none focus:border-brand">
         </form>
-        @if (auth()->user()->hasPermission('points.grant'))
-            <x-ui.button :href="route('admin.points.bulk.form')"><x-ui.icon name="points" class="w-4 h-4" /> {{ __('points.bulk_points') }}</x-ui.button>
-        @endif
+        <div class="flex gap-2">
+            <x-ui.button :href="route('admin.points.export', request()->query())" variant="ghost">
+                <x-ui.icon name="download" class="w-4 h-4" /> {{ __('admin.export_csv') }}
+            </x-ui.button>
+            @if (auth()->user()->hasPermission('points.grant'))
+                <x-ui.button :href="route('admin.points.bulk.form')"><x-ui.icon name="points" class="w-4 h-4" /> {{ __('points.bulk_points') }}</x-ui.button>
+            @endif
+        </div>
     </div>
 
     @if ($students->isEmpty())

@@ -9,6 +9,7 @@ use App\Models\QuizAttempt;
 use App\Services\Quiz\AdjustmentOutOfBoundsException;
 use App\Services\Quiz\ScoreAdjustmentService;
 use App\Support\AttemptReviewPresenter;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,10 +39,16 @@ class ResultController extends Controller
             ->paginate(30)
             ->withQueryString();
 
+        $now = CarbonImmutable::now();
+        $pendingRelease = Quiz::query()->where('status', '!=', Quiz::STATUS_DRAFT)->get()
+            ->filter(fn (Quiz $quiz) => $quiz->isPendingRelease($now))
+            ->values();
+
         return view('admin.results.index', [
             'attempts' => $attempts,
             'filters' => $filters,
             'quizzes' => Quiz::query()->orderBy('title')->get(['id', 'title']),
+            'pendingRelease' => $pendingRelease,
         ]);
     }
 

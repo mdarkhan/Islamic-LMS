@@ -9,10 +9,22 @@
     $nav = [
         ['label' => __('nav.home'), 'href' => route('home')],
         ['label' => __('nav.courses'), 'href' => route('home').'#courses'],
+        ['label' => __('nav.books'), 'href' => route('home').'#books'],
         ['label' => __('nav.fatwa'), 'href' => route('blog.index'), 'active' => request()->routeIs('blog.*')],
         ['label' => __('nav.zakat'), 'href' => route('zakat.index'), 'active' => request()->routeIs('zakat.*')],
         ['label' => __('nav.ask_ustaz'), 'href' => route('ask-ustaz.show'), 'active' => request()->routeIs('ask-ustaz.*')],
+        ['label' => __('nav.contact'), 'href' => route('contact.show'), 'active' => request()->routeIs('contact.*')],
     ];
+
+    // Footer social links — only channels the admin has configured are shown
+    // (Admin → Settings → General → সোসাল মিডিয়া লিংক).
+    $socialSettings = app(\App\Services\Settings\SettingService::class)->group('general');
+    $socialLinks = collect([
+        ['label' => __('public.social_whatsapp'), 'url' => $socialSettings['whatsapp_url'] ?? null],
+        ['label' => __('public.social_facebook_page'), 'url' => $socialSettings['facebook_page_url'] ?? null],
+        ['label' => __('public.social_facebook_group'), 'url' => $socialSettings['facebook_group_url'] ?? null],
+        ['label' => __('public.social_telegram_group'), 'url' => $socialSettings['telegram_url'] ?? null],
+    ])->filter(fn ($link) => filled($link['url']));
 @endphp
 
 <x-layout.base :title="$title" :description="$description" :canonical="$canonical" :og-image="$ogImage">
@@ -33,6 +45,9 @@
                 </nav>
 
                 <div class="flex items-center gap-1 sm:gap-2">
+                    <a href="{{ route('search.index') }}" class="p-2 rounded-lg text-muted hover:text-ink hover:bg-ink/5" aria-label="{{ __('public.search_heading') }}">
+                        <x-ui.icon name="search" class="w-5 h-5" />
+                    </a>
                     <x-ui.locale-toggle />
                     <x-ui.theme-toggle />
                     @auth
@@ -64,8 +79,21 @@
         </main>
 
         <footer class="border-t border-line py-8 text-center text-sm text-muted">
-            <div class="max-w-6xl mx-auto px-4">
-                সর্বস্বত্ব সংরক্ষিত © {{ date('Y') }} · মাসউদ আলিমী
+            <div class="max-w-6xl mx-auto px-4 space-y-4">
+                @if ($socialLinks->isNotEmpty())
+                    <div>
+                        <p class="text-xs text-muted mb-2">{{ __('public.social_heading') }}</p>
+                        <div class="flex flex-wrap items-center justify-center gap-2">
+                            @foreach ($socialLinks as $link)
+                                <a href="{{ $link['url'] }}" target="_blank" rel="noopener"
+                                   class="px-3 py-1.5 rounded-full border border-line text-xs font-semibold text-ink hover:border-brand/40 hover:text-brand transition-colors">
+                                    {{ $link['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                <div>সর্বস্বত্ব সংরক্ষিত © {{ date('Y') }} · মাসউদ আলিমী</div>
             </div>
         </footer>
     </div>

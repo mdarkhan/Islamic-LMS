@@ -40,6 +40,7 @@ return [
 
     // Publish panel
     'publish_box' => 'Publish',
+    'is_featured' => 'Feature on homepage (Q&A)',
     'save_draft' => 'Save draft',
     'publish_now' => 'Publish',
     'update_article' => 'Update',

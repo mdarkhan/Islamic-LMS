@@ -20,6 +20,7 @@ return [
     'start_new' => 'Start a new conversation',
     'pick_student' => 'Choose a student',
     'start' => 'Start',
+    'view_thread' => 'View conversation',
 
     'delete_thread' => 'Delete conversation',
     'confirm_delete' => 'Every message in this conversation will be permanently deleted. Are you sure?',

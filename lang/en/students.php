@@ -8,6 +8,9 @@ return [
     'status_archived' => 'Archived',
     'new' => 'New',
     'no_students' => 'No students found.',
+    'selected_suffix' => 'selected',
+    'apply_bulk' => 'Apply',
+    'confirm_bulk_status' => 'Change status for the selected students?',
 
     'name_col' => 'Name',
     'roll_col' => 'Roll',

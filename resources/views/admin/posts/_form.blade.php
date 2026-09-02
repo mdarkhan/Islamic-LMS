@@ -135,6 +135,10 @@
                 <x-ui.field :label="__('posts.published_at')" name="published_at" :hint="__('posts.scheduled_note')">
                     <x-ui.input type="datetime-local" name="published_at" value="{{ old('published_at', $post?->published_at?->format('Y-m-d\TH:i')) }}" />
                 </x-ui.field>
+                <label class="flex items-center gap-2 text-sm text-ink">
+                    <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured ?? false)) class="rounded border-line text-brand focus:ring-brand">
+                    {{ __('posts.is_featured') }}
+                </label>
             </div>
             <div class="flex items-center gap-2 border-t border-line bg-surface/60 px-4 py-3">
                 {{-- When publishing, still offer a one-click "save as draft instead". --}}

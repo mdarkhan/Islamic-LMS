@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StudentStoreRequest;
 use App\Http\Requests\Admin\StudentUpdateRequest;
+use App\Models\Conversation;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse as BaseStreamedResponse;
 
 class StudentController extends Controller
 {
@@ -28,17 +30,50 @@ class StudentController extends Controller
         $status = $request->query('status');
         [$sort, $dir] = StudentSort::resolve($request);
 
-        $query = User::query()->students()
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('roll', 'like', "%{$search}%")))
-            ->when(in_array($status, ['active', 'suspended', 'archived'], true), fn ($q) => $q->where('status', $status));
-
+        $query = $this->filteredQuery($search, $status);
         StudentSort::apply($query, $sort, $dir);
 
         $students = $query->paginate(20)->withQueryString();
 
         return view('admin.students.index', compact('students', 'search', 'status', 'sort', 'dir'));
+    }
+
+    /** Filtered CSV export — the same columns shown on the list, unpaginated. */
+    public function export(Request $request): BaseStreamedResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+        $status = $request->query('status');
+
+        $query = $this->filteredQuery($search, $status)->orderBy('name');
+
+        return response()->streamDownload(function () use ($query) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");   // BOM so Excel reads Bengali (utf8mb4) correctly
+            fputcsv($out, ['Name', 'Roll', 'Guardian', 'Email', 'Phone', 'Status', 'Points']);
+
+            $query->chunk(500, function ($chunk) use ($out) {
+                foreach ($chunk as $student) {
+                    fputcsv($out, [
+                        $student->name, $student->roll, $student->guardian_name,
+                        $student->email, $student->phone, $student->status, $student->points_balance,
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, 'students-'.now()->format('Ymd-His').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<User>
+     */
+    private function filteredQuery(string $search, ?string $status)
+    {
+        return User::query()->students()
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('roll', 'like', "%{$search}%")))
+            ->when(in_array($status, ['active', 'suspended', 'archived'], true), fn ($q) => $q->where('status', $status));
     }
 
     public function create(): View
@@ -96,7 +131,11 @@ class StudentController extends Controller
             ->limit(10)
             ->get();
 
-        return view('admin.students.show', compact('student', 'attempts'));
+        // Existing thread only — visiting a profile must never silently create one
+        // (MessageService::threadFor is reserved for an admin who actually writes in).
+        $conversation = Conversation::query()->where('user_id', $student->id)->first();
+
+        return view('admin.students.show', compact('student', 'attempts', 'conversation'));
     }
 
     public function edit(User $student): View
@@ -151,6 +190,41 @@ class StudentController extends Controller
         );
 
         return back()->with('success', 'শিক্ষার্থীর স্ট্যাটাস পরিবর্তন করা হয়েছে।');
+    }
+
+    /**
+     * Bulk suspend / reactivate / archive. The same session-kill rule as the single-
+     * student path applies; the acting admin is silently excluded from the selection
+     * (never suspend yourself via a bulk sweep) rather than rejecting the whole batch.
+     */
+    public function bulkStatus(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'student_ids' => ['required', 'array', 'min:1'],
+            'student_ids.*' => ['integer'],
+            'status' => ['required', Rule::in([User::STATUS_ACTIVE, User::STATUS_SUSPENDED, User::STATUS_ARCHIVED])],
+        ]);
+
+        $students = User::query()->students()
+            ->whereIn('id', $data['student_ids'])
+            ->where('id', '!=', $request->user()->id)
+            ->get();
+
+        DB::transaction(function () use ($students, $data) {
+            foreach ($students as $student) {
+                $student->forceFill(['status' => $data['status']])->save();
+
+                if ($data['status'] !== User::STATUS_ACTIVE) {
+                    DB::table('sessions')->where('user_id', $student->id)->delete();
+                }
+            }
+        });
+
+        $this->audit->log('student.bulk_status_changed', after: [
+            'students' => $students->count(), 'status' => $data['status'],
+        ]);
+
+        return back()->with('success', $students->count().' জন শিক্ষার্থীর স্ট্যাটাস পরিবর্তন করা হয়েছে।');
     }
 
     /**
