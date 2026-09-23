@@ -38,7 +38,49 @@
     @if (! empty($groups['released']))
         <section class="mb-8">
             <h2 class="text-sm font-bold uppercase tracking-wider text-muted mb-3">{{ __('results.group_released') }}</h2>
-            <div class="overflow-x-auto rounded-2xl border border-line">
+
+            {{-- Mobile: the table's 8 columns don't fit below sm without hiding the
+                 score/percentage/rank behind a scroll a student might never discover,
+                 so it becomes a stacked card list instead — same data, no scrolling. --}}
+            <div class="sm:hidden space-y-3">
+                @foreach ($groups['released'] as $row)
+                    <x-ui.card>
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-ink">{{ $row['quiz']->title }}</p>
+                                @if ($row['quiz']->course)<p class="text-xs text-muted">{{ $row['quiz']->course->title }}</p>@endif
+                            </div>
+                            <x-ui.badge :color="$statusTone($row['attempt']->status)" class="shrink-0">{{ $statusLabel($row['attempt']->status) }}</x-ui.badge>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-y-3 text-sm">
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_score') }}</p>
+                                <p class="font-semibold text-ink tabular-nums">{{ bn($row['attempt']->final_score) }} / {{ bn($row['attempt']->total_marks_snapshot) }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_percentage') }}</p>
+                                <p class="tabular-nums">{{ bn(number_format($row['percentage'], 2)) }}%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_time') }}</p>
+                                <p class="tabular-nums">{{ $fmtTime($row['attempt']->time_taken_seconds) }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_rank') }}</p>
+                                <p class="tabular-nums">{{ $row['rank'] ? bn($row['rank']) : '—' }}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted mt-3 tabular-nums">{{ $row['attempt']->submitted_at?->format('d/m/Y H:i') }}</p>
+                        @if ($row['reviewable'])
+                            <x-ui.button :href="route('student.results.show', $row['attempt'])" variant="secondary" size="sm" class="w-full mt-3">{{ __('results.view_answer_sheet') }}</x-ui.button>
+                        @else
+                            <p class="text-xs text-muted mt-3">{{ __('results.legacy_no_answers') }}</p>
+                        @endif
+                    </x-ui.card>
+                @endforeach
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto rounded-2xl border border-line">
                 <table class="w-full text-sm">
                     <thead class="bg-surface-raised text-muted">
                         <tr class="text-start">
@@ -108,7 +150,34 @@
     @if (! empty($groups['legacy']))
         <section class="mb-8">
             <h2 class="text-sm font-bold uppercase tracking-wider text-muted mb-3">{{ __('results.group_legacy') }}</h2>
-            <div class="overflow-x-auto rounded-2xl border border-line">
+
+            <div class="sm:hidden space-y-3">
+                @foreach ($groups['legacy'] as $row)
+                    <x-ui.card>
+                        <p class="font-semibold text-ink">{{ $row['quiz']->title }}</p>
+                        <div class="mt-3 grid grid-cols-2 gap-y-3 text-sm">
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_score') }}</p>
+                                <p class="font-semibold text-ink tabular-nums">{{ bn($row['attempt']->final_score) }} / {{ bn($row['attempt']->total_marks_snapshot) }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_percentage') }}</p>
+                                <p class="tabular-nums">{{ $row['percentage'] !== null ? bn(number_format($row['percentage'], 2)).'%' : '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_time') }}</p>
+                                <p class="tabular-nums">{{ $fmtTime($row['attempt']->time_taken_seconds) }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">{{ __('results.col_date') }}</p>
+                                <p class="tabular-nums">{{ $row['attempt']->submitted_at?->format('d/m/Y') }}</p>
+                            </div>
+                        </div>
+                    </x-ui.card>
+                @endforeach
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto rounded-2xl border border-line">
                 <table class="w-full text-sm">
                     <thead class="bg-surface-raised text-muted">
                         <tr>
