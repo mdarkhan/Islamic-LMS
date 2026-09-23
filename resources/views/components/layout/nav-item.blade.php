@@ -10,7 +10,7 @@
 
     $cls = $active
         ? 'bg-brand-tint text-brand-strong font-semibold'
-        : 'text-muted hover:text-ink hover:bg-ink/5';
+        : 'text-muted hover:text-brand-strong hover:bg-brand-tint';
 @endphp
 
 @if ($disabled)
