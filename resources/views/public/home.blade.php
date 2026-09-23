@@ -181,7 +181,7 @@
                     {{-- The cover/title link and the store links are siblings, not nested — an
                          <a> inside an <a> is invalid HTML and browsers split it unpredictably. --}}
                     <div class="flex flex-col items-center text-center">
-                        <a href="{{ route('books.show', $book) }}" class="group flex flex-col items-center w-full">
+                        <a href="{{ route('books.show', $book) }}" target="_blank" rel="noopener" class="group flex flex-col items-center w-full">
                             <div class="book-spine-effect w-full aspect-[3/4.2] rounded-2xl border border-brand/25 shadow-[--shadow-soft] overflow-hidden relative bg-brand-tint">
                                 @if ($book->coverUrl())
                                     <img src="{{ $book->coverUrl() }}" alt="{{ $book->title }}" class="absolute inset-0 w-full h-full object-cover">
@@ -192,7 +192,10 @@
                                     </div>
                                 @endif
                             </div>
-                            <h4 class="mt-3 text-xs sm:text-sm font-bold text-ink group-hover:text-brand-strong transition-colors leading-snug line-clamp-2">{{ $book->title }}</h4>
+                            {{-- One line + ellipsis (like the author below), not line-clamp-2: a long
+                                 title wrapping to two lines pushed that card's store links lower
+                                 than its neighbours'. Full title stays available on hover. --}}
+                            <h4 title="{{ $book->title }}" class="mt-3 w-full truncate text-xs sm:text-sm font-bold text-ink group-hover:text-brand-strong transition-colors leading-snug">{{ $book->title }}</h4>
                             <p class="text-xs text-muted mt-0.5 truncate max-w-full">{{ $book->author }}</p>
                         </a>
                         <x-ui.buy-links :links="$book->purchaseLinks" size="sm" class="mt-2.5 justify-center" />
