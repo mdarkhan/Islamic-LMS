@@ -37,7 +37,7 @@
                     </div>
                     <p class="text-xs text-muted" x-text="answeredLabel()"></p>
                 </div>
-                <div class="flex items-center gap-3 shrink-0">
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                     <template x-if="remaining !== null">
                         <div class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold tabular-nums"
                              :class="remaining <= 60 ? 'bg-rose-500/15 text-rose-600' : 'bg-brand-tint text-brand-strong'">
@@ -48,6 +48,14 @@
                     <template x-if="remaining === null">
                         <span class="text-xs text-muted">{{ __('exams.live_no_time_limit') }}</span>
                     </template>
+
+                    {{-- Always visible, never buried at the bottom of a long question
+                         list — that's the whole point of putting it in the sticky header. --}}
+                    <x-ui.button type="button" size="sm" @click="openConfirm()" x-bind:disabled="submitting"
+                                 aria-label="{{ __('exams.live_submit') }}">
+                        <x-ui.icon name="check" class="w-4 h-4" />
+                        <span class="hidden sm:inline">{{ __('exams.live_submit') }}</span>
+                    </x-ui.button>
                 </div>
             </div>
         </header>
