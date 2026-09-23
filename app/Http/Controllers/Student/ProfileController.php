@@ -49,6 +49,7 @@ class ProfileController extends Controller
         }
 
         $user->forceFill(['password' => Hash::make($data['password'])])->save();
+        $user->rotateRememberToken();
 
         return back()->with('success', 'আপনার পাসওয়ার্ড পরিবর্তন করা হয়েছে।');
     }

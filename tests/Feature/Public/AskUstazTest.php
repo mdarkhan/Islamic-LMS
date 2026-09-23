@@ -29,7 +29,6 @@ class AskUstazTest extends TestCase
             'mobile' => '01700000000',
             'subject' => 'যাকাত',
             'question' => 'ব্যবসার পণ্যের উপর যাকাত কীভাবে হিসাব করব?',
-            'started_at' => now()->subSeconds(30)->getTimestamp(),
             'website' => '',
         ], $o);
     }
@@ -104,8 +103,11 @@ class AskUstazTest extends TestCase
         // Honeypot filled.
         $this->post(route('ask-ustaz.store'), $this->payload(['website' => 'http://spam']))
             ->assertSessionHas('success');   // looks fine to the bot…
-        // Submitted impossibly fast.
-        $this->post(route('ask-ustaz.store'), $this->payload(['started_at' => now()->getTimestamp()]))
+
+        // Submitted impossibly fast: the elapsed time is timed server-side from when
+        // show() was reached (session), never trusted from a client-supplied field.
+        $this->get(route('ask-ustaz.show'));
+        $this->post(route('ask-ustaz.store'), $this->payload())
             ->assertSessionHas('success');
 
         Mail::assertNothingSent();   // …but nothing was actually sent.

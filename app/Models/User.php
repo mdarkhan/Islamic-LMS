@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 /**
  * points_balance is a cached mirror of the ledger and must only ever be written
@@ -67,6 +68,17 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    /**
+     * Invalidate any "remember me" cookie the browser is holding. A suspend, an
+     * admin-issued password reset, or a self password change must all close this
+     * door — the DB `sessions` row those call sites already delete only covers an
+     * active session, not a remember cookie sitting on a signed-out browser.
+     */
+    public function rotateRememberToken(): void
+    {
+        $this->forceFill(['remember_token' => Str::random(60)])->save();
     }
 
     /** Users holding the student role — the population the admin student area manages. */

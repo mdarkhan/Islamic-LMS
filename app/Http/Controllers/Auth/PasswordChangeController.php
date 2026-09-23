@@ -24,12 +24,19 @@ class PasswordChangeController extends Controller
 
     public function update(Request $request, AuditLogger $audit): RedirectResponse
     {
+        $user = $request->user();
+
+        // Staff/admin accounts guard the whole CRUD surface and the answer key, so they
+        // need more than a student's 6-character minimum. Students keep the lower bar
+        // deliberately (CLAUDE.md: young students, roll-based, simple to memorise).
+        $passwordRule = $user->isAdmin()
+            ? Password::min(10)->letters()->numbers()
+            : Password::min(6);
+
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'confirmed', Password::min(6)],
+            'password' => ['required', 'confirmed', $passwordRule],
         ]);
-
-        $user = $request->user();
 
         if (! Hash::check($data['current_password'], $user->password)) {
             return back()->withErrors(['current_password' => 'বর্তমান পাসওয়ার্ডটি সঠিক নয়।']);
@@ -39,6 +46,7 @@ class PasswordChangeController extends Controller
             'password' => Hash::make($data['password']),   // hashed; plaintext never stored or logged
             'force_password_change' => false,
         ])->save();
+        $user->rotateRememberToken();
 
         $audit->log('password.self_changed', $user);
 

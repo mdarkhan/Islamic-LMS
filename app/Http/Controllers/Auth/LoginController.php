@@ -25,6 +25,14 @@ class LoginController extends Controller
 {
     private const MAX_ATTEMPTS = 5;
 
+    // Rolls are short sequential numbers, so a per-identifier limit alone lets one IP
+    // cycle through every roll looking for a weak password. This is a broader, coarser
+    // ceiling across ALL identifiers from one IP — high enough that a shared school/
+    // office connection with several students logging in does not trip it.
+    private const MAX_ATTEMPTS_PER_IP = 30;
+
+    private const IP_DECAY_SECONDS = 600;
+
     public function show(): View
     {
         return view('auth.login');
@@ -49,6 +57,7 @@ class LoginController extends Controller
 
         if (! $user || ! $passwordOk) {
             RateLimiter::hit($this->throttleKey($request, $data['identifier']));
+            RateLimiter::hit($this->ipThrottleKey($request), self::IP_DECAY_SECONDS);
 
             throw ValidationException::withMessages([
                 'identifier' => 'রোল/ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।',
@@ -98,6 +107,14 @@ class LoginController extends Controller
 
     private function ensureNotRateLimited(Request $request, string $identifier): void
     {
+        if (RateLimiter::tooManyAttempts($this->ipThrottleKey($request), self::MAX_ATTEMPTS_PER_IP)) {
+            $seconds = RateLimiter::availableIn($this->ipThrottleKey($request));
+
+            throw ValidationException::withMessages([
+                'identifier' => "অনেকবার চেষ্টা করা হয়েছে। অনুগ্রহ করে {$seconds} সেকেন্ড পর আবার চেষ্টা করুন।",
+            ]);
+        }
+
         if (! RateLimiter::tooManyAttempts($this->throttleKey($request, $identifier), self::MAX_ATTEMPTS)) {
             return;
         }
@@ -107,6 +124,11 @@ class LoginController extends Controller
         throw ValidationException::withMessages([
             'identifier' => "অনেকবার চেষ্টা করা হয়েছে। অনুগ্রহ করে {$seconds} সেকেন্ড পর আবার চেষ্টা করুন।",
         ]);
+    }
+
+    private function ipThrottleKey(Request $request): string
+    {
+        return 'login-ip:'.$request->ip();
     }
 
     /**

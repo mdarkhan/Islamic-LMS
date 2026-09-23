@@ -395,10 +395,16 @@ Ustaz, Zakat calculator and the calendar. Conventions, all centralised:
   `Setting::where(...)` in a controller/Blade. `set()` ignores unknown keys and invalidates the
   cache. Decimals (rates/money) are returned as STRINGS for BCMath safety. Secrets (SMTP password,
   APP_KEY, DB creds) live in the environment only and are NEVER stored or shown here.
-- **Post content is Markdown**, rendered by `App\Support\Markdown::render()` with raw HTML stripped
-  and `javascript:`/`data:` links neutralised — the only safe way to output a body. Never
-  `{!! $post->body !!}`. `Post::scopePublic()` (published AND `published_at <= now`) is the single
-  public-visibility definition; a draft, archived or future-scheduled post is never public.
+- **Post content is HTML from the admin WYSIWYG editor**, reduced to a strict element/attribute
+  allow-list by `App\Support\HtmlSanitizer::clean()` on save AND again on display (`Post::
+  renderedBody()`) — so a body is safe no matter how it reached the database (editor, seeder,
+  import, or a hand-made model in a test). No `<script>`, event handler, `<iframe>`, `javascript:`/
+  `data:` link, or absolute CSS colour (it wouldn't adapt to the light/dark theme) survives. Never
+  `{!! $post->body !!}` — always `{!! $post->renderedBody() !!}`. `App\Support\Markdown` exists but
+  is unused dead code (no post content path calls it); do not resurrect it as the sanitization step
+  — `HtmlSanitizer` is the one enforced contract. `Post::scopePublic()` (published AND
+  `published_at <= now`) is the single public-visibility definition; a draft, archived or
+  future-scheduled post is never public.
 - **Ask Ustaz is email-only and NEVER persisted** (CLAUDE.md #1 still holds): validate → anti-spam
   (honeypot + min-fill-time + `throttle`) → `AskUstazQuestion` Mailable → `config('mail.ustaz_email')`
   → discard. A failed send returns a safe Bengali error and NEVER claims success; the question is

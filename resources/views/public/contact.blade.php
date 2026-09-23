@@ -15,7 +15,6 @@
         <x-ui.card>
             <form method="POST" action="{{ route('contact.store') }}" class="space-y-4">
                 @csrf
-                <input type="hidden" name="started_at" value="{{ $startedAt }}">
                 {{-- Honeypot: hidden from humans, tempting to bots. Must stay empty. --}}
                 <div class="absolute -left-[9999px]" aria-hidden="true">
                     <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>

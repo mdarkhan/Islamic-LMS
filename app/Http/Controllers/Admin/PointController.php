@@ -59,7 +59,7 @@ class PointController extends Controller
 
             $query->chunk(500, function ($chunk) use ($out) {
                 foreach ($chunk as $student) {
-                    fputcsv($out, [$student->name, $student->roll, $student->status, $student->points_balance]);
+                    fputcsv($out, [csv_safe($student->name), $student->roll, $student->status, $student->points_balance]);
                 }
             });
 

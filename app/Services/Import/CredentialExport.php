@@ -34,7 +34,7 @@ class CredentialExport
         fwrite($handle, "\xEF\xBB\xBF");
         fputcsv($handle, ['Roll', 'Student Name', 'Temporary Password']);
         foreach ($credentials as $row) {
-            fputcsv($handle, [$row['roll'] ?? '', $row['name'] ?? '', $row['password']]);
+            fputcsv($handle, [$row['roll'] ?? '', csv_safe($row['name'] ?? ''), $row['password']]);
         }
         rewind($handle);
         $csv = stream_get_contents($handle);

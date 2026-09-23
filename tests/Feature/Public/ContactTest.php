@@ -29,7 +29,6 @@ class ContactTest extends TestCase
             'mobile' => '01700000000',
             'subject' => 'সাধারণ জিজ্ঞাসা',
             'message' => 'আপনার কোর্সে ভর্তি হতে চাই, প্রক্রিয়া কী?',
-            'started_at' => now()->subSeconds(30)->getTimestamp(),
             'website' => '',
         ], $o);
     }
@@ -113,7 +112,11 @@ class ContactTest extends TestCase
 
         $this->post(route('contact.store'), $this->payload(['website' => 'http://spam']))
             ->assertSessionHas('success');
-        $this->post(route('contact.store'), $this->payload(['started_at' => now()->getTimestamp()]))
+
+        // Submitted impossibly fast: the elapsed time is timed server-side from when
+        // show() was reached (session), never trusted from a client-supplied field.
+        $this->get(route('contact.show'));
+        $this->post(route('contact.store'), $this->payload())
             ->assertSessionHas('success');
 
         Mail::assertNothingSent();

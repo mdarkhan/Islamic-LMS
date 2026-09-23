@@ -16,12 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // available, so a user's saved preference and a guest's session choice apply).
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\AddSecurityHeaders::class,
         ]);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'perm' => \App\Http\Middleware\EnsurePermission::class,
             'password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
+            'account.active' => \App\Http\Middleware\EnsureAccountActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

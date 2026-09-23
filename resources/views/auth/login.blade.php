@@ -1,5 +1,6 @@
 <x-layout.guest :title="__('auth.enter')">
     <x-ui.card>
+        <x-flash />
         <div class="text-center mb-6">
             <p class="font-arabic text-xl text-brand mb-3">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
             <h1 class="text-xl font-bold text-ink">{{ __('auth.sign_in') }}</h1>

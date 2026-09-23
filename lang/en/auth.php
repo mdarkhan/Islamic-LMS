@@ -19,5 +19,6 @@ return [
     'new_password' => 'New password',
     'confirm_new_password' => 'Confirm new password',
     'min_chars' => 'At least 6 characters',
+    'min_chars_admin' => 'At least 10 characters, with a letter and a number',
     'change_password' => 'Change password',
 ];

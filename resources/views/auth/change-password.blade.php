@@ -16,7 +16,8 @@
                 <x-ui.input name="current_password" type="password" autocomplete="current-password" />
             </x-ui.field>
 
-            <x-ui.field :label="__('auth.new_password')" name="password" :hint="__('auth.min_chars')" required>
+            <x-ui.field :label="__('auth.new_password')" name="password"
+                        :hint="__(auth()->user()->isAdmin() ? 'auth.min_chars_admin' : 'auth.min_chars')" required>
                 <x-ui.input name="password" type="password" autocomplete="new-password" />
             </x-ui.field>
 

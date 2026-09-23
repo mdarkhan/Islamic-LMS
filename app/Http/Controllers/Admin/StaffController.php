@@ -131,6 +131,7 @@ class StaffController extends Controller
 
         if ($data['status'] !== User::STATUS_ACTIVE) {
             DB::table('sessions')->where('user_id', $staff->id)->delete();
+            $staff->rotateRememberToken();
         }
 
         $this->audit->log('staff.status_changed', $staff,
@@ -153,6 +154,7 @@ class StaffController extends Controller
         ])->save();
 
         DB::table('sessions')->where('user_id', $staff->id)->delete();
+        $staff->rotateRememberToken();
 
         $this->audit->log('staff.password_reset', $staff);
 

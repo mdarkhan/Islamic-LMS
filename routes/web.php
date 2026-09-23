@@ -52,7 +52,7 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [LoginController::class, 'store'])->name('login.store');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'account.active'])->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
 
     // Forced/temporary password change — exempt from the password.changed guard.
@@ -64,7 +64,7 @@ Route::middleware('auth')->group(function () {
  * Notifications — the bell icon. Shared by both roles: a notification always belongs
  * to the authenticated user, never a role-scoped id, so one route set serves both.
  */
-Route::middleware(['auth', 'password.changed'])->group(function () {
+Route::middleware(['auth', 'account.active', 'password.changed'])->group(function () {
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/poll', [NotificationController::class, 'poll'])->name('notifications.poll');
     Route::put('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
@@ -75,7 +75,7 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
 /*
  * Student area
  */
-Route::middleware(['auth', 'password.changed', 'role:student'])->group(function () {
+Route::middleware(['auth', 'account.active', 'password.changed', 'role:student'])->group(function () {
     Route::get('dashboard', [Student\DashboardController::class, 'index'])->name('student.dashboard');
 
     Route::get('courses', [Student\CourseController::class, 'index'])->name('student.courses.index');
@@ -132,7 +132,7 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
 /*
  * Admin area
  */
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 'role:super_admin,admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'password.changed', 'role:super_admin,admin'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('search', [Admin\SearchController::class, 'index'])->name('search.index');
 

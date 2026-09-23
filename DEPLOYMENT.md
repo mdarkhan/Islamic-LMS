@@ -75,7 +75,9 @@ cd ~/masudalimi
 composer install --no-dev --optimize-autoloader
 
 cp .env.example .env      # first deploy only
-# edit .env: APP_ENV=production, APP_DEBUG=false, DB_*, MAIL_*, USTAZ_EMAIL
+# edit .env: APP_ENV=production, APP_DEBUG=false, DB_*, MAIL_*, USTAZ_EMAIL,
+# SESSION_SECURE_COOKIE=true (HTTPS is required per §2 — without this the session
+# and "remember me" cookies are sent in the clear over any accidental plain-HTTP hit)
 php artisan key:generate  # first deploy only — regenerating invalidates sessions
 
 php artisan migrate --force
@@ -210,6 +212,11 @@ batch-traceable, but production rollback follows [ROLLBACK.md](ROLLBACK.md); do 
 - [ ] `/.env` returns 404, not file contents
 - [ ] `/storage/logs/laravel.log` is not reachable
 - [ ] `APP_DEBUG=false` (force an error and confirm no stack trace shows)
+- [ ] `SESSION_SECURE_COOKIE=true` in `.env` (check the `Set-Cookie` response header
+      carries `Secure`) — without it, session and "remember me" cookies would be sent
+      over plain HTTP too
+- [ ] `/robots.txt` shows `Disallow: /admin`, `/dashboard`, etc. (the dynamic route,
+      not a stray static `public/robots.txt` shadowing it)
 - [ ] Login works with a Bengali-numeral roll number
 - [ ] A quiz start debits exactly one point; a refresh debits none
 - [ ] Bengali and Arabic render correctly on a fresh record

@@ -54,8 +54,8 @@ class StudentController extends Controller
             $query->chunk(500, function ($chunk) use ($out) {
                 foreach ($chunk as $student) {
                     fputcsv($out, [
-                        $student->name, $student->roll, $student->guardian_name,
-                        $student->email, $student->phone, $student->status, $student->points_balance,
+                        csv_safe($student->name), $student->roll, csv_safe($student->guardian_name),
+                        csv_safe($student->email), csv_safe($student->phone), $student->status, $student->points_balance,
                     ]);
                 }
             });
@@ -182,6 +182,7 @@ class StudentController extends Controller
 
         if ($data['status'] !== User::STATUS_ACTIVE) {
             DB::table('sessions')->where('user_id', $student->id)->delete();
+            $student->rotateRememberToken();
         }
 
         $this->audit->log('student.status_changed', $student,
@@ -216,6 +217,7 @@ class StudentController extends Controller
 
                 if ($data['status'] !== User::STATUS_ACTIVE) {
                     DB::table('sessions')->where('user_id', $student->id)->delete();
+                    $student->rotateRememberToken();
                 }
             }
         });
@@ -243,6 +245,7 @@ class StudentController extends Controller
         ])->save();
 
         DB::table('sessions')->where('user_id', $student->id)->delete();
+        $student->rotateRememberToken();
 
         $this->audit->log('student.password_reset', $student);
 

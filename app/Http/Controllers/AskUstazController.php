@@ -25,11 +25,18 @@ class AskUstazController extends Controller
     /** Reject a submission completed impossibly fast — a simple bot heuristic. */
     private const MIN_FILL_SECONDS = 3;
 
+    private const SESSION_KEY = 'ask_ustaz_started_at';
+
     public function __construct(private readonly SettingService $settings) {}
 
     public function show(): View
     {
-        return view('public.ask-ustaz', ['startedAt' => now()->getTimestamp()]);
+        // Recorded server-side, not trusted from the client: a bot can lie about a
+        // submitted "started_at" (or simply omit it), but it cannot fake how long ago
+        // ITS OWN session actually reached this page.
+        session()->put(self::SESSION_KEY, now()->getTimestamp());
+
+        return view('public.ask-ustaz');
     }
 
     public function store(AskUstazRequest $request): RedirectResponse
@@ -75,7 +82,7 @@ class AskUstazController extends Controller
             return true;   // honeypot filled
         }
 
-        $startedAt = (int) $request->input('started_at', 0);
+        $startedAt = (int) session(self::SESSION_KEY, 0);
 
         return $startedAt > 0 && (now()->getTimestamp() - $startedAt) < self::MIN_FILL_SECONDS;
     }

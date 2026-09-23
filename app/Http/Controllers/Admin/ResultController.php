@@ -105,7 +105,7 @@ class ResultController extends Controller
             $query->chunk(500, function ($chunk) use ($out) {
                 foreach ($chunk as $a) {
                     fputcsv($out, [
-                        $a->quiz->title, $a->user->roll, $a->user->name, $a->kind, $a->status,
+                        csv_safe($a->quiz->title), $a->user->roll, csv_safe($a->user->name), $a->kind, $a->status,
                         $a->calculated_score, $a->manual_adjustment, $a->final_score,
                         $a->total_marks_snapshot, $a->time_taken_seconds,
                         $a->submitted_at?->format('Y-m-d H:i'),
