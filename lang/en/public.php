@@ -64,7 +64,7 @@ return [
     'book_buy_body' => 'You can get this book from any of the following websites.',
     'buy_now' => 'Buy',
     'book_buy_none' => 'Purchase links will be added soon.',
-    'book_back' => '← Back to Books',
+    'book_back' => 'Back to Books',
 
     'articles_heading' => 'Recent articles',
     'articles_all' => 'All articles',

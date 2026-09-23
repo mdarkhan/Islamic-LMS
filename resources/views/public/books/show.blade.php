@@ -5,7 +5,14 @@
 <x-layout.public :title="$book->title" :canonical="route('books.show', $book)">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
-        <a href="{{ route('home') }}#books" class="text-sm font-semibold text-brand hover:underline">{{ __('public.book_back') }}</a>
+        {{-- `flex w-fit`, not an inline link: the parent's space-y spacing is a vertical
+             margin, which an inline element ignores — that's what left this glued to the
+             cover before. --}}
+        <a href="{{ route('home') }}#books"
+           class="group flex w-fit items-center gap-2 rounded-full border border-line bg-card py-2 pl-2.5 pr-4 text-sm font-semibold text-brand-strong shadow-[--shadow-soft] transition-colors hover:border-brand/40 hover:bg-brand-tint">
+            <x-ui.icon name="chevron" class="w-5 h-5 rotate-180 transition-transform group-hover:-translate-x-0.5" />
+            {{ __('public.book_back') }}
+        </a>
 
         {{-- Header --}}
         <section class="grid gap-6 sm:grid-cols-[auto_1fr]">
