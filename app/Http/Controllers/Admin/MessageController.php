@@ -7,6 +7,7 @@ use App\Http\Requests\SendMessageRequest;
 use App\Models\Conversation;
 use App\Models\User;
 use App\Services\Messaging\MessageService;
+use App\Services\Notifications\NotificationService;
 use App\Support\MessagePresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +21,10 @@ use Illuminate\View\View;
  */
 class MessageController extends Controller
 {
-    public function __construct(private readonly MessageService $messages) {}
+    public function __construct(
+        private readonly MessageService $messages,
+        private readonly NotificationService $notifications,
+    ) {}
 
     public function index(): View
     {
@@ -38,8 +42,11 @@ class MessageController extends Controller
     {
         $admin = $request->user();
 
-        // A shared inbox: opening the thread clears it for every admin.
+        // A shared inbox: opening the thread clears the message list for every admin,
+        // but the bell notification is only THIS admin's own row — each admin's feed is
+        // independent, so a colleague who has not opened it yet still sees it as new.
         $this->messages->markRead($conversation, $admin);
+        $this->notifications->markReadForSubject($admin, 'conversation', $conversation->getKey());
 
         return view('admin.messages.show', [
             'conversation' => $conversation->load('student:id,name,roll'),
@@ -86,6 +93,7 @@ class MessageController extends Controller
         $new = $this->messages->messages($conversation, $after);
 
         $this->messages->markRead($conversation, $admin);
+        $this->notifications->markReadForSubject($admin, 'conversation', $conversation->getKey());
 
         return response()->json([
             'messages' => MessagePresenter::collection($new, $admin),

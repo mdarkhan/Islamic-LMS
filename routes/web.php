@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
@@ -60,6 +61,18 @@ Route::middleware('auth')->group(function () {
 });
 
 /*
+ * Notifications — the bell icon. Shared by both roles: a notification always belongs
+ * to the authenticated user, never a role-scoped id, so one route set serves both.
+ */
+Route::middleware(['auth', 'password.changed'])->group(function () {
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/poll', [NotificationController::class, 'poll'])->name('notifications.poll');
+    Route::put('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::get('notifications/{notification}/open', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::delete('notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
+/*
  * Student area
  */
 Route::middleware(['auth', 'password.changed', 'role:student'])->group(function () {
@@ -105,6 +118,11 @@ Route::middleware(['auth', 'password.changed', 'role:student'])->group(function 
     Route::get('messages', [Student\MessageController::class, 'index'])->name('student.messages.index');
     Route::get('messages/poll', [Student\MessageController::class, 'poll'])->name('student.messages.poll');
     Route::post('messages', [Student\MessageController::class, 'store'])->name('student.messages.store')->middleware('throttle:30,1');
+
+    // Daily amol tracker. No amol/entry id in the URL — always the caller's own day,
+    // and a checkmark can only ever be written for today (AmolService enforces this).
+    Route::get('amol', [Student\AmolController::class, 'index'])->name('student.amol.index');
+    Route::put('amol/{amol}/toggle', [Student\AmolController::class, 'toggle'])->name('student.amol.toggle')->middleware('throttle:120,1');
 
     Route::get('profile', [Student\ProfileController::class, 'edit'])->name('student.profile.edit');
     Route::put('profile', [Student\ProfileController::class, 'update'])->name('student.profile.update');
@@ -252,6 +270,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'password.changed', 
         Route::get('messages/{conversation}/poll', [Admin\MessageController::class, 'poll'])->name('messages.poll');
         Route::post('messages/{conversation}', [Admin\MessageController::class, 'store'])->name('messages.store')->middleware('throttle:60,1');
         Route::delete('messages/{conversation}', [Admin\MessageController::class, 'destroy'])->name('messages.destroy');
+    });
+
+    // Daily amol tracker — read-only checklists plus a per-day comment.
+    Route::middleware('perm:amol.view')->group(function () {
+        Route::get('amol', [Admin\AmolController::class, 'index'])->name('amol.index');
+        Route::get('amol/{student}', [Admin\AmolController::class, 'show'])->name('amol.show');
+        Route::post('amol/{student}/note', [Admin\AmolController::class, 'saveNote'])->name('amol.note');
     });
 
     // Settings (general / zakat / calendar). Secrets are never editable here.

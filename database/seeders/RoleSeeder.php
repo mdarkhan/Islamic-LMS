@@ -20,6 +20,7 @@ class RoleSeeder extends Seeder
         'results' => ['results.view', 'results.adjust', 'results.regrade', 'results.release'],
         'content' => ['posts.manage', 'notices.manage', 'faqs.manage'],
         'messages' => ['messages.view'],
+        'amol' => ['amol.view'],
         'system' => ['settings.manage', 'audit.view'],
     ];
 

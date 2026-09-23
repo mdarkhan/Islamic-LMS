@@ -270,6 +270,51 @@ password-reset, point credit/deduct/bulk, course & lesson create/update/delete, 
   (`message.thread_deleted`) records who, when and how many — never the message bodies, so deleting
   for privacy does not simply move the content into the audit table.
 
+### 2.15 Daily amol tracker
+
+- **A checkmark is write-locked to today by construction.** `AmolService::toggle()` accepts no date
+  parameter at all — it resolves the server's current Dhaka date internally, so a client can never
+  supply a past (or future) date to mutate. There is no path, buggy or otherwise, that can edit
+  yesterday's checklist; there is simply no argument for "yesterday" to travel through. A test
+  advances the clock a day and asserts the previous day's entries are unchanged and its view is
+  rendered non-interactive (`disabled` buttons, no `data-url`).
+- **A student can only ever reach their own checklist.** `PUT /amol/{amol}/toggle` takes no student
+  id — always the authenticated user — so there is no IDOR surface. A test asserts one student's
+  toggle never affects another's entries and that the toggle route is unreachable while logged out.
+- **The ustaz view is permission-gated** (`perm:amol.view`) and strictly read-only for checkmarks —
+  there is no admin route that can write an `amol_entries` row, only `amol_day_notes`. A test
+  revokes the permission and asserts every admin amol route 403s for that admin, and 403s outright
+  for a student.
+- **A day's note may be saved for any date** (the ustaz reviews after the fact) but is still
+  validated `before_or_equal:today` server-side — a future date is rejected, not silently clamped.
+- **`Amol::label` is content, not chrome**, and is served to the client as-is (plain Bengali text,
+  escaped by `{{ }}` on render) — never treated as HTML or Markdown, same posture as a message body.
+
+### 2.16 Bell-icon notifications
+
+- **Ownership is checked on every per-notification action.** `open`/`destroy` both
+  `abort_unless($notification->user_id === $request->user()->getKey(), 403)` before touching the
+  row. A test creates a notification for one user and asserts a second user gets 403 opening or
+  deleting it, and that the row is untouched afterward.
+- **The feed is a plain, hand-rolled table (`app_notifications`), not Laravel's built-in
+  `notifications` table** (which `User`'s unused `Notifiable` trait would otherwise expect) — kept
+  deliberately separate so nothing accidentally aliases the two.
+- **Fan-out never leaks past the permission boundary.** A student's message notifies only admins
+  who actually hold `messages.view` (via `hasPermission()`, so a permission revocation also stops
+  future fan-out to that admin) — never every staff account indiscriminately. A test detaches the
+  permission from one admin and asserts they receive nothing while a `super_admin` (which holds
+  no explicit grant, per `hasPermission()`'s bypass) still does.
+- **A shared inbox does not leak read-state across admins.** Opening a conversation only marks
+  THAT admin's own notification row read; a colleague's row is untouched. A test asserts this with
+  two admins on the same conversation.
+- **`title`/`body` are always rendered escaped** (`{{ }}` in Blade, `x-text` in Alpine) — both are
+  built from user-authored content (a message body, an amol note), so neither is ever treated as
+  HTML or Markdown.
+- **`GET /notifications/{id}/open` mutates (marks read) on a GET** — a deliberate, narrow exception
+  to REST convention, matching this app's existing read-on-view precedent (opening a message
+  thread, viewing an amol date). It is low-risk (idempotent-ish, scoped to the caller's own row,
+  no destructive effect) and avoids requiring JS just to click a notification.
+
 ---
 
 ## 3. Files that must never be committed

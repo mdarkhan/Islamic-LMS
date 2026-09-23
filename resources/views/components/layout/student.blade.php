@@ -1,10 +1,13 @@
 @props(['title' => null, 'heading' => null])
 
 @php
-    // Unread ustaz replies — drives the sidebar badge so a student sees on any page
-    // that something is waiting for them.
+    // Unread ustaz replies / unseen amol comments — drive the sidebar badges so a
+    // student sees on any page that something is waiting for them.
     $unreadMessages = auth()->check()
         ? app(\App\Services\Messaging\MessageService::class)->unreadCountFor(auth()->user())
+        : 0;
+    $unseenAmolNotes = auth()->check()
+        ? app(\App\Services\Amol\AmolService::class)->unseenNoteCountFor(auth()->user())
         : 0;
 
     $nav = [
@@ -16,6 +19,7 @@
         ['label' => __('nav.leaderboard'), 'href' => route('student.leaderboards.overall'), 'icon' => 'leaderboard', 'active' => request()->routeIs('student.leaderboards.*')],
         ['label' => __('nav.point_history'), 'href' => route('student.points'), 'icon' => 'points', 'active' => request()->routeIs('student.points')],
         ['label' => __('nav.messages'), 'href' => route('student.messages.index'), 'icon' => 'message', 'active' => request()->routeIs('student.messages.*'), 'badge' => $unreadMessages ?: null],
+        ['label' => __('nav.amol'), 'href' => route('student.amol.index'), 'icon' => 'checklist', 'active' => request()->routeIs('student.amol.*'), 'badge' => $unseenAmolNotes ?: null],
         ['label' => __('nav.profile'), 'href' => route('student.profile.edit'), 'icon' => 'profile', 'active' => request()->routeIs('student.profile.*')],
     ];
 

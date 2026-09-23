@@ -14,6 +14,7 @@ return [
     'leaderboard' => 'Leaderboard',
     'point_history' => 'Point History',
     'messages' => 'Messages',
+    'amol' => 'Daily Amol Tracker',
     'profile' => 'Profile',
     'logout' => 'Log out',
     'later_phase' => 'Later phase',

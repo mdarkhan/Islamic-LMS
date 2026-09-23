@@ -33,6 +33,10 @@
         $nav[] = ['label' => __('nav.messages'), 'href' => route('admin.messages.index'), 'icon' => 'message', 'active' => request()->routeIs('admin.messages.*'), 'badge' => $unreadMessages ?: null];
     }
 
+    if ($user?->hasPermission('amol.view')) {
+        $nav[] = ['label' => __('nav.amol'), 'href' => route('admin.amol.index'), 'icon' => 'checklist', 'active' => request()->routeIs('admin.amol.*')];
+    }
+
     if ($user?->hasPermission('notices.manage')) {
         $nav[] = ['label' => __('nav.notices'), 'href' => route('admin.notices.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.notices.*')];
     }

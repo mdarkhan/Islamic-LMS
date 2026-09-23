@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SendMessageRequest;
 use App\Services\Messaging\MessageService;
+use App\Services\Notifications\NotificationService;
 use App\Support\MessagePresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,15 +19,20 @@ use Illuminate\View\View;
  */
 class MessageController extends Controller
 {
-    public function __construct(private readonly MessageService $messages) {}
+    public function __construct(
+        private readonly MessageService $messages,
+        private readonly NotificationService $notifications,
+    ) {}
 
     public function index(Request $request): View
     {
         $student = $request->user();
         $conversation = $this->messages->threadFor($student);
 
-        // Opening the thread is what marks the ustaz's replies read.
+        // Opening the thread is what marks the ustaz's replies read — in the message
+        // list itself and in the bell-icon feed alike.
         $this->messages->markRead($conversation, $student);
+        $this->notifications->markReadForSubject($student, 'conversation', $conversation->getKey());
 
         return view('student.messages.index', [
             'messages' => MessagePresenter::collection(
@@ -62,6 +68,7 @@ class MessageController extends Controller
 
         // Seeing them in an open thread is reading them.
         $this->messages->markRead($conversation, $student);
+        $this->notifications->markReadForSubject($student, 'conversation', $conversation->getKey());
 
         return response()->json([
             'messages' => MessagePresenter::collection($new, $student),

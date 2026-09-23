@@ -59,6 +59,9 @@
                     @endif
                     <x-ui.locale-toggle />
                     <x-ui.theme-toggle />
+                    @auth
+                        <x-layout.notification-bell />
+                    @endauth
                     <div class="hidden sm:flex items-center gap-2 pl-2 ml-1 border-l border-line">
                         <div class="text-right leading-tight">
                             <p class="text-sm font-semibold text-ink truncate max-w-[10rem]">{{ $user?->name }}</p>

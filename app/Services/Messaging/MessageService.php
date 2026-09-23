@@ -4,8 +4,10 @@ namespace App\Services\Messaging;
 
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
+use App\Services\Notifications\NotificationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +29,10 @@ use Illuminate\Support\Facades\DB;
  */
 class MessageService
 {
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly NotificationService $notifications,
+    ) {}
 
     /** The student's thread, created on first use by either side. */
     public function threadFor(User $student): Conversation
@@ -36,12 +41,13 @@ class MessageService
     }
 
     /**
-     * Append a message and bump the thread's ordering timestamp, atomically.
+     * Append a message and bump the thread's ordering timestamp, atomically. Then ping
+     * the bell-icon feed of whoever did NOT just write it.
      * `read_at` stays null: it means "not yet read by the other side".
      */
     public function send(Conversation $conversation, User $sender, string $body): Message
     {
-        return DB::transaction(function () use ($conversation, $sender, $body) {
+        $message = DB::transaction(function () use ($conversation, $sender, $body) {
             $message = $conversation->messages()->create([
                 'sender_id' => $sender->getKey(),
                 'body' => trim($body),
@@ -51,6 +57,55 @@ class MessageService
 
             return $message;
         });
+
+        $this->notifyOfMessage($conversation, $sender, $message);
+
+        return $message;
+    }
+
+    /**
+     * A student's message pings every admin who can see the shared inbox; an ustaz reply
+     * pings just that one student. Upserted by (conversation) — see NotificationService::
+     * notify() — so a burst of messages in one thread surfaces as one feed item, not many.
+     */
+    private function notifyOfMessage(Conversation $conversation, User $sender, Message $message): void
+    {
+        if ($this->readsAsStudent($conversation, $sender)) {
+            $conversation->loadMissing('student:id,name');
+
+            foreach ($this->adminsWithMessagingAccess() as $admin) {
+                $this->notifications->notify(
+                    $admin,
+                    'message',
+                    $conversation->student->name.' আপনাকে একটি মেসেজ পাঠিয়েছেন',
+                    $message->body,
+                    route('admin.messages.show', $conversation),
+                    'conversation',
+                    $conversation->getKey(),
+                );
+            }
+
+            return;
+        }
+
+        $this->notifications->notify(
+            $conversation->student,
+            'message',
+            'উস্তায আপনাকে একটি নতুন মেসেজ পাঠিয়েছেন',
+            $message->body,
+            route('student.messages.index'),
+            'conversation',
+            $conversation->getKey(),
+        );
+    }
+
+    /** Every admin/super_admin who actually holds messages.view (super_admin bypasses grants). */
+    private function adminsWithMessagingAccess(): Collection
+    {
+        return User::query()
+            ->whereHas('roles', fn ($q) => $q->whereIn('name', [Role::SUPER_ADMIN, Role::ADMIN]))
+            ->get()
+            ->filter(fn (User $u) => $u->hasPermission('messages.view'));
     }
 
     /** Mark everything the other side wrote as read, for whichever side $reader is on. */

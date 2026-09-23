@@ -14,6 +14,7 @@ return [
     'leaderboard' => 'মেধাতালিকা',
     'point_history' => 'পয়েন্ট হিস্ট্রি',
     'messages' => 'মেসেজ',
+    'amol' => 'দৈনন্দিন আমলনামা',
     'profile' => 'প্রোফাইল',
 
     'posts' => 'লেখাসমূহ',

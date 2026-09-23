@@ -410,3 +410,75 @@ Ask Ustaz form** (rule 1) — see the note there before touching either.
 - **Thread deletion is real** (messages cascade) and is the ustaz's call. The *fact* is audited
   (`message.thread_deleted` with a count); the message bodies are deliberately never copied into
   the audit payload.
+
+## Daily amol tracker
+
+"দৈনন্দিন আমলনামা" — a digitised version of the institution's paper daily-deed checklist
+(`দৈনন্দিন আমলের রুটিন.pdf`: fajr sunnah, five takbir-e-oola, witr, morning/evening adhkar, …).
+
+- **`AmolService` is the only writer** of `amol_entries` / `amol_day_notes`. The checklist itself
+  (`amols`) is a seeded catalog (`AmolSeeder`), not admin-editable UI at this stage.
+- **A checkmark can only ever be written for TODAY.** `AmolService::toggle()` takes no date
+  argument — it always resolves the server's current Dhaka date itself (`APP_TIMEZONE=Asia/Dhaka`
+  is PHP's default timezone app-wide, so `CarbonImmutable::now()` already IS Dhaka time). Once a
+  day has passed there is no code path that can still mark it, by construction, the same
+  "never trust a client-supplied … elapsed time" posture the exam timer uses. Viewing a past date
+  is fine (`AmolDate::resolve()` clamps a `?date=` query param, never trusting it blindly, and
+  clamps any future date back to today); the checklist for a non-today date is rendered read-only
+  (`<x-amol.item-row :editable="false">`, a `disabled` button — inert by construction, not by a
+  click handler that could be forgotten).
+- **Student routes carry no entry id** — a toggle is always the authenticated student's own row
+  for today, so there is nothing to tamper with. `PUT /amol/{amol}/toggle` only ever needs the
+  deed id.
+- **The ustaz side never writes a checkmark**, only a per-day NOTE (`AmolDayNote`, one per
+  student+date, `unique(user_id, date)`). Unlike entries, a note may be saved for ANY date — the
+  ustaz reviews after the fact — validated `before_or_equal:today` server-side regardless.
+- **Ustaz access is permission-gated** (`perm:amol.view`), same pattern as messaging: the admin
+  role holds it today, and it can be narrowed to specific admins later without a schema change.
+- **`amol.label` is Bengali content and is never localised** (same rule as a lesson title) — only
+  the surrounding chrome (`lang/*/amol.php`) is bilingual.
+- **The five daily prayers group into dropdowns.** `amols.group` clusters a prayer's sunnah/
+  namaz/takbir-e-oola sub-items (e.g. `fajr`); `Amol::partition()` is the SINGLE place that
+  splits a checklist into `GROUP_ORDER` groups + the ungrouped rest — both the student and admin
+  views call it, so the grouping rule never drifts between them. A group's dropdown is a native
+  `<details>` (no JS needed to open/close it); group labels are chrome (`amol.group_*` keys), not
+  content, since they are just structural section headers.
+- **`AmolDayNote.seen_at`** drives the "আমলনামা" sidebar badge (unseen count = notes with
+  `seen_at IS NULL`). `AmolService::saveNote()` resets it to null on every save, including an
+  edit to an existing day's note — a revised comment re-surfaces as new. Viewing that specific
+  date (`Student\AmolController@index`) is what clears it, the same read-on-open pattern as
+  the message thread.
+
+## Bell-icon notifications
+
+A cross-feature feed (`app_notifications`, `AppNotification`, `NotificationService`), shared by
+both roles via one `NotificationController` and rendered by `x-layout.notification-bell` in the
+common header (`x-layout.app`) — never a role-specific copy.
+
+- **`NotificationService::notify()` is the only writer.** Deliberately named `app_notifications`,
+  not `notifications` — Laravel's own `Notifiable` trait (already on `User`, unused elsewhere)
+  expects a `notifications` table with a different (polymorphic, uuid) shape; a same-named table
+  here would collide with that convention.
+- **Upserted by `(user_id, subject_type, subject_id)`, not inserted per event.** Three quick
+  messages in one conversation, or two saves of the same day's amol note, refresh ONE row (latest
+  title/body/`updated_at`, `read_at` reset to null) instead of piling up duplicates. A
+  notification with no natural subject always gets its own fresh row.
+- **Fan-out today:** a student's message pings every admin holding `messages.view` (computed via
+  `hasPermission()`, so `super_admin` is included correctly even though it carries no explicit
+  grant); an ustaz reply pings that one student; an amol day-note save pings that one student.
+  Toggling an amol checkbox notifies no one — only the day's NOTE is notifiable.
+- **A shared inbox still gets independent feeds.** When one admin opens a conversation,
+  `markReadForSubject()` clears only THAT admin's own row — a colleague who has not opened it
+  yet still sees it as unread. Each admin fanned out to on send got their own upserted row.
+- **Opening the thing IS the read action**, wired at the same call sites that already mark the
+  feature's own read-state: `Student\MessageController@index/poll`, `Admin\MessageController@show/
+  poll`, `Student\AmolController@index`. There is also `GET /notifications/{id}/open`, which
+  marks read then redirects to the stored `url` — a deliberate, low-risk exception to "GET never
+  mutates," matching this app's existing precedent for read-on-view.
+- **No WebSockets** (see the messaging section above) — the bell polls `GET /notifications/poll`
+  every 25s for the unread count AND a fresh recent list, so an already-open dropdown updates too.
+- **Ownership is checked per action**, not by role: `open`/`destroy` `abort_unless`
+  `$notification->user_id === $request->user()->getKey()`. Deletion (`NotificationService::
+  delete()`) is real and Facebook-style — removing it from your own feed only, never anyone else's.
+- **`title`/`body` are plain Bengali text, always rendered escaped**, same posture as a message
+  body — never HTML or Markdown.

@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
             PostCategorySeeder::class,
             BookSeeder::class,
+            AmolSeeder::class,
             LegacyCourseSeeder::class,
             DevAccountsSeeder::class,
         ]);
