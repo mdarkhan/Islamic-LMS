@@ -62,6 +62,7 @@ return [
     'book_preview_page' => 'Sample page :current/:total',
     'book_buy_heading' => 'Get this book',
     'book_buy_body' => 'You can get this book from any of the following websites.',
+    'buy_now' => 'Buy',
     'book_buy_none' => 'Purchase links will be added soon.',
     'book_back' => '← Back to Books',
 

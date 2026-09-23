@@ -62,6 +62,7 @@ return [
     'book_preview_page' => 'নমুনা পাতা :current/:total',
     'book_buy_heading' => 'বইটি সংগ্রহ করুন',
     'book_buy_body' => 'নিচের যেকোনো একটি ওয়েবসাইট থেকে বইটি সংগ্রহ করতে পারেন।',
+    'buy_now' => 'কিনুন',
     'book_buy_none' => 'শীঘ্রই সংগ্রহের লিংক যুক্ত হবে।',
     'book_back' => '← বইসমূহে ফিরুন',
 

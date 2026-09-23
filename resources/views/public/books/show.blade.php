@@ -33,6 +33,11 @@
                         <dd class="text-ink font-semibold tabular-nums">{{ bn($book->page_count) }}</dd>
                     @endif
                 </dl>
+
+                @if ($book->purchaseLinks->isNotEmpty())
+                    <p class="text-xs font-semibold text-muted mt-5 mb-2">{{ __('public.book_buy_heading') }}</p>
+                    <x-ui.buy-links :links="$book->purchaseLinks" />
+                @endif
             </div>
         </section>
 
@@ -70,15 +75,7 @@
             <p class="text-sm text-muted">{{ __('public.book_buy_none') }}</p>
         @else
             <p class="text-sm text-muted mb-4">{{ __('public.book_buy_body') }}</p>
-            <div class="space-y-2.5">
-                @foreach ($book->purchaseLinks as $link)
-                    <a href="{{ $link->url }}" target="_blank" rel="noopener"
-                       class="flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3 text-sm font-semibold text-ink hover:border-brand/40 hover:bg-brand-tint transition-colors">
-                        {{ $link->website_name }}
-                        <x-ui.icon name="chevron" class="w-4 h-4 -rotate-90 text-muted" />
-                    </a>
-                @endforeach
-            </div>
+            <x-ui.buy-links :links="$book->purchaseLinks" class="flex-col items-stretch [&>a]:justify-between" />
         @endif
     </x-ui.modal>
 </x-layout.public>

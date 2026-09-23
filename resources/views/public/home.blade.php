@@ -178,20 +178,25 @@
             </div>
             <div class="grid gap-5 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($books as $book)
-                    <a href="{{ route('books.show', $book) }}" class="group flex flex-col items-center text-center">
-                        <div class="book-spine-effect w-full aspect-[3/4.2] rounded-2xl border border-brand/25 shadow-[--shadow-soft] overflow-hidden relative bg-brand-tint">
-                            @if ($book->coverUrl())
-                                <img src="{{ $book->coverUrl() }}" alt="{{ $book->title }}" class="absolute inset-0 w-full h-full object-cover">
-                            @else
-                                <div class="absolute inset-0 geo-accent opacity-60" aria-hidden="true"></div>
-                                <div class="absolute inset-0 grid place-items-center text-brand/60">
-                                    <x-ui.icon name="book" class="w-10 h-10" />
-                                </div>
-                            @endif
-                        </div>
-                        <h4 class="mt-3 text-xs sm:text-sm font-bold text-ink group-hover:text-brand-strong transition-colors leading-snug line-clamp-2">{{ $book->title }}</h4>
-                        <p class="text-xs text-muted mt-0.5 truncate max-w-full">{{ $book->author }}</p>
-                    </a>
+                    {{-- The cover/title link and the store links are siblings, not nested — an
+                         <a> inside an <a> is invalid HTML and browsers split it unpredictably. --}}
+                    <div class="flex flex-col items-center text-center">
+                        <a href="{{ route('books.show', $book) }}" class="group flex flex-col items-center w-full">
+                            <div class="book-spine-effect w-full aspect-[3/4.2] rounded-2xl border border-brand/25 shadow-[--shadow-soft] overflow-hidden relative bg-brand-tint">
+                                @if ($book->coverUrl())
+                                    <img src="{{ $book->coverUrl() }}" alt="{{ $book->title }}" class="absolute inset-0 w-full h-full object-cover">
+                                @else
+                                    <div class="absolute inset-0 geo-accent opacity-60" aria-hidden="true"></div>
+                                    <div class="absolute inset-0 grid place-items-center text-brand/60">
+                                        <x-ui.icon name="book" class="w-10 h-10" />
+                                    </div>
+                                @endif
+                            </div>
+                            <h4 class="mt-3 text-xs sm:text-sm font-bold text-ink group-hover:text-brand-strong transition-colors leading-snug line-clamp-2">{{ $book->title }}</h4>
+                            <p class="text-xs text-muted mt-0.5 truncate max-w-full">{{ $book->author }}</p>
+                        </a>
+                        <x-ui.buy-links :links="$book->purchaseLinks" size="sm" class="mt-2.5 justify-center" />
+                    </div>
                 @endforeach
             </div>
         </section>

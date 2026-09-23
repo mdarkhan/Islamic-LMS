@@ -33,7 +33,7 @@ class PublicController extends Controller
         return view('public.home', [
             'calendar' => $this->calendar->all(),
             'upcomingEvents' => $this->calendar->upcomingIslamicOccasions(),
-            'books' => Book::query()->published()->orderBy('sort_order')->limit(10)->get(),
+            'books' => Book::query()->published()->with('purchaseLinks')->orderBy('sort_order')->limit(10)->get(),
             'courses' => $courses,
             // The hero strip highlights numbers that are reliably non-zero for a young
             // site (a fresh install may have zero articles for a while, which reads as
