@@ -154,8 +154,15 @@ and `super_admin` bypasses `perm:` via `User::hasPermission()`.
   Use the tokens, not raw palette values, so both themes stay consistent. Emerald/teal
   on warm neutral. Respect `prefers-reduced-motion` (already handled globally).
 - **Tailwind v4 via Vite.** Never the CDN. `npm run build` compiles CSS/JS and
-  self-hosts the Bengali/Arabic/Latin fonts into `public/build`. Node is a build-time
-  dependency only.
+  self-hosts the Bengali body font (Kalpurush, `resources/fonts/kalpurush.ttf` — not on
+  Google/Bunny Fonts or Fontsource, so it's a checked-in local file via `vite.config.js`'s
+  `local()` provider, not a remote fetch) into `public/build`. Node is a build-time
+  dependency only. **`@vite(...)` alone never emits the font's `@font-face` rules or
+  preload links** — `{{ \Illuminate\Support\Facades\Vite::fonts() }}` in
+  `components/layout/base.blade.php` is a separate required call that reads
+  `fonts-manifest.json`; drop it and `--font-sans` silently falls through to the next
+  stack entry with no error. The Arabic face (`--font-arabic`, bismillah/Qur'anic
+  passages) is NOT self-hosted — it relies on the visitor's own system fonts.
 - **Never put `@disabled` / `@checked` / `@selected` directives inside an `<x-...>`
   component tag** — it generates a dangling `endif`. Use a bound attribute
   (`:disabled="$expr"`) instead. Plain HTML elements are fine.

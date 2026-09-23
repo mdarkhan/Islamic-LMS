@@ -12,7 +12,7 @@
  * neutral surfaces, following the legacy site.
  */
 @theme {
-    --font-sans: 'Noto Sans Bengali', 'Hind Siliguri', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'kalpurush', 'kalpurush Fallback', ui-sans-serif, system-ui, sans-serif;
     --font-arabic: 'Noto Naskh Arabic', 'Amiri', serif;
 
     --color-surface: var(--surface);

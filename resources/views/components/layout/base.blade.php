@@ -36,6 +36,11 @@
         })();
     </script>
 
+    {{-- @vite() alone never emits the self-hosted @font-face rules or their preload
+         links — Vite::fonts() is a separate call that reads fonts-manifest.json and
+         renders both. Without it the CSS's `--font-sans` name resolves to nothing the
+         browser has ever heard of and silently falls through to the next stack entry. --}}
+    {{ \Illuminate\Support\Facades\Vite::fonts() }}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen antialiased">
