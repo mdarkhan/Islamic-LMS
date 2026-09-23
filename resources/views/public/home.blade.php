@@ -71,7 +71,12 @@
                     <div class="mx-auto w-10 h-10 rounded-full bg-brand-tint text-brand grid place-items-center mb-2.5 group-hover:scale-110 transition-transform">
                         <x-ui.icon :name="$stat['icon']" class="w-4 h-4" />
                     </div>
-                    <p class="text-2xl sm:text-3xl font-black text-ink tabular-nums">{{ bn($stat['value']) }}</p>
+                    {{-- data-count-up: app.js animates 0 → value (locale-aware digits) the
+                         first time this scrolls into view. The server-rendered {{ bn(...) }}
+                         is the real, correct value from the start — JS only replaces it with
+                         an animated version; without JS (or before it runs) the right number
+                         is already there, just static. --}}
+                    <p class="text-2xl sm:text-3xl font-black text-ink tabular-nums" data-count-up="{{ $stat['value'] }}">{{ bn($stat['value']) }}</p>
                     <p class="text-xs sm:text-sm text-muted mt-0.5">{{ $stat['label'] }}</p>
                 </div>
             @endforeach
@@ -82,7 +87,7 @@
 
         {{-- About the Ustaz --}}
         @if (filled($about['about_bio']))
-            <section class="rounded-3xl border border-line bg-card p-6 sm:p-8">
+            <section data-reveal class="rounded-3xl border border-line bg-card p-6 sm:p-8">
                 <div class="grid gap-6 sm:grid-cols-[auto_1fr] items-start">
                     @if ($about['about_photo'])
                         <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($about['about_photo']) }}" alt=""
@@ -99,7 +104,7 @@
         {{-- Upcoming exam banner --}}
         @if ($upcomingQuiz)
             @php $isOpen = $upcomingQuiz->officialState(now()) === \App\Models\Quiz::STATE_OPEN; @endphp
-            <section @class([
+            <section data-reveal @class([
                 'rounded-2xl border p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4',
                 'border-emerald-300/60 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10' => $isOpen,
                 'border-brand/30 bg-brand-tint/40' => ! $isOpen,
@@ -121,7 +126,7 @@
         @endif
 
         {{-- Courses overview --}}
-        <section id="courses" class="scroll-mt-20">
+        <section id="courses" data-reveal class="scroll-mt-20">
             <div class="flex items-center gap-3 mb-6">
                 <span class="w-1.5 h-8 rounded-full bg-brand shrink-0" aria-hidden="true"></span>
                 <div>
@@ -163,7 +168,7 @@
         </section>
 
         {{-- Books --}}
-        <section id="books" class="scroll-mt-20">
+        <section id="books" data-reveal class="scroll-mt-20">
             <div class="flex items-center gap-3 mb-6">
                 <span class="w-1.5 h-8 rounded-full bg-brand shrink-0" aria-hidden="true"></span>
                 <div>
@@ -193,7 +198,7 @@
 
         {{-- Featured Fatwa --}}
         @if ($featuredPost)
-            <section>
+            <section data-reveal>
                 <div class="flex items-center gap-3 mb-6">
                     <span class="w-1.5 h-8 rounded-full bg-brand shrink-0" aria-hidden="true"></span>
                     <h2 class="text-2xl sm:text-3xl font-black text-ink">{{ __('public.featured_fatwa_heading') }}</h2>
@@ -208,7 +213,7 @@
 
         {{-- Recent articles --}}
         @if ($recentPosts->isNotEmpty())
-            <section>
+            <section data-reveal>
                 <div class="flex items-center justify-between gap-4 mb-6">
                     <div class="flex items-center gap-3">
                         <span class="w-1.5 h-8 rounded-full bg-brand shrink-0" aria-hidden="true"></span>
@@ -230,7 +235,7 @@
 
         {{-- FAQ --}}
         @if ($faqs->isNotEmpty())
-            <section x-data="{ open: null }">
+            <section x-data="{ open: null }" data-reveal>
                 <div class="flex items-center gap-3 mb-6">
                     <span class="w-1.5 h-8 rounded-full bg-brand shrink-0" aria-hidden="true"></span>
                     <h2 class="text-2xl sm:text-3xl font-black text-ink">{{ __('public.faq_heading') }}</h2>
@@ -255,7 +260,7 @@
         @endif
 
         {{-- Islamic tools --}}
-        <section>
+        <section data-reveal>
             <div class="flex items-center gap-3 mb-6">
                 <span class="w-1.5 h-8 rounded-full bg-brand shrink-0" aria-hidden="true"></span>
                 <h2 class="text-2xl sm:text-3xl font-black text-ink">{{ __('public.utilities_heading') }}</h2>
@@ -275,7 +280,7 @@
         {{-- Telegram CTA — a solid brand block so the page has a second strong colour
              anchor besides the hero, rather than yet another white bordered card. --}}
         @if ($telegramUrl)
-            <section class="relative overflow-hidden rounded-3xl bg-brand text-brand-ink p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
+            <section data-reveal class="relative overflow-hidden rounded-3xl bg-brand text-brand-ink p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
                 <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-brand-ink/10 blur-2xl pointer-events-none" aria-hidden="true"></div>
                 <div class="relative flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-brand-ink/15 grid place-items-center shrink-0">
@@ -291,7 +296,7 @@
         @endif
 
         {{-- Student CTA --}}
-        <section class="relative overflow-hidden rounded-3xl border border-brand/30 bg-brand-tint/50 p-8 sm:p-10 text-center">
+        <section data-reveal class="relative overflow-hidden rounded-3xl border border-brand/30 bg-brand-tint/50 p-8 sm:p-10 text-center">
             <div class="absolute inset-0 geo-accent opacity-40" aria-hidden="true"></div>
             <div class="relative">
                 <h2 class="text-2xl font-black text-ink">{{ __('public.student_cta_title') }}</h2>

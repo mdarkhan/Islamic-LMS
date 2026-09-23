@@ -143,6 +143,25 @@
         }
     }
 
+    /* Scroll-reveal for the public homepage — a section fades + rises into view the
+       first time it enters the viewport (app.js: IntersectionObserver, fires once,
+       never re-triggers on re-scroll). Unlike `.animate-rise` on the authenticated
+       shell (deliberately removed — see CLAUDE.md), this is safe to leave unconditional
+       here: the homepage is a single long page a visitor scrolls once, not a shell that
+       re-renders on every click. Reduced-motion still collapses the transition via the
+       global rule above, so it just appears instead of animating. If JS never runs
+       (disabled, or an error), the element simply stays at its default state below —
+       visible, never permanently hidden. */
+    [data-reveal] {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [data-reveal].is-revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     /* Subtle 3D "book spine" tilt for the homepage library grid — a book cover lifts
        and turns slightly toward the viewer on hover, instead of a flat scale. Disabled
        automatically under reduced-motion (the global rule above covers transitions). */

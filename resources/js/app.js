@@ -18,3 +18,77 @@ window.theme = {
 
 window.Alpine = Alpine;
 Alpine.start();
+
+// Homepage scroll-reveal: each [data-reveal] section fades + rises into view the
+// first time it enters the viewport, then stays revealed (no re-triggering on
+// scroll-back). If IntersectionObserver is unavailable, everything is revealed
+// immediately — content is never left permanently hidden waiting on JS.
+const revealTargets = document.querySelectorAll('[data-reveal]');
+if (revealTargets.length) {
+    if ('IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
+
+        revealTargets.forEach((el) => revealObserver.observe(el));
+    } else {
+        revealTargets.forEach((el) => el.classList.add('is-revealed'));
+    }
+}
+
+// Homepage stat counters: each [data-count-up] animates from 0 up to its real value
+// (already server-rendered, correct, and locale-digit-formatted) the first time it
+// scrolls into view — on page load if it's already visible, same as the reveal above.
+// Digits are localized in JS the same way the bn() helper does it server-side, since
+// every intermediate frame needs formatting, not just the final one.
+const countTargets = document.querySelectorAll('[data-count-up]');
+if (countTargets.length) {
+    const BENGALI_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    const isBengaliLocale = document.documentElement.lang.startsWith('bn');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const formatCount = (n) => isBengaliLocale
+        ? String(n).replace(/[0-9]/g, (digit) => BENGALI_DIGITS[Number(digit)])
+        : String(n);
+
+    const animateCount = (el) => {
+        const target = parseInt(el.dataset.countUp, 10);
+        if (! Number.isFinite(target) || target <= 0 || prefersReducedMotion) {
+            return;   // already showing the correct server-rendered value
+        }
+
+        const duration = 1200;
+        const start = performance.now();
+
+        const step = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - (1 - progress) ** 3;   // ease-out cubic
+            el.textContent = formatCount(Math.round(target * eased));
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            }
+        };
+
+        requestAnimationFrame(step);
+    };
+
+    if ('IntersectionObserver' in window) {
+        const countObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    animateCount(entry.target);
+                    countObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.4 });
+
+        countTargets.forEach((el) => countObserver.observe(el));
+    }
+    // No IntersectionObserver fallback needed: the server-rendered value is already
+    // correct and visible, so skipping the animation there is a silent, safe no-op.
+}

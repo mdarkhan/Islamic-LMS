@@ -48,6 +48,11 @@
          self-hosted font emitted via laravel-vite-plugin's fonts feature, so there is
          no separate Vite::fonts() call needed here — plain @vite() is enough. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- The [data-reveal] scroll-reveal (app.css/app.js) starts sections hidden and
+         waits for JS to reveal them — with JS entirely off, nothing would ever run the
+         IntersectionObserver fallback either, so force them visible here instead. --}}
+    <noscript><style>[data-reveal] { opacity: 1 !important; transform: none !important; }</style></noscript>
 </head>
 <body class="min-h-screen antialiased">
     {{ $slot }}
