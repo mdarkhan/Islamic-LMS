@@ -4,6 +4,35 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+ * Kalpurush is base64-inlined into this stylesheet (forced via vite.config.js's
+ * assetsInlineLimit, not fetched from a separate url()) so the real Bengali body
+ * font is present the instant this render-blocking CSS parses — no separate font
+ * request, so no fallback-then-swap flash. This app has no client-side routing,
+ * so every navigation is a fresh document and a second async request always
+ * risks a visible flash regardless of `font-display` or HTTP caching. See
+ * CLAUDE.md for the full reasoning (two prior attempts — font-display: optional,
+ * then removing an unrelated re-triggering CSS animation — didn't fix this).
+ */
+@font-face {
+    font-family: 'kalpurush';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url('../fonts/kalpurush.ttf') format('truetype');
+    /* Kalpurush's own glyphs sit noticeably smaller within its em-box than the
+       system Bengali fonts this site used to fall back to — measured via canvas
+       pixel bounds at 128px: Kalpurush's cap/x-height is ~146px tall vs ~161px
+       for Nirmala UI at the identical declared size (~10% shorter). `size-adjust`
+       compensates at the font level so every existing `text-xs`/`text-sm`/…
+       utility across the whole site reads at roughly the size it was designed
+       for, instead of hand-editing size classes in 90+ view files. (Kalpurush is
+       also proportionally narrower than Nirmala — a genuine design difference,
+       not a bug — so width doesn't match as closely; height/legibility is what
+       "looks small" is actually about, so that's what this is tuned to.) */
+    size-adjust: 112%;
+}
+
+/*
  * Design tokens.
  *
  * Semantic names map to CSS custom properties so a single set of utilities
@@ -12,7 +41,7 @@
  * neutral surfaces, following the legacy site.
  */
 @theme {
-    --font-sans: 'kalpurush', 'kalpurush Fallback', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'kalpurush', ui-sans-serif, system-ui, sans-serif;
     --font-arabic: 'Noto Naskh Arabic', 'Amiri', serif;
 
     --color-surface: var(--surface);

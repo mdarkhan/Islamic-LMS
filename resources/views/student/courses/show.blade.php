@@ -14,7 +14,7 @@
                     <span class="text-xs text-muted flex items-center gap-1"><x-ui.icon name="clock" class="w-3.5 h-3.5" />{{ $lesson->duration_label ?? '—' }}</span>
                 </div>
                 <h1 class="text-2xl font-black text-ink">{{ $lesson->title }}</h1>
-                @if ($lesson->description)<p class="mt-2 text-muted leading-relaxed">{{ $lesson->description }}</p>@endif
+                @if ($lesson->description)<p class="mt-2 text-sm text-muted leading-relaxed">{{ $lesson->description }}</p>@endif
 
                 {{-- Video (YouTube) --}}
                 @if ($lesson->youtubeEmbedUrl())
@@ -41,8 +41,18 @@
                             <x-ui.icon name="volume" class="w-4 h-4 text-brand" />
                             <span class="text-sm font-semibold text-ink">{{ __('lessons.audio') }}</span>
                         </div>
-                        <div class="rounded-xl overflow-hidden border border-line bg-surface-raised">
-                            <iframe src="{{ $lesson->embedUrl() }}" class="block w-full h-24" allow="autoplay" loading="lazy" title="{{ __('lessons.audio') }}"></iframe>
+                        {{-- Google Drive's own player (play button, waveform, timestamp) needs
+                             more vertical room than it looks like at a glance — too short an
+                             iframe clips it against the box edge instead of scaling it down.
+                             No `loading="lazy"` — this section is visible without scrolling on
+                             most screens, so lazy-loading only adds delay, not savings. The
+                             spinner overlay covers Drive's own real (not fully controllable)
+                             load time with feedback instead of a blank box. --}}
+                        <div x-data="{ loaded: false }" class="relative rounded-xl overflow-hidden border border-line bg-surface-raised">
+                            <div x-show="!loaded" x-transition.opacity class="absolute inset-0 grid place-items-center bg-surface-raised">
+                                <span class="w-6 h-6 rounded-full border-2 border-line border-t-brand animate-spin"></span>
+                            </div>
+                            <iframe src="{{ $lesson->embedUrl() }}" @load="loaded = true" class="block w-full h-52" allow="autoplay" title="{{ __('lessons.audio') }}"></iframe>
                         </div>
                     </div>
                     @if ($lesson->media_url)

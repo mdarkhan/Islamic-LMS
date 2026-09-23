@@ -75,7 +75,11 @@
                 </div>
             </header>
 
-            <main class="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto animate-rise">
+            {{-- No `animate-rise` here (unlike guest.blade.php's one-off login card): this
+                 shell re-renders fresh on EVERY sidebar click (no client-side routing), so a
+                 0.4s opacity/translate entrance would replay on every navigation — reads as a
+                 momentary "wrong, then corrected" flash rather than a nice touch. --}}
+            <main class="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto">
                 <x-flash />
                 {{ $slot }}
             </main>

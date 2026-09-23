@@ -153,16 +153,44 @@ and `super_admin` bypasses `perm:` via `User::hasPermission()`.
   (`bg-surface`, `text-ink`, `border-line`, `text-brand`, …), re-pointed under `.dark`.
   Use the tokens, not raw palette values, so both themes stay consistent. Emerald/teal
   on warm neutral. Respect `prefers-reduced-motion` (already handled globally).
-- **Tailwind v4 via Vite.** Never the CDN. `npm run build` compiles CSS/JS and
-  self-hosts the Bengali body font (Kalpurush, `resources/fonts/kalpurush.ttf` — not on
-  Google/Bunny Fonts or Fontsource, so it's a checked-in local file via `vite.config.js`'s
-  `local()` provider, not a remote fetch) into `public/build`. Node is a build-time
-  dependency only. **`@vite(...)` alone never emits the font's `@font-face` rules or
-  preload links** — `{{ \Illuminate\Support\Facades\Vite::fonts() }}` in
-  `components/layout/base.blade.php` is a separate required call that reads
-  `fonts-manifest.json`; drop it and `--font-sans` silently falls through to the next
-  stack entry with no error. The Arabic face (`--font-arabic`, bismillah/Qur'anic
-  passages) is NOT self-hosted — it relies on the visitor's own system fonts.
+- **Tailwind v4 via Vite.** Never the CDN. `npm run build` compiles CSS/JS into
+  `public/build`. Node is a build-time dependency only.
+- **Kalpurush (the Bengali body font) is base64-inlined directly into the compiled
+  `app-*.css`**, not served as its own file. The `@font-face` rule lives in
+  `resources/css/app.css` as a plain `url('../fonts/kalpurush.ttf')`, and
+  `vite.config.js`'s `build.assetsInlineLimit` force-inlines that one file regardless
+  of Vite's normal 4 KiB threshold (Kalpurush isn't on Google/Bunny Fonts or
+  Fontsource, so `resources/fonts/kalpurush.ttf` is checked into the repo). This is
+  deliberate and came after two other approaches genuinely failed in production use:
+  this app has **no client-side routing**, so every sidebar click is a fresh full
+  page load, and a self-hosted font served as its own file is always a *second*
+  async request racing first paint. `font-display: swap` visibly painted a fallback
+  face first on every navigation, not just the first. Switching to `display:
+  'optional'` plus long-lived HTTP caching (`public/.htaccess`'s `/build/` rule)
+  reduced but did not eliminate it — the browser still has to complete that second
+  request before the font can apply, and a slow tick past `optional`'s block period
+  makes the whole page fall back for good. Inlining the font into the *same*,
+  already render-blocking stylesheet removes the second request entirely, which is
+  the only way to make this deterministic rather than probabilistic. There is no
+  separate `Vite::fonts()` call, `fonts-manifest.json`, or fallback face (`fontaine`
+  was removed as a dependency) — plain `@vite(...)` is enough, because this is just a
+  CSS asset now, not laravel-vite-plugin's dedicated fonts feature. The Arabic face
+  (`--font-arabic`, bismillah/Qur'anic passages) is NOT self-hosted or inlined — it
+  relies on the visitor's own system fonts.
+- **Kalpurush's `@font-face` carries `size-adjust: 112%`.** Its own glyphs sit
+  noticeably smaller within their em-box than the system Bengali fonts this site
+  used to fall back to — measured via canvas pixel bounds at a large declared size,
+  Kalpurush's cap/x-height came out ~10% shorter than Nirmala UI's at the identical
+  `font-size`. Without this, every `text-*` utility across the whole site reads
+  smaller than it was designed to. **Fix it here, in the one `@font-face` rule, not
+  by hand-editing `text-xs`/`text-sm`/… classes across the 90+ view files that use
+  them** — that was the first instinct when this was reported and would have been
+  both enormous in scope and wrong, since the classes themselves were never the
+  problem. (Kalpurush is also proportionally narrower than Nirmala — a real design
+  difference, not something `size-adjust` can or should fully correct — but
+  height/legibility, not stroke width, is what "the font looks small" is about.)
+  If Kalpurush is ever swapped for a different file, re-measure and re-tune this
+  value; don't assume it still applies.
 - **Never put `@disabled` / `@checked` / `@selected` directives inside an `<x-...>`
   component tag** — it generates a dangling `endif`. Use a bound attribute
   (`:disabled="$expr"`) instead. Plain HTML elements are fine.

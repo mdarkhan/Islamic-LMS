@@ -27,6 +27,14 @@
     @if ($canonical)<meta property="og:url" content="{{ $canonical }}">@endif
     @if ($ogImage)<meta property="og:image" content="{{ $ogImage }}">@endif
 
+    {{-- Warms up the connection to Google Drive ahead of a lesson's embedded audio
+         player (resources/views/student/courses/show.blade.php) — the DNS lookup +
+         TLS handshake is a meaningful chunk of that iframe's slow-feeling first load,
+         and this is cheap even on pages with no Drive embed (the browser just closes
+         an idle connection after a few seconds). --}}
+    <link rel="preconnect" href="https://drive.google.com">
+    <link rel="preconnect" href="https://docs.google.com">
+
     {{-- Pre-paint theme to avoid a flash of the wrong palette. --}}
     <script>
         (function () {
@@ -36,11 +44,9 @@
         })();
     </script>
 
-    {{-- @vite() alone never emits the self-hosted @font-face rules or their preload
-         links — Vite::fonts() is a separate call that reads fonts-manifest.json and
-         renders both. Without it the CSS's `--font-sans` name resolves to nothing the
-         browser has ever heard of and silently falls through to the next stack entry. --}}
-    {{ \Illuminate\Support\Facades\Vite::fonts() }}
+    {{-- Kalpurush is base64-inlined into app.css itself (see vite.config.js), not a
+         self-hosted font emitted via laravel-vite-plugin's fonts feature, so there is
+         no separate Vite::fonts() call needed here — plain @vite() is enough. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen antialiased">

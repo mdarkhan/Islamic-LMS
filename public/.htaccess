@@ -1,3 +1,19 @@
+# Every file under /build/ is a content-hashed Vite build output (app-*.css,
+# app-*.js, ...) — a content change always produces a new filename, so it's
+# safe to cache these forever. Without this, the browser revalidates them on
+# every full-page navigation (this app has no client-side routing).
+# (Kalpurush itself is base64-inlined into app-*.css, not a separate file —
+# see app.css and CLAUDE.md — but this still benefits the CSS/JS themselves.)
+<LocationMatch "^/build/">
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresDefault "access plus 1 year"
+    </IfModule>
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </IfModule>
+</LocationMatch>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

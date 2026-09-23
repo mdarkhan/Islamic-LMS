@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import { local } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
@@ -8,18 +7,20 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
-            // Self-hosted at build time (no runtime CDN). Kalpurush isn't on Google/
-            // Bunny Fonts or Fontsource, so it's checked in locally (from omicronlab.com,
-            // its original distributor) rather than fetched remotely at build time.
-            // `fontaine` (a devDependency) generates the metric-matched "kalpurush
-            // Fallback" companion family used below, so text doesn't reflow once the
-            // real font finishes loading.
-            fonts: [
-                local('kalpurush', { src: 'resources/fonts/kalpurush.ttf' }),
-            ],
         }),
         tailwindcss(),
     ],
+    build: {
+        // Kalpurush (resources/fonts/kalpurush.ttf, referenced by url() in app.css) is
+        // force-inlined as a base64 data: URI regardless of Vite's default 4 KiB
+        // assetsInlineLimit. This app has no client-side routing, so every navigation
+        // is a fresh document; a self-hosted font served as its own file is always a
+        // second async request racing first paint, which shows the wrong font for a
+        // moment no matter how HTTP caching or font-display are tuned. Inlining it
+        // into the render-blocking stylesheet removes that request entirely. See the
+        // font-face comment in app.css and CLAUDE.md for the full history.
+        assetsInlineLimit: (filePath) => filePath.endsWith('kalpurush.ttf') ? true : undefined,
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],
