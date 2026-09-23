@@ -129,12 +129,17 @@
                     <p class="text-sm text-muted mt-0.5">{{ __('public.courses_intro') }}</p>
                 </div>
             </div>
+            {{-- Per-course icon, matched to the reference design's choice for each of the
+                 institution's actual courses (book / document / microphone / group) — keyed
+                 by slug since that's the stable identifier, not the Bengali title. A course
+                 outside this set (none exist today) just falls back to the book icon. --}}
+            @php $courseIcons = ['seerat' => 'courses', 'tafsir' => 'document', 'jummah' => 'microphone', 'halakah' => 'group']; @endphp
             <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($courses as $course)
                     <div class="group rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all flex flex-col justify-between">
                         <div>
                             <div class="w-11 h-11 rounded-xl bg-brand-tint text-brand grid place-items-center mb-5 group-hover:bg-brand group-hover:text-brand-ink transition-colors">
-                                <x-ui.icon name="courses" class="w-6 h-6" />
+                                <x-ui.icon :name="$courseIcons[$course->slug] ?? 'courses'" class="w-6 h-6" />
                             </div>
                             <h3 class="font-bold text-ink text-lg leading-snug group-hover:text-brand-strong transition-colors">{{ $course->title }}</h3>
                             @if ($course->description)

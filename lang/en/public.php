@@ -74,6 +74,8 @@ return [
     'ask_cta' => 'Ask the Ustaz',
     'ask_cta_sub' => 'Send your question by email.',
 
+    'quick_links_heading' => 'Quick links',
+
     'social_heading' => 'Other ways to reach us',
     'social_whatsapp' => 'WhatsApp',
     'social_facebook_page' => 'Facebook Page',

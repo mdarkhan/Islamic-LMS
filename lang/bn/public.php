@@ -74,6 +74,8 @@ return [
     'ask_cta' => 'উস্তাযকে জিজ্ঞাসা করুন',
     'ask_cta_sub' => 'ইমেইলে আপনার প্রশ্ন পাঠান।',
 
+    'quick_links_heading' => 'দ্রুত লিংক',
+
     'social_heading' => 'অন্যান্য যোগাযোগ মাধ্যম',
     'social_whatsapp' => 'WhatsApp',
     'social_facebook_page' => 'ফেসবুক পেজ',

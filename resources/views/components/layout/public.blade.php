@@ -91,7 +91,7 @@
                     </div>
 
                     <div>
-                        <p class="text-xs font-bold text-ink uppercase tracking-wider mb-3">{{ __('nav.home') }}</p>
+                        <p class="text-xs font-bold text-ink uppercase tracking-wider mb-3">{{ __('public.quick_links_heading') }}</p>
                         <nav class="flex flex-col gap-2 text-sm text-muted">
                             @foreach ($nav as $item)
                                 <a href="{{ $item['href'] }}" class="hover:text-brand transition-colors w-fit">{{ $item['label'] }}</a>
