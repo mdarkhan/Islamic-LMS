@@ -7,35 +7,59 @@
         <div class="absolute inset-0 geo-accent opacity-60" aria-hidden="true"></div>
 
         <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-16 sm:pb-20">
-            <div class="grid gap-8 lg:grid-cols-[1.6fr_1fr] items-start">
-                <div>
-                    <p class="text-brand font-arabic text-xl sm:text-2xl mb-4">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
-                    <h1 class="text-4xl sm:text-5xl font-black text-ink leading-[1.1] tracking-tight">{{ __('public.hero_title') }}</h1>
-                    <p class="mt-4 text-base sm:text-lg text-muted max-w-xl leading-relaxed">{{ __('public.hero_subtitle') }}</p>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                <div class="lg:col-span-7">
+                    {{-- Bismillah badge --}}
+                    <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-card border border-line w-fit mb-5 shadow-[--shadow-soft]">
+                        <span class="w-2 h-2 rounded-full bg-brand animate-pulse" aria-hidden="true"></span>
+                        <span class="font-arabic text-brand text-lg sm:text-xl font-bold" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
+                    </div>
 
-                    <form method="GET" action="{{ route('search.index') }}" class="mt-7 max-w-lg flex gap-2">
-                        <x-ui.input type="search" name="q" placeholder="{{ __('public.search_placeholder') }}" class="flex-1 bg-card shadow-[--shadow-soft]" />
-                        <x-ui.button type="submit" variant="secondary" class="shadow-[--shadow-soft]"><x-ui.icon name="search" class="w-4 h-4" /></x-ui.button>
+                    <h1 class="text-4xl sm:text-5xl font-black text-ink leading-[1.15] tracking-tight">
+                        {{ __('public.hero_title_pre') }}<span class="text-brand relative inline-block">{{ __('public.hero_title_emphasis') }}
+                            <svg class="absolute -bottom-1.5 left-0 w-full text-brand/40" viewBox="0 0 200 8" fill="none" aria-hidden="true"><path d="M1 5.5C40 2 160 2 199 5.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                        </span>
+                    </h1>
+                    <p class="mt-5 text-base sm:text-lg text-muted max-w-xl leading-relaxed">{{ __('public.hero_subtitle') }}</p>
+
+                    <form method="GET" action="{{ route('search.index') }}" class="mt-7 max-w-lg">
+                        <div class="relative flex items-center">
+                            <input type="search" name="q" placeholder="{{ __('public.search_placeholder') }}"
+                                   class="w-full bg-card pl-5 pr-14 py-3.5 rounded-2xl border border-line shadow-[--shadow-soft] text-ink placeholder-muted text-base outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition">
+                            <button type="submit" aria-label="{{ __('public.search_heading') }}"
+                                    class="absolute right-2 bg-brand hover:bg-brand-strong text-brand-ink p-2.5 rounded-xl transition-colors">
+                                <x-ui.icon name="search" class="w-5 h-5" />
+                            </button>
+                        </div>
                     </form>
 
                     <div class="mt-6 flex flex-wrap gap-3">
                         <x-ui.button :href="route('blog.index')" size="lg"><x-ui.icon name="results" class="w-4 h-4" /> {{ __('public.hero_browse') }}</x-ui.button>
-                        <x-ui.button :href="route('login')" variant="secondary" size="lg">{{ __('public.hero_login') }}</x-ui.button>
+                        <x-ui.button :href="route('login')" variant="secondary" size="lg"><x-ui.icon name="profile" class="w-4 h-4" /> {{ __('public.hero_login') }}</x-ui.button>
                     </div>
                 </div>
 
-                <div class="space-y-4">
+                <div class="lg:col-span-5 flex flex-col gap-4">
                     <x-ui.date-widget :calendar="$calendar" class="shadow-[--shadow-soft]" />
                     <x-ui.islamic-events-widget :events="$upcomingEvents" class="shadow-[--shadow-soft]" />
-                    <x-ui.notice-banner :notices="$notices" />
                 </div>
             </div>
+
+            {{-- Notices: the mockup this hero follows has no slot for them, but they're a
+                 real, tested feature (server-windowed, priority-ordered) — a slim strip
+                 under the two-column layout keeps them visible without crowding either
+                 card. --}}
+            @if ($notices->isNotEmpty())
+                <div class="relative mt-6 max-w-3xl">
+                    <x-ui.notice-banner :notices="$notices" />
+                </div>
+            @endif
         </div>
     </section>
 
     {{-- Stats: one floating bar overlapping the hero's bottom edge, ties the two
          sections together instead of sitting as a fifth identical card. --}}
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 -mt-10 sm:-mt-12 relative z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 -mt-8 sm:-mt-10 relative z-10">
         <div class="rounded-2xl border border-line bg-card shadow-[--shadow-soft] overflow-hidden grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-line">
             @foreach ([
                 ['icon' => 'students', 'value' => $stats['students'], 'label' => __('public.stats_students')],
@@ -43,8 +67,8 @@
                 ['icon' => 'lessons', 'value' => $stats['lessons'], 'label' => __('public.stats_lessons')],
                 ['icon' => 'book', 'value' => $stats['books'], 'label' => __('public.stats_books')],
             ] as $stat)
-                <div class="p-5 sm:p-6 text-center">
-                    <div class="mx-auto w-9 h-9 rounded-xl bg-brand-tint text-brand grid place-items-center mb-2">
+                <div class="group p-5 sm:p-6 text-center hover:bg-brand-tint/40 transition-colors">
+                    <div class="mx-auto w-10 h-10 rounded-full bg-brand-tint text-brand grid place-items-center mb-2.5 group-hover:scale-110 transition-transform">
                         <x-ui.icon :name="$stat['icon']" class="w-4 h-4" />
                     </div>
                     <p class="text-2xl sm:text-3xl font-black text-ink tabular-nums">{{ bn($stat['value']) }}</p>
@@ -107,14 +131,23 @@
             </div>
             <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($courses as $course)
-                    <div class="rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all">
-                        <div class="w-12 h-12 rounded-2xl bg-brand-tint text-brand grid place-items-center mb-4"><x-ui.icon name="courses" class="w-6 h-6" /></div>
-                        <h3 class="font-bold text-ink text-lg leading-snug">{{ $course->title }}</h3>
-                        @if ($course->description)
-                            <p class="text-sm text-muted mt-1.5 leading-relaxed line-clamp-2">{{ $course->description }}</p>
-                        @endif
-                        <div class="mt-4 pt-4 border-t border-line flex items-center gap-1.5 text-xs font-semibold text-muted">
-                            <x-ui.icon name="lessons" class="w-3.5 h-3.5" /> {{ __('public.courses_lessons', ['count' => bn($course->lessons_count)]) }}
+                    <div class="group rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="w-11 h-11 rounded-xl bg-brand-tint text-brand grid place-items-center mb-5 group-hover:bg-brand group-hover:text-brand-ink transition-colors">
+                                <x-ui.icon name="courses" class="w-6 h-6" />
+                            </div>
+                            <h3 class="font-bold text-ink text-lg leading-snug group-hover:text-brand-strong transition-colors">{{ $course->title }}</h3>
+                            @if ($course->description)
+                                <p class="text-sm text-muted mt-1.5 leading-relaxed line-clamp-2">{{ $course->description }}</p>
+                            @endif
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-line flex items-center justify-between gap-2 text-xs">
+                            <span class="flex items-center gap-1.5 font-medium text-muted">
+                                <x-ui.icon name="lessons" class="w-3.5 h-3.5" /> {{ __('public.courses_lessons', ['count' => bn($course->lessons_count)]) }}
+                            </span>
+                            <span class="text-brand font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                {{ __('public.courses_cta') }} →
+                            </span>
                         </div>
                     </div>
                 @endforeach
@@ -133,12 +166,12 @@
                     <p class="text-sm text-muted mt-0.5">{{ __('public.books_intro') }}</p>
                 </div>
             </div>
-            <div class="grid gap-4 sm:gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            <div class="grid gap-5 sm:gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($books as $book)
-                    <a href="{{ route('books.show', $book) }}" class="group rounded-2xl border border-line bg-card p-3 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all">
-                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden bg-brand-tint">
+                    <a href="{{ route('books.show', $book) }}" class="group flex flex-col items-center text-center">
+                        <div class="book-spine-effect w-full aspect-[3/4.2] rounded-2xl border border-brand/25 shadow-[--shadow-soft] overflow-hidden relative bg-brand-tint">
                             @if ($book->coverUrl())
-                                <img src="{{ $book->coverUrl() }}" alt="{{ $book->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <img src="{{ $book->coverUrl() }}" alt="{{ $book->title }}" class="absolute inset-0 w-full h-full object-cover">
                             @else
                                 <div class="absolute inset-0 geo-accent opacity-60" aria-hidden="true"></div>
                                 <div class="absolute inset-0 grid place-items-center text-brand/60">
@@ -146,8 +179,8 @@
                                 </div>
                             @endif
                         </div>
-                        <p class="text-xs sm:text-sm font-semibold text-ink mt-2.5 leading-snug line-clamp-2">{{ $book->title }}</p>
-                        <p class="text-xs text-muted truncate mt-0.5">{{ $book->author }}</p>
+                        <h4 class="mt-3 text-xs sm:text-sm font-bold text-ink group-hover:text-brand-strong transition-colors leading-snug line-clamp-2">{{ $book->title }}</h4>
+                        <p class="text-xs text-muted mt-0.5 truncate max-w-full">{{ $book->author }}</p>
                     </a>
                 @endforeach
             </div>
@@ -223,12 +256,12 @@
                 <h2 class="text-2xl sm:text-3xl font-black text-ink">{{ __('public.utilities_heading') }}</h2>
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
-                <a href="{{ route('zakat.index') }}" class="flex items-center gap-4 rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-brand-tint text-brand grid place-items-center shrink-0"><x-ui.icon name="points" class="w-6 h-6" /></div>
+                <a href="{{ route('zakat.index') }}" class="group flex items-center gap-5 rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-tint text-brand grid place-items-center shrink-0 group-hover:bg-brand group-hover:text-brand-ink transition-colors"><x-ui.icon name="points" class="w-7 h-7" /></div>
                     <div><p class="font-bold text-ink">{{ __('public.zakat_cta') }}</p><p class="text-sm text-muted mt-0.5">{{ __('public.zakat_cta_sub') }}</p></div>
                 </a>
-                <a href="{{ route('ask-ustaz.show') }}" class="flex items-center gap-4 rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all">
-                    <div class="w-12 h-12 rounded-xl bg-brand-tint text-brand grid place-items-center shrink-0"><x-ui.icon name="profile" class="w-6 h-6" /></div>
+                <a href="{{ route('ask-ustaz.show') }}" class="group flex items-center gap-5 rounded-2xl border border-line bg-card p-5 sm:p-6 hover:border-brand/40 hover:shadow-[--shadow-soft] transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-tint text-brand grid place-items-center shrink-0 group-hover:bg-brand group-hover:text-brand-ink transition-colors"><x-ui.icon name="profile" class="w-7 h-7" /></div>
                     <div><p class="font-bold text-ink">{{ __('public.ask_cta') }}</p><p class="text-sm text-muted mt-0.5">{{ __('public.ask_cta_sub') }}</p></div>
                 </a>
             </div>
@@ -238,12 +271,17 @@
              anchor besides the hero, rather than yet another white bordered card. --}}
         @if ($telegramUrl)
             <section class="relative overflow-hidden rounded-3xl bg-brand text-brand-ink p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
-                <div class="absolute inset-0 geo-accent opacity-10" aria-hidden="true"></div>
-                <div class="relative">
-                    <p class="font-black text-lg">{{ __('public.telegram_cta') }}</p>
-                    <p class="text-sm opacity-90 mt-1">{{ __('public.telegram_cta_sub') }}</p>
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-brand-ink/10 blur-2xl pointer-events-none" aria-hidden="true"></div>
+                <div class="relative flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-ink/15 grid place-items-center shrink-0">
+                        <x-ui.icon name="send" class="w-5 h-5" />
+                    </div>
+                    <div>
+                        <p class="font-black text-lg">{{ __('public.telegram_cta') }}</p>
+                        <p class="text-sm opacity-90 mt-1">{{ __('public.telegram_cta_sub') }}</p>
+                    </div>
                 </div>
-                <x-ui.button :href="$telegramUrl" variant="secondary" class="relative shrink-0">{{ __('public.telegram_cta_button') }}</x-ui.button>
+                <x-ui.button :href="$telegramUrl" target="_blank" rel="noopener" variant="secondary" class="relative shrink-0">{{ __('public.telegram_cta_button') }} <x-ui.icon name="chevron" class="w-4 h-4" /></x-ui.button>
             </section>
         @endif
 

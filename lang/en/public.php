@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'hero_title' => 'Learn the Qur’an, Tafsir and Seerah',
+    'hero_title_pre' => 'Learn the Qur’an, Tafsir and ',
+    'hero_title_emphasis' => 'Seerah',
     'hero_subtitle' => 'A trusted place for Islamic learning — lessons, examinations, scholarly writings and everyday Islamic tools.',
     'hero_browse' => 'Browse articles',
     'hero_login' => 'Student login',
@@ -44,6 +45,9 @@ return [
     'courses_intro' => 'Seerah, Tafsir and lectures. Sign in to access the lessons.',
     'courses_lessons' => ':count lessons',
     'courses_login_note' => 'Lesson audio and resources are available to registered students.',
+    'courses_cta' => 'Start now',
+
+    'location_label' => 'Dhaka, Bangladesh',
 
     'books_heading' => 'Books',
     'books_intro' => 'Books authored and compiled by the Ustaz.',

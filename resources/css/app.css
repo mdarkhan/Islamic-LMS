@@ -143,6 +143,17 @@
         }
     }
 
+    /* Subtle 3D "book spine" tilt for the homepage library grid — a book cover lifts
+       and turns slightly toward the viewer on hover, instead of a flat scale. Disabled
+       automatically under reduced-motion (the global rule above covers transitions). */
+    .book-spine-effect {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform-style: preserve-3d;
+    }
+    .book-spine-effect:hover {
+        transform: translateY(-6px) rotateY(-4deg) rotateZ(0.5deg);
+    }
+
     /* Restrained Islamic geometric accent for hero/section corners. */
     .geo-accent {
         background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-brand) 22%, transparent) 1px, transparent 0);
