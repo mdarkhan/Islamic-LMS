@@ -7,8 +7,8 @@ return [
     'hero_login' => 'Student login',
 
     'stats_students' => 'Students',
+    'stats_courses' => 'Courses',
     'stats_lessons' => 'Lessons',
-    'stats_articles' => 'Articles',
     'stats_books' => 'Books',
 
     'about_heading' => 'About the Ustaz',

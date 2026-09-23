@@ -7,8 +7,8 @@ return [
     'hero_login' => 'শিক্ষার্থী লগইন',
 
     'stats_students' => 'শিক্ষার্থী',
+    'stats_courses' => 'কোর্স',
     'stats_lessons' => 'ক্লাস',
-    'stats_articles' => 'লেখা',
     'stats_books' => 'বই',
 
     'about_heading' => 'উস্তায পরিচিতি',

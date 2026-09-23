@@ -33,11 +33,15 @@
             <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
                 <x-ui.brand />
 
-                <nav class="hidden md:flex items-center gap-1" aria-label="{{ __('nav.home') }}">
+                {{-- Seven items don't fit beside the brand + action icons until quite
+                     wide (measured overflow up to ~1100px), so the full horizontal nav
+                     only appears at xl; the hamburger menu covers everything below
+                     that instead of letting it wrap or overflow. --}}
+                <nav class="hidden xl:flex items-center gap-1" aria-label="{{ __('nav.home') }}">
                     @foreach ($nav as $item)
                         <a href="{{ $item['href'] }}"
                            @class([
-                               'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                               'px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
                                'text-brand-strong bg-brand-tint' => $item['active'] ?? false,
                                'text-muted hover:text-ink hover:bg-ink/5' => ! ($item['active'] ?? false),
                            ])>{{ $item['label'] }}</a>
@@ -55,14 +59,14 @@
                     @else
                         <x-ui.button :href="route('login')" size="sm" class="hidden sm:inline-flex">{{ __('nav.login') }}</x-ui.button>
                     @endauth
-                    <button @click="open = !open" class="md:hidden p-2 text-muted hover:text-ink" aria-label="{{ __('nav.open_menu') }}">
+                    <button @click="open = !open" class="xl:hidden p-2 text-muted hover:text-ink" aria-label="{{ __('nav.open_menu') }}">
                         <x-ui.icon name="menu" />
                     </button>
                 </div>
             </div>
 
-            {{-- Mobile menu --}}
-            <div x-show="open" x-cloak class="md:hidden border-t border-line bg-surface" style="display:none">
+            {{-- Mobile/tablet menu (below lg) --}}
+            <div x-show="open" x-cloak class="xl:hidden border-t border-line bg-surface" style="display:none">
                 <nav class="max-w-6xl mx-auto px-4 py-2 space-y-1">
                     @foreach ($nav as $item)
                         <a href="{{ $item['href'] }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-ink hover:bg-ink/5">{{ $item['label'] }}</a>
@@ -78,22 +82,41 @@
             {{ $slot }}
         </main>
 
-        <footer class="border-t border-line py-8 text-center text-sm text-muted">
-            <div class="max-w-6xl mx-auto px-4 space-y-4">
-                @if ($socialLinks->isNotEmpty())
+        <footer class="border-t border-line bg-surface-raised">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+                <div class="grid gap-8 sm:grid-cols-[1.4fr_1fr_1fr]">
                     <div>
-                        <p class="text-xs text-muted mb-2">{{ __('public.social_heading') }}</p>
-                        <div class="flex flex-wrap items-center justify-center gap-2">
-                            @foreach ($socialLinks as $link)
-                                <a href="{{ $link['url'] }}" target="_blank" rel="noopener"
-                                   class="px-3 py-1.5 rounded-full border border-line text-xs font-semibold text-ink hover:border-brand/40 hover:text-brand transition-colors">
-                                    {{ $link['label'] }}
-                                </a>
-                            @endforeach
-                        </div>
+                        <x-ui.brand />
+                        <p class="text-sm text-muted mt-3 max-w-xs leading-relaxed">{{ __('public.hero_subtitle') }}</p>
                     </div>
-                @endif
-                <div>সর্বস্বত্ব সংরক্ষিত © {{ date('Y') }} · মাসউদ আলিমী</div>
+
+                    <div>
+                        <p class="text-xs font-bold text-ink uppercase tracking-wider mb-3">{{ __('nav.home') }}</p>
+                        <nav class="flex flex-col gap-2 text-sm text-muted">
+                            @foreach ($nav as $item)
+                                <a href="{{ $item['href'] }}" class="hover:text-brand transition-colors w-fit">{{ $item['label'] }}</a>
+                            @endforeach
+                        </nav>
+                    </div>
+
+                    <div>
+                        @if ($socialLinks->isNotEmpty())
+                            <p class="text-xs font-bold text-ink uppercase tracking-wider mb-3">{{ __('public.social_heading') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($socialLinks as $link)
+                                    <a href="{{ $link['url'] }}" target="_blank" rel="noopener"
+                                       class="px-3 py-1.5 rounded-full border border-line text-xs font-semibold text-ink hover:border-brand/40 hover:text-brand transition-colors">
+                                        {{ $link['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-6 border-t border-line text-center text-sm text-muted">
+                    সর্বস্বত্ব সংরক্ষিত © {{ date('Y') }} · মাসউদ আলিমী
+                </div>
             </div>
         </footer>
     </div>

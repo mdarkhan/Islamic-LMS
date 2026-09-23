@@ -24,19 +24,24 @@ class PublicController extends Controller
 
     public function home(): View
     {
+        $courses = Course::query()
+            ->where('is_published', true)
+            ->withCount(['lessons' => fn ($q) => $q->where('is_published', true)])
+            ->orderBy('sort_order')
+            ->get();
+
         return view('public.home', [
             'calendar' => $this->calendar->all(),
             'upcomingEvents' => $this->calendar->upcomingIslamicOccasions(),
             'books' => Book::query()->published()->orderBy('sort_order')->limit(10)->get(),
-            'courses' => Course::query()
-                ->where('is_published', true)
-                ->withCount(['lessons' => fn ($q) => $q->where('is_published', true)])
-                ->orderBy('sort_order')
-                ->get(),
+            'courses' => $courses,
+            // The hero strip highlights numbers that are reliably non-zero for a young
+            // site (a fresh install may have zero articles for a while, which reads as
+            // a weakness); the full article count still has its own section below.
             'stats' => [
                 'students' => User::students()->count(),
+                'courses' => $courses->count(),
                 'lessons' => Lesson::query()->where('is_published', true)->count(),
-                'articles' => Post::query()->public()->count(),
                 'books' => Book::query()->published()->count(),
             ],
             'about' => $this->settings->group('about'),
