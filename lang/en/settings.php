@@ -38,6 +38,8 @@ return [
     'latitude' => 'Latitude',
     'longitude' => 'Longitude',
     'timezone' => 'Timezone',
+    'location_label' => 'Place name',
+    'location_label_hint' => 'Shown on the homepage date card. Left blank: "Dhaka, Bangladesh" while the location is still the Dhaka default, otherwise nothing.',
     'hijri_offset' => 'Hijri adjustment (days)',
     'hijri_offset_hint' => 'Aligns the calculated Hijri date with local moon sighting (−1 / 0 / +1).',
     'location_hint' => 'Institutional location for sunset (default: Dhaka).',
@@ -54,4 +56,10 @@ return [
     'mail_note' => 'SMTP credentials are set in the server environment, never here.',
 
     'save' => 'Save',
+    'fajr_angle' => 'Fajr angle (°)',
+    'isha_angle' => 'Isha angle (°)',
+    'asr_method' => 'Asr method',
+    'asr_hanafi' => 'Hanafi (shadow ×2)',
+    'asr_shafii' => 'Shafi'i (shadow ×1)',
+    'prayer_hint' => 'Prayer times are computed from the coordinates above; Bangladesh typically uses 18° for Fajr/Isha and Hanafi Asr.',
 ];

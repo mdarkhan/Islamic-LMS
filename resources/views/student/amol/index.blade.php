@@ -4,6 +4,23 @@
         <p class="text-xs text-muted mt-1">— {{ __('amol.verse_ref') }}</p>
     </x-ui.card>
 
+    <x-ui.card class="mb-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h3 class="font-bold text-ink flex items-center gap-2"><x-ui.icon name="clock" class="w-4 h-4 text-brand" /> {{ __('amol.prayer_times_heading') }}</h3>
+            <span class="text-sm text-muted">{{ __('amol.next_prayer') }}:
+                <strong class="text-brand">{{ __('amol.group_'.$prayer['next']) }} · {{ bn($prayer['next_at']->format('h:i')) }}</strong></span>
+        </div>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+            @foreach (\App\Services\Calendar\PrayerTimeService::PRAYERS as $key)
+                <div @class(['rounded-lg border px-2 py-2', 'border-brand bg-brand-tint/40' => $prayer['current'] === $key, 'border-line bg-surface' => $prayer['current'] !== $key])>
+                    <p class="text-xs text-muted">{{ $key === 'sunrise' ? __('amol.sunrise') : __('amol.group_'.$key) }}</p>
+                    <p class="font-bold text-ink tabular-nums">{{ bn($prayer['times'][$key]->format('h:i')) }}</p>
+                </div>
+            @endforeach
+        </div>
+        <p class="text-[11px] text-muted mt-2">{{ __('amol.prayer_times_note') }}</p>
+    </x-ui.card>
+
     <x-amol.date-nav :date="$date" :today="$today" route="student.amol.index" />
 
     @if (! $isToday)
@@ -24,7 +41,7 @@
         <div class="space-y-2 mb-2">
             @foreach ($parts['grouped'] as $group => $items)
                 @continue($items->isEmpty())
-                <x-amol.group-row :group="$group" :items="$items" :editable="$isToday" />
+                <x-amol.group-row :group="$group" :items="$items" :editable="$isToday" :time="$prayer['times'][$group] ?? null" />
             @endforeach
         </div>
 
@@ -43,6 +60,8 @@
             {{ __('amol.toggle_failed') }}
         </p>
     </x-ui.card>
+
+    <div class="mt-5"><x-amol.stats :stats="$stats" /></div>
 
     <x-ui.card class="mt-5">
         <h3 class="font-bold text-ink mb-2 flex items-center gap-2">

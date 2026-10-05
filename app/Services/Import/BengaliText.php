@@ -29,6 +29,28 @@ class BengaliText
         return \Normalizer::normalize($value, \Normalizer::FORM_C) ?: $value;
     }
 
+    /**
+     * Every spelling a Bengali search term may be STORED as. য়/ড়/ঢ় are one glyph but
+     * two byte sequences — precomposed (U+09DF/09DC/09DD) or base + nukta (U+09BC) — and
+     * MySQL's LIKE treats them as different strings (verified, utf8mb4_unicode_ci), so a
+     * search typed on one keyboard would miss text entered with another. NFC yields the
+     * decomposed form (these characters are composition-excluded); the second entry is the
+     * precomposed one. Search for both.
+     *
+     * @return array<int, string>
+     */
+    public static function searchVariants(string $term): array
+    {
+        $nfc = self::normalise($term);
+        $precomposed = strtr($nfc, [
+            "\u{09AF}\u{09BC}" => "\u{09DF}",
+            "\u{09A1}\u{09BC}" => "\u{09DC}",
+            "\u{09A2}\u{09BC}" => "\u{09DD}",
+        ]);
+
+        return array_values(array_unique([$nfc, $precomposed]));
+    }
+
     /** Convert Bengali digits to Latin, leaving everything else untouched. */
     public static function toLatinDigits(string $value): string
     {

@@ -93,6 +93,14 @@
                     <input type="checkbox" name="leaderboard_visible" value="1" @checked(old('leaderboard_visible', $quiz->leaderboard_visible ?? true)) class="rounded border-line text-brand focus:ring-brand">
                     {{ __('quizzes.leaderboard_visible') }}
                 </label>
+                @php $shuffleLocked = isset($quiz) && $quiz->exists && $quiz->scoringLocked(); @endphp
+                <div>
+                    <label class="flex items-center gap-2 text-sm text-ink">
+                        <input type="checkbox" name="shuffle_per_student" value="1" @checked(old('shuffle_per_student', $quiz->shuffle_per_student ?? false)) @disabled($shuffleLocked) class="rounded border-line text-brand focus:ring-brand">
+                        {{ __('quizzes.shuffle_per_student') }}
+                    </label>
+                    <p class="text-xs text-muted mt-1 ml-6">{{ $shuffleLocked ? __('quizzes.shuffle_locked') : __('quizzes.shuffle_hint') }}</p>
+                </div>
 
                 {{-- Achievement bonus --}}
                 <div class="border-t border-line pt-3 space-y-3"

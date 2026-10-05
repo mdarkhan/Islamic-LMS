@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Own account (Admin\AccountController)
+    'account_heading' => 'My account',
+    'account_password_changed' => 'Your password has been changed.',
+    'account_password_same' => 'The new password must be different from the current one.',
+
     // Generic labels reused across admin CRUD
     'order' => 'Order',
     'slug' => 'Slug',

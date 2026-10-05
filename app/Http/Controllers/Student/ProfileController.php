@@ -30,7 +30,9 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
         ]);
 
-        $user->fill($data)->save();
+        $user->fill($data);
+        $user->notify_by_email = $request->boolean('notify_by_email');
+        $user->save();
 
         return back()->with('success', 'আপনার প্রোফাইল আপডেট করা হয়েছে।');
     }

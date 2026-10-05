@@ -29,18 +29,28 @@ class ExamAttemptPresenter
      */
     public static function questions(QuizAttempt $attempt): array
     {
-        return QuizQuestion::query()
+        $shuffle = $attempt->kind === QuizAttempt::KIND_OFFICIAL && (bool) $attempt->quiz?->shuffle_per_student;
+
+        $questions = QuizQuestion::query()
             ->where('quiz_id', $attempt->quiz_id)
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->with(['options' => fn ($q) => $q->orderBy('sort_order')])
-            ->get()
+            ->get();
+
+        if ($shuffle) {
+            $questions = $questions->sortBy(fn (QuizQuestion $q) => self::shuffleKey($attempt, 'q', $q->id))->values();
+        }
+
+        return $questions
             ->map(fn (QuizQuestion $question): array => [
                 'id' => (int) $question->id,
                 'body' => $question->body,
                 // Only id + body. is_correct is deliberately absent (not merely
                 // #[Hidden]) so it cannot leak through this path.
-                'options' => $question->options
+                'options' => ($shuffle
+                    ? $question->options->sortBy(fn ($o) => self::shuffleKey($attempt, 'o'.$question->id, $o->id))->values()
+                    : $question->options)
                     ->map(fn ($option): array => [
                         'id' => (int) $option->id,
                         'body' => $option->body,
@@ -50,6 +60,17 @@ class ExamAttemptPresenter
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * A stable pseudo-random sort key per attempt: the same attempt always sees the same
+     * order (reload, resume, another device), different attempts see different ones, and
+     * nothing is stored. Keyed with APP_KEY so it cannot be predicted from ids alone.
+     * Ordering has no effect on scoring, which is by option id.
+     */
+    private static function shuffleKey(QuizAttempt $attempt, string $scope, int $id): string
+    {
+        return hash_hmac('sha256', $attempt->getKey().'|'.$scope.'|'.$id, (string) config('app.key'));
     }
 
     /**

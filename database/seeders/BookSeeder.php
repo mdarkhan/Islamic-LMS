@@ -91,48 +91,43 @@ class BookSeeder extends Seeder
         ],
     ];
 
+    /**
+     * Additive only: creates a catalogue book that does not exist yet (with its cover and
+     * links) and touches NOTHING that does. Once the site is live the admin panel owns
+     * books — a re-run of this seeder (DEPLOYMENT.md says first deploy only, but a slip is
+     * easy) must never delete a book the admin added, or reset a title, cover or purchase
+     * link the admin has edited. It used to do both.
+     *
+     * To change a book after it exists, use the admin panel, not this file.
+     */
     public function run(): void
     {
-        $keptSlugs = [];
-
         foreach (self::BOOKS as $order => $row) {
             $slug = Slug::make($row['title'], 'book');
-            $keptSlugs[] = $slug;
+
+            if (Book::query()->where('slug', $slug)->exists()) {
+                continue;
+            }
 
             $coverPath = 'books/'.$row['cover'];
             $sourcePath = __DIR__.'/assets/books/'.$row['cover'];
             if (is_file($sourcePath)) {
-                // Always overwrite: the committed source is the truth, so a replaced cover
-                // (same filename) reaches storage instead of a stale copy lingering.
                 Storage::disk('public')->put($coverPath, file_get_contents($sourcePath));
             }
 
-            $book = Book::query()->updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'title' => $row['title'],
-                    'author' => $row['author'],
-                    'cover_path' => $coverPath,
-                    'sort_order' => $order + 1,
-                    'is_published' => true,
-                ],
-            );
+            $book = Book::query()->create([
+                'slug' => $slug,
+                'title' => $row['title'],
+                'author' => $row['author'],
+                'cover_path' => $coverPath,
+                'sort_order' => $order + 1,
+                'is_published' => true,
+            ]);
 
-            // The catalogue is authoritative for its own books' links (same as their title).
-            $book->purchaseLinks()->delete();
             $position = 0;
             foreach ($row['links'] as $store => $url) {
                 $book->purchaseLinks()->create(['website_name' => $store, 'url' => $url, 'sort_order' => $position++]);
             }
         }
-
-        // Drop anything left over from an older catalogue (e.g. the original placeholder
-        // titles) so re-running this seeder converges on exactly the list above.
-        Book::query()->whereNotIn('slug', $keptSlugs)->get()->each(function (Book $book) {
-            if ($book->cover_path) {
-                Storage::disk('public')->delete($book->cover_path);
-            }
-            $book->delete();
-        });
     }
 }

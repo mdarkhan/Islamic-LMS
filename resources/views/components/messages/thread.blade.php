@@ -89,14 +89,12 @@
 
                     init() {
                         this.$nextTick(() => this.toBottom());
-                        this._poll = setInterval(() => this.poll(), 10000);
-                        // Stop polling when the tab is hidden; catch up on return.
-                        document.addEventListener('visibilitychange', () => {
-                            if (!document.hidden) this.poll();
-                        });
+                        // Chat should feel live, so 10s while it's active; but nothing is fetched
+                        // in a hidden tab, and it backs off (up to 60s) while the thread is quiet.
+                        this._poller = window.pollWhenVisible(() => this.poll(), { base: 10000, max: 60000 });
                     },
 
-                    destroy() { clearInterval(this._poll); },
+                    destroy() { this._poller?.stop(); },
 
                     toBottom() {
                         const el = this.$refs.scroll;
@@ -114,11 +112,14 @@
                             const res = await fetch(endpoints.poll + '?after=' + this.lastId, {
                                 headers: { 'Accept': 'application/json' },
                             });
-                            if (!res.ok) return;
+                            if (!res.ok) return false;
                             const data = await res.json();
-                            (data.messages || []).forEach((m) => this.append(m));
+                            const fresh = data.messages || [];
+                            fresh.forEach((m) => this.append(m));
+                            return fresh.length > 0;   // true = activity, keep polling fast
                         } catch (e) {
                             // A dropped poll is harmless — the next tick catches up.
+                            return false;
                         }
                     },
 
@@ -144,6 +145,7 @@
 
                             const data = await res.json();
                             this.append(data.message);
+                            this._poller?.reset();   // a reply may follow soon: back to the fast rate
                             this.body = '';
                             this.$el.querySelector('textarea').style.height = 'auto';
                         } catch (e) {

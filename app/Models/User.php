@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Mail\PasswordResetLink;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -11,7 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * points_balance is a cached mirror of the ledger and must only ever be written
@@ -41,6 +44,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'force_password_change' => 'boolean',
+            'notify_by_email' => 'boolean',
             'is_legacy_import' => 'boolean',
             'points_balance' => 'integer',
         ];
@@ -65,9 +69,32 @@ class User extends Authenticatable
         ]);
     }
 
+    /** Sends the self-service reset link (called by the password broker with a fresh token). */
+    public function sendPasswordResetNotification($token): void
+    {
+        Mail::to($this->email)->send(new PasswordResetLink(
+            $this->name,
+            route('password.reset', ['token' => $token, 'email' => $this->email]),
+            (int) config('auth.passwords.users.expire', 60),
+        ));
+    }
+
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    /**
+     * The password rule for THIS account. Staff/admin accounts guard the whole CRUD surface
+     * and the answer key, so they need more than a student's 6-character minimum; students
+     * keep the lower bar deliberately (young, roll-based, simple to memorise). The one
+     * place this is decided — every "set my own password" screen uses it.
+     */
+    public function passwordRule(): Password
+    {
+        return $this->isAdmin()
+            ? Password::min(10)->letters()->numbers()
+            : Password::min(6);
     }
 
     /**

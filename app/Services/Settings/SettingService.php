@@ -62,6 +62,12 @@ class SettingService
         'calendar_latitude' => ['default' => '23.8103', 'type' => 'decimal', 'group' => 'calendar'],
         'calendar_longitude' => ['default' => '90.4125', 'type' => 'decimal', 'group' => 'calendar'],
         'calendar_timezone' => ['default' => 'Asia/Dhaka', 'type' => 'string', 'group' => 'calendar'],
+        // Place name shown on the homepage date card. Blank: see CalendarService::locationLabel().
+        'calendar_location_label' => ['default' => '', 'type' => 'string', 'group' => 'calendar'],
+        // Prayer-time method (PrayerTimeService): Karachi 18°/18° and Hanafi Asr by default.
+        'prayer_fajr_angle' => ['default' => '18', 'type' => 'decimal', 'group' => 'calendar'],
+        'prayer_isha_angle' => ['default' => '18', 'type' => 'decimal', 'group' => 'calendar'],
+        'prayer_asr_factor' => ['default' => 2, 'type' => 'integer', 'group' => 'calendar'],
     ];
 
     /** Typed value for a key, falling back to the registered default. */

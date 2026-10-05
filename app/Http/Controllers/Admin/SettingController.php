@@ -112,6 +112,10 @@ class SettingController extends Controller
             'calendar_latitude' => ['required', 'numeric', 'between:-90,90'],
             'calendar_longitude' => ['required', 'numeric', 'between:-180,180'],
             'calendar_timezone' => ['required', 'timezone'],
+            'calendar_location_label' => ['nullable', 'string', 'max:100'],
+            'prayer_fajr_angle' => ['sometimes', 'required', 'numeric', 'between:10,22'],
+            'prayer_isha_angle' => ['sometimes', 'required', 'numeric', 'between:10,22'],
+            'prayer_asr_factor' => ['sometimes', 'required', 'integer', 'in:1,2'],
             // Bounded to keep an ordinary admin from setting an extreme offset (brief §39).
             'hijri_offset_days' => ['required', 'integer', 'in:-1,0,1'],
         ]);

@@ -330,6 +330,49 @@ class ExamTakingTest extends TestCase
         $this->travelBack();
     }
 
+    // ── Autosave reliability ────────────────────────────────────────────────────
+
+    /**
+     * The browser now resends any answer whose save failed (on a timer and on
+     * reconnect). That is only safe because the PUT carries the WHOLE selection: an
+     * answer that in fact landed and is then resent must end up stored exactly once.
+     */
+    public function test_resending_an_answer_is_idempotent(): void
+    {
+        [$quiz, $q1] = $this->openQuiz();
+        $user = $this->startedStudent($quiz);
+        $attempt = QuizAttempt::query()->where('user_id', $user->id)->firstOrFail();
+        $url = route('student.attempts.answer', ['attempt' => $attempt, 'question' => $q1]);
+        $body = ['option_ids' => [$q1->options[1]->id]];
+
+        $this->actingAs($user)->putJson($url, $body)->assertOk();
+        $this->actingAs($user)->putJson($url, $body)->assertOk();
+        $this->actingAs($user)->putJson($url, $body)->assertOk();
+
+        $this->assertSame(1, $attempt->answers()->where('question_id', $q1->id)->count());
+        $this->assertSame([$q1->options[1]->id], QuizAnswerOption::query()
+            ->whereIn('answer_id', $attempt->answers()->pluck('id'))->pluck('option_id')->all());
+    }
+
+    public function test_the_live_screen_never_submits_over_answers_that_failed_to_save(): void
+    {
+        [$quiz] = $this->openQuiz();
+        $user = $this->startedStudent($quiz);
+        $attempt = QuizAttempt::query()->where('user_id', $user->id)->firstOrFail();
+
+        $page = $this->actingAs($user)->get(route('student.attempts.show', $attempt))->assertOk();
+
+        // The retry loop and the submit guard are present…
+        $page->assertSee('retryFailed()', false)
+            ->assertSee("addEventListener('online'", false)
+            ->assertSee('const allSaved = await this.flushSaves(', false)
+            ->assertSee('saveFailedNotice = true', false);
+        // …and the student is told, in Bengali by default, rather than left guessing.
+        $page->assertSee(__('exams.live_unsaved_banner'))
+            ->assertSee(__('exams.live_unsaved_title'))
+            ->assertSee(__('exams.live_retry_submit'));
+    }
+
     /** Start an official attempt for a fresh student with points, return the student. */
     private function startedStudent(Quiz $quiz): User
     {

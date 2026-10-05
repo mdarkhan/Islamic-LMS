@@ -49,6 +49,26 @@ class BookBuyLinksTest extends TestCase
         $this->get(route('books.show', $book))->assertOk()->assertSee('Boi Bazar');
     }
 
+    public function test_rerunning_the_seeder_never_deletes_or_overwrites_the_admins_work(): void
+    {
+        Storage::fake('public');
+        $this->seed(BookSeeder::class);
+
+        // The admin adds a book, edits a seeded book's title and links, and removes a link.
+        $mine = Book::factory()->create(['title' => 'অ্যাডমিনের নিজের বই', 'is_published' => true]);
+        $seeded = Book::query()->where('sort_order', 1)->firstOrFail();
+        $seeded->update(['title' => 'সম্পাদিত শিরোনাম']);
+        $seeded->purchaseLinks()->delete();
+        $seeded->purchaseLinks()->create(['website_name' => 'Boi Bazar', 'url' => 'https://example.test/x', 'sort_order' => 0]);
+
+        $this->seed(BookSeeder::class);   // the slip DEPLOYMENT.md warns against
+
+        $this->assertNotNull($mine->fresh(), 'an admin-added book must survive');
+        $this->assertSame('সম্পাদিত শিরোনাম', $seeded->fresh()->title);
+        $this->assertSame(['Boi Bazar'], $seeded->fresh()->purchaseLinks()->pluck('website_name')->all());
+        $this->assertSame(11, Book::query()->count(), '10 catalogue books + the admin\'s, nothing recreated or removed');
+    }
+
     public function test_the_seeded_catalogue_has_both_store_links_for_every_book(): void
     {
         Storage::fake('public');

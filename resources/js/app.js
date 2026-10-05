@@ -16,6 +16,52 @@ window.theme = {
     },
 };
 
+// Shared background polling (notification bell, message thread). The server has no
+// WebSockets or queue worker (cPanel), so the browser polls — which on shared hosting
+// multiplies by every open tab. This keeps that cheap:
+//   - nothing is fetched while the tab is hidden; coming back refreshes at once,
+//   - while nothing changes the interval backs off (×1.5, up to `max`); a change or an
+//     explicit reset() (e.g. the user just sent a message) returns it to `base`,
+//   - ±10% jitter, so a classroom of students opened at the same moment does not hit the
+//     server in lockstep.
+// `task` returns true when it found something new. Must be defined before Alpine starts.
+window.pollWhenVisible = function (task, { base, max = base * 4, backoff = 1.5 } = {}) {
+    let delay = base;
+    let timer = null;
+    let stopped = false;
+
+    const schedule = () => {
+        if (stopped) return;
+        clearTimeout(timer);
+        timer = setTimeout(run, delay * (0.9 + Math.random() * 0.2));
+    };
+
+    const run = async () => {
+        if (stopped || document.hidden) return;   // paused; onVisible resumes
+
+        let changed = false;
+        try { changed = (await task()) === true; } catch (e) { /* a failed poll just backs off */ }
+
+        delay = changed ? base : Math.min(delay * backoff, max);
+        schedule();
+    };
+
+    const onVisible = () => {
+        if (stopped || document.hidden) return;
+        delay = base;
+        clearTimeout(timer);
+        run();
+    };
+
+    document.addEventListener('visibilitychange', onVisible);
+    schedule();
+
+    return {
+        reset() { delay = base; schedule(); },
+        stop() { stopped = true; clearTimeout(timer); document.removeEventListener('visibilitychange', onVisible); },
+    };
+};
+
 window.Alpine = Alpine;
 Alpine.start();
 

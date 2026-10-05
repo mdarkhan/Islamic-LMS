@@ -143,6 +143,9 @@ class AdminResultsTest extends TestCase
     public function test_a_score_change_immediately_refreshes_the_leaderboard(): void
     {
         // Two students; the lower scorer gets a manual bump that overtakes the other.
+        // Frozen clock: a tie needs equal time_taken, which otherwise depends on whether the two
+        // submissions straddle a wall-clock second.
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::now());
         $quiz = Quiz::factory()->create();
         $q = QuizBuilder::for($quiz)->question(['A', 'B'], correctPositions: [1], marks: 10);
         $svc = app(QuizAttemptService::class);
@@ -172,6 +175,8 @@ class AdminResultsTest extends TestCase
         $this->assertSame(10, $ranks[$challenger->id]['obtained']);
         $this->assertSame(1, $ranks[$challenger->id]['rank']);   // now shares the top rank
         $this->assertSame(1, $ranks[$leader->id]['rank']);
+
+        \Carbon\Carbon::setTestNow();
     }
 
     // ── Pending release / release now ───────────────────────────────────────────

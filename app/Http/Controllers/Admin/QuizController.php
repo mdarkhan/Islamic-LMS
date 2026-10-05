@@ -80,6 +80,7 @@ class QuizController extends Controller
             'practice_enabled' => $request->boolean('practice_enabled'),
             'practice_timer_enabled' => $request->boolean('practice_timer_enabled'),
             'leaderboard_visible' => $request->boolean('leaderboard_visible'),
+            'shuffle_per_student' => $request->boolean('shuffle_per_student'),
             'bonus_enabled' => $request->boolean('bonus_enabled'),
             'bonus_threshold_type' => $data['bonus_threshold_type'] ?? Quiz::BONUS_THRESHOLD_FULL,
             'bonus_threshold_marks' => $data['bonus_threshold_marks'] ?? null,
@@ -131,6 +132,12 @@ class QuizController extends Controller
             'bonus_points' => $data['bonus_points'] ?? 0,
             'max_official_attempts' => $data['max_official_attempts'],
         ]);
+
+        // Frozen once official attempts exist: flipping it would reorder an exam a student
+        // is in the middle of. Everything else about the quiz stays editable.
+        if (! $quiz->scoringLocked()) {
+            $quiz->shuffle_per_student = $request->boolean('shuffle_per_student');
+        }
 
         if (! empty($data['slug'])) {
             $quiz->slug = $data['slug'];

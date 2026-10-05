@@ -16,6 +16,7 @@ return [
     'messages' => 'Messages',
     'amol' => 'Daily Amol Tracker',
     'profile' => 'Profile',
+    'account' => 'My account',
     'logout' => 'Log out',
     'later_phase' => 'Later phase',
 

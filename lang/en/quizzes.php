@@ -142,4 +142,7 @@ return [
     'fatal_error_note' => 'Import is blocked until the errors are fixed.',
     'possible_duplicate' => 'Possible duplicate',
     'duplicate_body' => 'A quiz titled ":title" already exists. Import as a new copy if you want, or cancel. The existing quiz is never overwritten.',
+    'shuffle_per_student' => 'Different question & option order per student (official exams)',
+    'shuffle_hint' => 'When on, each examinee sees questions and options in a different order. Results and answer sheets always show the original order for everyone.',
+    'shuffle_locked' => 'Locked because official attempts already exist.',
 ];

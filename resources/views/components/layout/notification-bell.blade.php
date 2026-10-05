@@ -63,14 +63,12 @@
                 unread: config.unread,
                 notifications: config.notifications,
                 csrf: null,
-                _poll: null,
+                _poller: null,
 
                 init() {
                     this.csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-                    this._poll = setInterval(() => this.refresh(), 25000);
-                    document.addEventListener('visibilitychange', () => {
-                        if (!document.hidden) this.refresh();
-                    });
+                    // Pauses in a hidden tab and backs off while nothing new arrives (app.js).
+                    this._poller = window.pollWhenVisible(() => this.refresh(), { base: 30000, max: 120000 });
                 },
 
                 localeNumber(n) {
@@ -85,18 +83,27 @@
 
                 toggle() {
                     this.open = !this.open;
-                    if (this.open) this.refresh();
+                    if (this.open) {
+                        this.refresh();
+                        this._poller?.reset();   // someone is looking: poll at the fast rate again
+                    }
                 },
 
+                // Resolves true when something changed (count or list), so the poller knows
+                // whether to back off.
                 async refresh() {
                     try {
                         const res = await fetch(config.pollUrl, { headers: { Accept: 'application/json' } });
-                        if (!res.ok) return;
+                        if (!res.ok) return false;
                         const data = await res.json();
+                        const signature = (list) => list.map((n) => n.id + ':' + (n.read ? 1 : 0)).join(',');
+                        const changed = data.count !== this.unread || signature(data.notifications) !== signature(this.notifications);
                         this.unread = data.count;
                         this.notifications = data.notifications;
+                        return changed;
                     } catch (e) {
                         // A dropped poll is harmless — the next tick catches up.
+                        return false;
                     }
                 },
 

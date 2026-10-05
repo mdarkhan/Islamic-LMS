@@ -38,6 +38,10 @@
                     <x-ui.field :label="__('profile.email')" name="email">
                         <x-ui.input name="email" type="email" :value="old('email', $user->email)" placeholder="email@example.com" />
                     </x-ui.field>
+                    <label class="flex items-start gap-2 text-sm text-ink">
+                        <input type="checkbox" name="notify_by_email" value="1" @checked(old('notify_by_email', $user->notify_by_email)) class="mt-0.5 rounded border-line text-brand focus:ring-brand">
+                        <span>{{ __('profile.notify_by_email') }}<span class="block text-xs text-muted">{{ __('profile.notify_by_email_hint') }}</span></span>
+                    </label>
                     <x-ui.field :label="__('profile.phone')" name="phone">
                         <x-ui.input name="phone" type="text" :value="old('phone', $user->phone)" placeholder="01XXXXXXXXX" />
                     </x-ui.field>

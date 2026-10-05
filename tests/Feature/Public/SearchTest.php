@@ -56,6 +56,37 @@ class SearchTest extends TestCase
             ->assertSee(__('public.search_no_results'));
     }
 
+    /**
+     * য়/ড়/ঢ় has two byte sequences (precomposed vs base + nukta). MySQL LIKE treats them as
+     * different strings, so text typed on one keyboard must still be found by a search typed
+     * on the other, in either direction.
+     */
+    public function test_search_matches_both_spellings_of_bengali_nukta_letters(): void
+    {
+        $precomposed = "জানু\u{09DF}ারি";            // য় as one code point
+        $decomposed = "জানু\u{09AF}\u{09BC}ারি";     // য + nukta
+
+        Course::factory()->create(['title' => "কোর্স {$precomposed}", 'is_published' => true]);
+        Book::factory()->create(['title' => "বই {$decomposed}", 'is_published' => true]);
+
+        foreach ([$precomposed, $decomposed] as $typed) {
+            // The exact stored titles — not bare words like "বই", which the nav also contains.
+            $this->get(route('search.index', ['q' => $typed]))->assertOk()
+                ->assertSee("কোর্স {$precomposed}", false)
+                ->assertSee("বই {$decomposed}", false);
+        }
+    }
+
+    public function test_like_wildcards_in_the_query_are_searched_literally(): void
+    {
+        Course::factory()->create(['title' => 'সাধারণ কোর্স', 'is_published' => true]);
+
+        // A bare "%" or "_" must not behave as "match everything".
+        foreach (['%', '_'] as $wildcard) {
+            $this->get(route('search.index', ['q' => $wildcard]))->assertOk()->assertDontSee('সাধারণ কোর্স');
+        }
+    }
+
     public function test_no_results_state_is_shown(): void
     {
         $this->get(route('search.index', ['q' => 'zzz-nonexistent-zzz']))

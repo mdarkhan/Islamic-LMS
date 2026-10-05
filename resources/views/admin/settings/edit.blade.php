@@ -111,6 +111,24 @@
                         <x-ui.input type="number" step="0.0001" name="calendar_longitude" value="{{ old('calendar_longitude', $calendar['calendar_longitude']) }}" required />
                     </x-ui.field>
                 </div>
+                <x-ui.field :label="__('settings.location_label')" name="calendar_location_label" :hint="__('settings.location_label_hint')">
+                    <x-ui.input name="calendar_location_label" value="{{ old('calendar_location_label', $calendar['calendar_location_label'] ?? '') }}" maxlength="100" />
+                </x-ui.field>
+                <div class="grid grid-cols-3 gap-3">
+                    <x-ui.field :label="__('settings.fajr_angle')" name="prayer_fajr_angle" :required="true">
+                        <x-ui.input type="number" step="0.1" name="prayer_fajr_angle" value="{{ old('prayer_fajr_angle', $calendar['prayer_fajr_angle']) }}" required />
+                    </x-ui.field>
+                    <x-ui.field :label="__('settings.isha_angle')" name="prayer_isha_angle" :required="true">
+                        <x-ui.input type="number" step="0.1" name="prayer_isha_angle" value="{{ old('prayer_isha_angle', $calendar['prayer_isha_angle']) }}" required />
+                    </x-ui.field>
+                    <x-ui.field :label="__('settings.asr_method')" name="prayer_asr_factor" :required="true">
+                        <select name="prayer_asr_factor" class="w-full rounded-xl bg-surface border border-line px-3 py-2.5 text-sm text-ink">
+                            <option value="2" @selected((int) old('prayer_asr_factor', $calendar['prayer_asr_factor']) === 2)>{{ __('settings.asr_hanafi') }}</option>
+                            <option value="1" @selected((int) old('prayer_asr_factor', $calendar['prayer_asr_factor']) === 1)>{{ __('settings.asr_shafii') }}</option>
+                        </select>
+                    </x-ui.field>
+                </div>
+                <p class="text-xs text-muted -mt-2">{{ __('settings.prayer_hint') }}</p>
                 <x-ui.field :label="__('settings.timezone')" name="calendar_timezone" :required="true">
                     <x-ui.input name="calendar_timezone" value="{{ old('calendar_timezone', $calendar['calendar_timezone']) }}" required />
                 </x-ui.field>

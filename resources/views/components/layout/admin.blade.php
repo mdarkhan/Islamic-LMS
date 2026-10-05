@@ -50,6 +50,7 @@
     }
 
     $nav[] = ['label' => __('nav.audit'), 'href' => route('admin.audit.index'), 'icon' => 'audit', 'active' => request()->routeIs('admin.audit.*')];
+    $nav[] = ['label' => __('nav.account'), 'href' => route('admin.account.edit'), 'icon' => 'profile', 'active' => request()->routeIs('admin.account.*')];
 
     // Staff & role management — super_admin only, deliberately not a perm: gate (see
     // routes/web.php): a regular admin must never see or reach this area.

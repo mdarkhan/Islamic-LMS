@@ -18,7 +18,7 @@
     font-style: normal;
     font-weight: 400;
     font-display: block;
-    src: url('../fonts/kalpurush.ttf') format('truetype');
+    src: url('../fonts/kalpurush.woff2') format('woff2');
     /* Kalpurush's own glyphs sit noticeably smaller within its em-box than the
        system Bengali fonts this site used to fall back to — measured via canvas
        pixel bounds at 128px: Kalpurush's cap/x-height is ~146px tall vs ~161px

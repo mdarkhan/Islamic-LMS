@@ -11,7 +11,7 @@ export default defineConfig({
         tailwindcss(),
     ],
     build: {
-        // Kalpurush (resources/fonts/kalpurush.ttf, referenced by url() in app.css) is
+        // Kalpurush (resources/fonts/kalpurush.woff2, referenced by url() in app.css) is
         // force-inlined as a base64 data: URI regardless of Vite's default 4 KiB
         // assetsInlineLimit. This app has no client-side routing, so every navigation
         // is a fresh document; a self-hosted font served as its own file is always a
@@ -19,7 +19,7 @@ export default defineConfig({
         // moment no matter how HTTP caching or font-display are tuned. Inlining it
         // into the render-blocking stylesheet removes that request entirely. See the
         // font-face comment in app.css and CLAUDE.md for the full history.
-        assetsInlineLimit: (filePath) => filePath.endsWith('kalpurush.ttf') ? true : undefined,
+        assetsInlineLimit: (filePath) => filePath.endsWith('kalpurush.woff2') ? true : undefined,
     },
     server: {
         watch: {

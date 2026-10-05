@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
@@ -26,12 +27,18 @@ class LoginController extends Controller
     private const MAX_ATTEMPTS = 5;
 
     // Rolls are short sequential numbers, so a per-identifier limit alone lets one IP
-    // cycle through every roll looking for a weak password. This is a broader, coarser
-    // ceiling across ALL identifiers from one IP — high enough that a shared school/
-    // office connection with several students logging in does not trip it.
-    private const MAX_ATTEMPTS_PER_IP = 30;
+    // cycle through every roll looking for a weak password. This is a second ceiling on how
+    // many DIFFERENT accounts one IP may be failing at once — the enumeration signature.
+    //
+    // It counts distinct accounts that are STILL failing, not raw attempts, and an account
+    // is forgiven the moment its owner logs in (see forgiveIpFailure). So a school lab where
+    // thirty students each mistype once and then get in never accumulates anything, while a
+    // script cycling through rolls never succeeds and hits the ceiling. (A raw per-IP attempt
+    // count locked out whole shared networks.) The ledger is per-IP and only its owner's own
+    // success can clear an entry, so one attacker's success cannot wipe the others' failures.
+    private const MAX_FAILING_ACCOUNTS_PER_IP = 40;
 
-    private const IP_DECAY_SECONDS = 600;
+    private const IP_WINDOW_SECONDS = 600;
 
     public function show(): View
     {
@@ -57,12 +64,16 @@ class LoginController extends Controller
 
         if (! $user || ! $passwordOk) {
             RateLimiter::hit($this->throttleKey($request, $data['identifier']));
-            RateLimiter::hit($this->ipThrottleKey($request), self::IP_DECAY_SECONDS);
+            $this->recordIpFailure($request, $data['identifier']);
 
             throw ValidationException::withMessages([
                 'identifier' => 'রোল/ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।',
             ]);
         }
+
+        // Credentials are right, so this person is not guessing: forgive their earlier typos
+        // on this IP (before the status check — a suspended account's owner is not an attacker).
+        $this->forgiveIpFailure($request, $data['identifier']);
 
         // Credentials verified — now it is safe to explain a blocked account.
         if (! $user->isActive()) {
@@ -107,8 +118,9 @@ class LoginController extends Controller
 
     private function ensureNotRateLimited(Request $request, string $identifier): void
     {
-        if (RateLimiter::tooManyAttempts($this->ipThrottleKey($request), self::MAX_ATTEMPTS_PER_IP)) {
-            $seconds = RateLimiter::availableIn($this->ipThrottleKey($request));
+        $ledger = $this->ipLedger($request);
+        if (count($ledger['accounts']) >= self::MAX_FAILING_ACCOUNTS_PER_IP) {
+            $seconds = max(1, $ledger['since'] + self::IP_WINDOW_SECONDS - time());
 
             throw ValidationException::withMessages([
                 'identifier' => "অনেকবার চেষ্টা করা হয়েছে। অনুগ্রহ করে {$seconds} সেকেন্ড পর আবার চেষ্টা করুন।",
@@ -126,9 +138,37 @@ class LoginController extends Controller
         ]);
     }
 
-    private function ipThrottleKey(Request $request): string
+    private function ipLedgerKey(Request $request): string
     {
-        return 'login-ip:'.$request->ip();
+        return 'login-ip-failing:'.$request->ip();
+    }
+
+    /** @return array{since: int, accounts: array<string, true>} */
+    private function ipLedger(Request $request): array
+    {
+        $ledger = Cache::get($this->ipLedgerKey($request));
+
+        return is_array($ledger) && ($ledger['since'] ?? 0) + self::IP_WINDOW_SECONDS > time()
+            ? $ledger
+            : ['since' => time(), 'accounts' => []];
+    }
+
+    private function recordIpFailure(Request $request, string $identifier): void
+    {
+        $ledger = $this->ipLedger($request);
+        $ledger['accounts'][$this->canonicalIdentifier($identifier)] = true;
+
+        Cache::put($this->ipLedgerKey($request), $ledger, max(1, $ledger['since'] + self::IP_WINDOW_SECONDS - time()));
+    }
+
+    private function forgiveIpFailure(Request $request, string $identifier): void
+    {
+        $ledger = $this->ipLedger($request);
+        unset($ledger['accounts'][$this->canonicalIdentifier($identifier)]);
+
+        $ledger['accounts'] === []
+            ? Cache::forget($this->ipLedgerKey($request))
+            : Cache::put($this->ipLedgerKey($request), $ledger, max(1, $ledger['since'] + self::IP_WINDOW_SECONDS - time()));
     }
 
     /**
@@ -139,10 +179,13 @@ class LoginController extends Controller
      */
     private function throttleKey(Request $request, string $identifier): string
     {
-        $canonical = str_contains($identifier, '@')
+        return 'login:'.$this->canonicalIdentifier($identifier).'|'.$request->ip();
+    }
+
+    private function canonicalIdentifier(string $identifier): string
+    {
+        return str_contains($identifier, '@')
             ? mb_strtolower(trim($identifier))
             : (User::normaliseRoll($identifier) ?? trim($identifier));
-
-        return 'login:'.$canonical.'|'.$request->ip();
     }
 }

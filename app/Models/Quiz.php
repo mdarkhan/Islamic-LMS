@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'course_id', 'lesson_id', 'slug', 'title', 'description', 'status',
     'practice_enabled', 'practice_timer_enabled', 'point_cost', 'duration_seconds',
     'starts_at', 'ends_at', 'result_release_at', 'results_released_at',
-    'leaderboard_visible', 'counts_toward_overall', 'max_official_attempts', 'created_by',
+    'leaderboard_visible', 'counts_toward_overall', 'shuffle_per_student', 'max_official_attempts', 'created_by',
     'bonus_enabled', 'bonus_threshold_type', 'bonus_threshold_marks', 'bonus_points',
     'legacy_import_batch_id', 'legacy_source_key',
 ])]
@@ -42,6 +42,7 @@ class Quiz extends Model
             'practice_timer_enabled' => 'boolean',
             'leaderboard_visible' => 'boolean',
             'counts_toward_overall' => 'boolean',
+            'shuffle_per_student' => 'boolean',
             'point_cost' => 'integer',
             'duration_seconds' => 'integer',
             'total_marks' => 'integer',

@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Own account (Admin\AccountController)
+    'account_heading' => 'আমার অ্যাকাউন্ট',
+    'account_password_changed' => 'আপনার পাসওয়ার্ড পরিবর্তন করা হয়েছে।',
+    'account_password_same' => 'নতুন পাসওয়ার্ড বর্তমান পাসওয়ার্ডের থেকে আলাদা হতে হবে।',
+
     // Generic labels reused across admin CRUD
     'order' => 'ক্রম',
     'slug' => 'স্লাগ',

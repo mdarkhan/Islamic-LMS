@@ -34,6 +34,8 @@
             </label>
 
             <x-ui.button type="submit" class="w-full" size="lg">{{ __('auth.enter') }}</x-ui.button>
+
+            <p class="text-sm text-center"><a href="{{ route('password.request') }}" class="text-brand font-semibold hover:underline">{{ __('auth.forgot_link') }}</a></p>
         </form>
 
         <p class="text-xs text-muted text-center mt-6">

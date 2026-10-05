@@ -41,6 +41,7 @@ class QuizRequest extends FormRequest
             'practice_enabled' => ['sometimes', 'boolean'],
             'practice_timer_enabled' => ['sometimes', 'boolean'],
             'leaderboard_visible' => ['sometimes', 'boolean'],
+            'shuffle_per_student' => ['sometimes', 'boolean'],
             'max_official_attempts' => ['required', 'integer', 'min:1', 'max:100'],
 
             'bonus_enabled' => ['sometimes', 'boolean'],

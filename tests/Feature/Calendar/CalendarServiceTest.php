@@ -207,4 +207,26 @@ class CalendarServiceTest extends TestCase
         $this->assertNotNull($newYearEvent);
         $this->assertSame(0, $newYearEvent['days_until']);
     }
+
+    // ── Location label (homepage date card badge) ─────────────────────────────────
+
+    public function test_the_location_label_is_dhaka_only_while_the_coordinates_are_the_dhaka_defaults(): void
+    {
+        $this->assertSame('ঢাকা, বাংলাদেশ', $this->calendar->locationLabel());
+
+        // Moved to Riyadh with no name given: no badge beats a wrong "Dhaka".
+        app(SettingService::class)->set(['calendar_latitude' => '24.7136', 'calendar_longitude' => '46.6753']);
+        $this->assertNull($this->calendar->locationLabel());
+    }
+
+    public function test_an_admin_set_location_label_always_wins(): void
+    {
+        app(SettingService::class)->set([
+            'calendar_latitude' => '24.7136', 'calendar_longitude' => '46.6753',
+            'calendar_location_label' => 'রিয়াদ, সৌদি আরব',
+        ]);
+
+        $this->assertSame('রিয়াদ, সৌদি আরব', $this->calendar->locationLabel());
+        $this->assertSame('রিয়াদ, সৌদি আরব', $this->calendar->all()['location']);
+    }
 }

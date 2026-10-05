@@ -34,6 +34,7 @@ class QuizDuplicator
                 'ends_at' => $quiz->ends_at,
                 'result_release_at' => $quiz->result_release_at,
                 'leaderboard_visible' => $quiz->leaderboard_visible,
+                'shuffle_per_student' => $quiz->shuffle_per_student,
                 'max_official_attempts' => $quiz->max_official_attempts,
                 'created_by' => auth()->id(),
             ]);

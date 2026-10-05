@@ -121,8 +121,8 @@ class AccountSecurityTest extends TestCase
     public function test_login_is_rate_limited_per_ip_across_different_rolls(): void
     {
         // Rolls are short sequential numbers — simulate an attacker cycling through
-        // many DIFFERENT accounts from one IP, not repeatedly guessing one account.
-        for ($i = 0; $i < 30; $i++) {
+        // many DIFFERENT accounts from one IP, never getting in.
+        for ($i = 0; $i < 40; $i++) {
             $this->post('/login', ['identifier' => (string) (500 + $i), 'password' => 'wrong']);
         }
 
@@ -130,6 +130,44 @@ class AccountSecurityTest extends TestCase
 
         $this->post('/login', ['identifier' => '999', 'password' => 'secret123'])
             ->assertSessionHasErrors('identifier');
+        $this->assertGuest();
+    }
+
+    /**
+     * A school lab: everyone behind one IP, many students mistype their password once and
+     * then get in. Their typos are forgiven on success, so a whole class cannot lock the
+     * network out — which a raw per-IP attempt count did.
+     */
+    public function test_a_shared_network_of_students_who_mistype_then_succeed_is_never_locked_out(): void
+    {
+        foreach (range(1, 60) as $roll) {
+            $this->makeStudent(['roll' => (string) (2000 + $roll), 'password' => Hash::make('secret123')]);
+        }
+
+        foreach (range(1, 60) as $roll) {
+            $id = (string) (2000 + $roll);
+
+            $this->post('/login', ['identifier' => $id, 'password' => 'typo']);          // one typo…
+            $this->post('/login', ['identifier' => $id, 'password' => 'secret123']);     // …then in
+            $this->assertAuthenticated();
+            $this->post('/logout');
+        }
+    }
+
+    public function test_one_attackers_own_success_does_not_wipe_the_failures_it_caused(): void
+    {
+        $this->makeStudent(['roll' => '999', 'password' => Hash::make('secret123')]);
+
+        for ($i = 0; $i < 39; $i++) {
+            $this->post('/login', ['identifier' => (string) (500 + $i), 'password' => 'wrong']);
+        }
+
+        // The attacker logs into their OWN account: only that identifier is forgiven.
+        $this->post('/login', ['identifier' => '999', 'password' => 'secret123']);
+        $this->post('/logout');
+
+        $this->post('/login', ['identifier' => '540', 'password' => 'wrong']);   // the 40th distinct failing account
+        $this->post('/login', ['identifier' => '999', 'password' => 'secret123'])->assertSessionHasErrors('identifier');
         $this->assertGuest();
     }
 }

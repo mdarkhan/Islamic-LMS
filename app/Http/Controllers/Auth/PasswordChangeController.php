@@ -7,7 +7,6 @@ use App\Services\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 /**
@@ -26,16 +25,9 @@ class PasswordChangeController extends Controller
     {
         $user = $request->user();
 
-        // Staff/admin accounts guard the whole CRUD surface and the answer key, so they
-        // need more than a student's 6-character minimum. Students keep the lower bar
-        // deliberately (CLAUDE.md: young students, roll-based, simple to memorise).
-        $passwordRule = $user->isAdmin()
-            ? Password::min(10)->letters()->numbers()
-            : Password::min(6);
-
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'confirmed', $passwordRule],
+            'password' => ['required', 'confirmed', $user->passwordRule()],
         ]);
 
         if (! Hash::check($data['current_password'], $user->password)) {

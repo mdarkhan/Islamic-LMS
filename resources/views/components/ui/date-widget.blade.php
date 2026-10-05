@@ -22,7 +22,9 @@
             <x-ui.icon name="calendar" class="w-4 h-4" />
             <span>{{ __('calendar.today') }}</span>
         </div>
-        <x-ui.badge color="brand">{{ __('public.location_label') }}</x-ui.badge>
+        @if (filled($calendar['location'] ?? null))
+            <x-ui.badge color="brand">{{ $calendar['location'] }}</x-ui.badge>
+        @endif
     </div>
 
     {{-- Hijri prominent --}}

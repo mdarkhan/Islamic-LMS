@@ -22,3 +22,8 @@ Schedule::command('attempts:finalize-expired')->everyMinute()->withoutOverlappin
 // so a few-minute cadence simply catches newly-released quizzes; the student sees the
 // congratulations on their next login.
 Schedule::command('rewards:award-quiz-bonuses')->everyFiveMinutes()->withoutOverlapping();
+
+// Exam reminders (opening soon / closing soon) and "results published" notices, in the
+// bell feed and by email. Once-only per student+quiz+kind and capped per run, so a few
+// minutes' cadence is safe for shared-hosting SMTP limits.
+Schedule::command('exams:send-notifications')->everyTenMinutes()->withoutOverlapping();

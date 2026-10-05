@@ -61,6 +61,12 @@
         </header>
 
         <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-6">
+            {{-- Any answer that has not reached the server: say so plainly, on every question. --}}
+            <div x-show="hasFailed()" x-cloak style="display:none" role="alert"
+                 class="mb-4 rounded-xl border border-rose-300 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
+                {{ __('exams.live_unsaved_banner') }}
+            </div>
+
             {{-- No active questions: nothing to answer, but the attempt can still be submitted. --}}
             <template x-if="questions.length === 0">
                 <x-ui.card>
@@ -148,6 +154,19 @@
             </div>
         </div>
 
+        {{-- Submit blocked: some answers never reached the server --}}
+        <div x-show="saveFailedNotice" x-cloak class="fixed inset-0 z-50 grid place-items-center p-4" style="display:none">
+            <div class="absolute inset-0 bg-black/50" @click="saveFailedNotice = false"></div>
+            <div class="relative w-full max-w-md bg-card rounded-2xl border border-line shadow-xl p-6">
+                <h2 class="text-lg font-bold text-rose-600">{{ __('exams.live_unsaved_title') }}</h2>
+                <p class="text-sm text-muted mt-2">{{ __('exams.live_unsaved_body') }}</p>
+                <div class="mt-6 flex items-center justify-end gap-3">
+                    <x-ui.button type="button" variant="secondary" @click="saveFailedNotice = false">{{ __('exams.live_cancel') }}</x-ui.button>
+                    <x-ui.button type="button" @click="confirmAndSubmit()" x-bind:disabled="submitting">{{ __('exams.live_retry_submit') }}</x-ui.button>
+                </div>
+            </div>
+        </div>
+
         {{-- Time-up overlay --}}
         <div x-show="expiredNotice" x-cloak class="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" style="display:none">
             <div class="bg-card rounded-2xl border border-line shadow-xl p-8 text-center max-w-sm">
@@ -176,11 +195,14 @@
                 saveState: {},          // qid -> 'idle' | 'saving' | 'saved' | 'error'
                 inflight: {},           // qid -> bool (one save at a time per question)
                 dirty: {},              // qid -> bool (a newer value is waiting)
+                noRetry: {},            // qid -> bool (server REJECTED the selection: retrying cannot help)
                 submitting: false,
                 showConfirm: false,
+                saveFailedNotice: false,
                 expiredNotice: false,
                 _timer: null,
                 _poll: null,
+                _retry: null,
 
                 init(data) {
                     this.questions = data.questions || [];
@@ -192,6 +214,16 @@
 
                     this.questions.forEach((qq) => {
                         this.saveState[qq.id] = (this.answers[qq.id] || []).length ? 'saved' : 'idle';
+                    });
+
+                    // A failed save used to stay failed until the student happened to change that
+                    // answer again — while the palette still showed it as answered. Retry on a
+                    // timer and the moment the connection returns; the PUT sends the whole
+                    // selection, so resending is idempotent.
+                    this._retry = setInterval(() => this.retryFailed(), 4000);
+                    window.addEventListener('online', () => this.retryFailed());
+                    window.addEventListener('beforeunload', (e) => {
+                        if (!this.submitting && this.hasUnsaved()) { e.preventDefault(); e.returnValue = ''; }
                     });
 
                     if (this.remaining !== null) {
@@ -246,10 +278,15 @@
                         }
                         if (!res.ok) {
                             this.saveState[qid] = 'error';
+                            // 422 = the server refused this selection outright; resending the same
+                            // thing forever would only spam it. Everything else (network, 5xx,
+                            // expired CSRF, throttling) is worth retrying.
+                            this.noRetry[qid] = res.status === 422;
                         } else {
                             const d = await res.json();
                             if (typeof d.remaining_seconds === 'number') this.remaining = d.remaining_seconds;
                             this.saveState[qid] = 'saved';
+                            this.noRetry[qid] = false;
                         }
                     } catch (e) {
                         this.saveState[qid] = 'error';
@@ -264,12 +301,29 @@
                     return this.questions.some((qq) => this.inflight[qq.id] || this.dirty[qq.id]);
                 },
 
-                async flushSaves() {
-                    let guard = 0;
-                    while (this.pending() && guard < 120) {
-                        await new Promise((r) => setTimeout(r, 100));
-                        guard++;
+                failed() { return this.questions.filter((qq) => this.saveState[qq.id] === 'error'); },
+                hasFailed() { return this.failed().length > 0; },
+                hasUnsaved() { return this.pending() || this.hasFailed(); },
+
+                retryFailed() {
+                    this.failed().forEach((qq) => {
+                        if (!this.inflight[qq.id] && !this.noRetry[qq.id]) this.sendSave(qq.id);
+                    });
+                },
+
+                // Wait until every answer is really on the server — resending failed ones as we
+                // go — and say whether that happened. (It used to wait only for in-flight saves
+                // and return regardless, so an answer that had already failed was submitted
+                // without.) Gives up after maxMs, or at once if the server rejected an answer.
+                async flushSaves(maxMs = 15000) {
+                    const deadline = Date.now() + maxMs;
+                    while (Date.now() < deadline) {
+                        this.retryFailed();
+                        if (!this.pending() && !this.hasFailed()) return true;
+                        if (!this.pending() && this.failed().every((qq) => this.noRetry[qq.id])) return false;
+                        await new Promise((r) => setTimeout(r, 300));
                     }
+                    return !this.pending() && !this.hasFailed();
                 },
 
                 // ── timer ────────────────────────────────────────────────────
@@ -303,7 +357,7 @@
                     this.submitting = true;
                     this.stopTimers();
                     this.expiredNotice = true;
-                    await this.flushSaves();
+                    await this.flushSaves(8000);   // time is up: submit either way, the server enforces the deadline
                     this.doSubmit();
                 },
 
@@ -313,8 +367,18 @@
                     if (this.submitting) return;
                     this.submitting = true;
                     this.showConfirm = false;
+                    this.saveFailedNotice = false;
+
+                    // Timers keep running while we confirm the answers are saved, so a student
+                    // stuck offline is still auto-submitted at the deadline rather than stranded.
+                    const allSaved = await this.flushSaves(15000);
+                    if (!allSaved && this.remaining !== 0) {
+                        this.submitting = false;
+                        this.saveFailedNotice = true;   // do NOT submit an exam missing answers they think they gave
+                        return;
+                    }
+
                     this.stopTimers();
-                    await this.flushSaves();   // never lose a pending answer on submit
                     this.doSubmit();
                 },
 
@@ -328,6 +392,7 @@
                 paletteClass(idx) {
                     if (idx === this.current) return 'border-brand bg-brand text-brand-ink';
                     const qid = this.questions[idx].id;
+                    if (this.saveState[qid] === 'error') return 'border-rose-400 bg-rose-500/10 text-rose-600';
                     if ((this.answers[qid] || []).length) return 'border-brand/40 bg-brand-tint text-brand-strong';
                     return 'border-line text-muted hover:border-brand/40';
                 },

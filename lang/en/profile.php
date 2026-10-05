@@ -19,4 +19,6 @@ return [
 
     'language' => 'Language',
     'language_hint' => 'Interface language. Content stays in Bengali.',
+    'notify_by_email' => 'Email notifications',
+    'notify_by_email_hint' => 'Get exam reminders and result announcements by email. The bell icon still shows them if you turn this off.',
 ];

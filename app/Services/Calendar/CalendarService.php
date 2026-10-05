@@ -267,6 +267,27 @@ class CalendarService
 
     // ── Everything, for the widget ───────────────────────────────────────────────
 
+    /**
+     * The place name for the date card — the sunset and Hijri rollover are computed for the
+     * configured coordinates, so the label must describe THOSE, not a fixed city.
+     *
+     * The admin's own label wins. With none set, the built-in "Dhaka, Bangladesh" is shown
+     * only while the coordinates are still the Dhaka defaults; if an admin has moved them
+     * without naming the place, no label is better than a wrong one.
+     */
+    public function locationLabel(): ?string
+    {
+        $label = trim((string) $this->settings->get('calendar_location_label', ''));
+        if ($label !== '') {
+            return $label;
+        }
+
+        $atDefaultLocation = abs((float) $this->settings->get('calendar_latitude', '23.8103') - 23.8103) < 0.01
+            && abs((float) $this->settings->get('calendar_longitude', '90.4125') - 90.4125) < 0.01;
+
+        return $atDefaultLocation ? __('public.location_label') : null;
+    }
+
     /** @return array<string, mixed> */
     public function all(?CarbonImmutable $now = null): array
     {
@@ -275,6 +296,7 @@ class CalendarService
             'bangla' => $this->bangla($now),
             'hijri' => $this->hijri($now),
             'sunset' => $this->sunsetAt($now),
+            'location' => $this->locationLabel(),
         ];
     }
 

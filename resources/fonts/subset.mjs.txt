@@ -1,0 +1,31 @@
+import fs from 'node:fs';
+import subsetFont from 'subset-font';
+
+const src = fs.readFileSync('./kalpurush.ttf');
+
+// Everything the site can plausibly render in Kalpurush:
+//  - Basic Latin + Latin-1 (English UI, digits, punctuation)
+//  - Bengali block U+0980–09FF, plus Devanagari danda/double danda U+0964–0965 (the "।" the
+//    site uses as a full stop)
+//  - ZWJ/ZWNJ (needed by Bengali shaping), general punctuation (dashes, quotes, ellipsis,
+//    bullet), arrows, dotted circle (used to show lone Bengali marks)
+const ranges = [
+  [0x0020, 0x007e], [0x00a0, 0x00ff],
+  [0x0964, 0x0965], [0x0980, 0x09ff],
+  [0x200c, 0x200d], [0x2010, 0x2027], [0x2030, 0x203a], [0x2190, 0x21ff], [0x25cc, 0x25cc],
+  // Anything else the site actually contains (measured: views, translations, DB text):
+  // Arabic letters/marks, Latin Extended-A (ā), math (− ≥ ≈), geometric shapes (▲ ▼), ✓.
+  [0x0600, 0x06ff], [0x0100, 0x017f], [0x2200, 0x22ff], [0x25a0, 0x25ff], [0x2713, 0x2714],
+];
+let text = '';
+for (const [a, b] of ranges) for (let c = a; c <= b; c++) text += String.fromCodePoint(c);
+
+const woff2 = await subsetFont(src, text, { targetFormat: 'woff2' });
+fs.writeFileSync('./kalpurush.subset.woff2', woff2);
+
+console.log(JSON.stringify({
+  originalTtf: src.length,
+  subsetWoff2: woff2.length,
+  savedPercent: Math.round((1 - woff2.length / src.length) * 100),
+  base64Kb: Math.round((woff2.length * 4) / 3 / 1024),
+}));

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\AskUstazController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordChangeController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ContactController;
@@ -50,6 +51,12 @@ Route::get('robots.txt', [SitemapController::class, 'robots'])->name('robots');
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'show'])->name('login');
     Route::post('login', [LoginController::class, 'store'])->name('login.store');
+
+    // Self-service reset by email (accounts that have one). Same response whatever the account.
+    Route::get('password/forgot', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('password/forgot', [PasswordResetController::class, 'sendLink'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('password/reset/{token}', [PasswordResetController::class, 'form'])->name('password.reset');
+    Route::post('password/reset', [PasswordResetController::class, 'reset'])->middleware('throttle:10,1')->name('password.update');
 });
 
 Route::middleware(['auth', 'account.active'])->group(function () {
@@ -134,6 +141,10 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'role:student']
  */
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'password.changed', 'role:super_admin,admin'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    // The signed-in admin's own account (password). No perm: — everyone may manage their own.
+    Route::get('account', [Admin\AccountController::class, 'edit'])->name('account.edit');
+    Route::put('account/password', [Admin\AccountController::class, 'updatePassword'])->name('account.password');
     Route::get('search', [Admin\SearchController::class, 'index'])->name('search.index');
 
     // Students — literal routes are declared before the {student} wildcard so
@@ -217,6 +228,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'p
     Route::get('results', [Admin\ResultController::class, 'index'])->name('results.index')->middleware('perm:results.view');
     Route::get('results/export', [Admin\ResultController::class, 'export'])->name('results.export')->middleware('perm:results.view');
     Route::get('results/{attempt}', [Admin\ResultController::class, 'show'])->name('results.show')->middleware('perm:results.view');
+    Route::get('quizzes/{quiz}/analysis', [Admin\QuizAnalysisController::class, 'show'])->name('quizzes.analysis')->middleware('perm:results.view');
     Route::post('results/{attempt}/adjust', [Admin\ResultController::class, 'adjust'])->name('results.adjust')->middleware('perm:results.adjust');
 
     // Answer-key correction / regrade (the only sanctioned way to change a locked key).

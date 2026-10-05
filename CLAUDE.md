@@ -157,10 +157,10 @@ and `super_admin` bypasses `perm:` via `User::hasPermission()`.
   `public/build`. Node is a build-time dependency only.
 - **Kalpurush (the Bengali body font) is base64-inlined directly into the compiled
   `app-*.css`**, not served as its own file. The `@font-face` rule lives in
-  `resources/css/app.css` as a plain `url('../fonts/kalpurush.ttf')`, and
+  `resources/css/app.css` as a plain `url('../fonts/kalpurush.woff2')`, and
   `vite.config.js`'s `build.assetsInlineLimit` force-inlines that one file regardless
   of Vite's normal 4 KiB threshold (Kalpurush isn't on Google/Bunny Fonts or
-  Fontsource, so `resources/fonts/kalpurush.ttf` is checked into the repo). This is
+  Fontsource, so `resources/fonts/kalpurush.woff2` is checked into the repo — a Latin/Bengali/Arabic-block subset of the original TTF, kept as `kalpurush.ttf` for regenerating it with `subset.mjs.txt`; 109 KB vs 315 KB, verified pixel-identical). This is
   deliberate and came after two other approaches genuinely failed in production use:
   this app has **no client-side routing**, so every sidebar click is a fresh full
   page load, and a self-hosted font served as its own file is always a *second*
@@ -523,3 +523,31 @@ common header (`x-layout.app`) — never a role-specific copy.
   delete()`) is real and Facebook-style — removing it from your own feed only, never anyone else's.
 - **`title`/`body` are plain Bengali text, always rendered escaped**, same posture as a message
   body — never HTML or Markdown.
+
+## Prayer times, amol stats, exam notifications, self-service reset, analysis, shuffling
+
+- **Prayer times are computed offline by `PrayerTimeService`** (solar position, no API), from the
+  same `calendar_latitude/longitude/timezone` settings CalendarService uses, so Maghrib IS the
+  sunset the Hijri rollover uses. Method = Karachi 18°/18° + Hanafi Asr by default; angles and
+  Asr factor are `prayer_*` settings. Shown on the student amol page (card + per-prayer group
+  headers). Never hard-code a time; freeze `now` in tests.
+- **Amol streaks/monthly chart come from `AmolStatsService`** — read-only, derived on demand from
+  `amol_entries` (nothing stored/cached). "Full" streak = every active deed done; "active" streak
+  = at least one. An unfinished today never breaks a streak.
+- **Exam reminders / result notices: `ExamNotificationService`** (`exams:send-notifications`, every
+  10 min via the existing `schedule:run` cron, no worker). Kinds `exam_soon` (opens ≤24 h),
+  `exam_closing` (closes ≤3 h, students who have not started), `results` (released within 3 days,
+  students with a finished attempt). Once-only via `notification_deliveries` (unique
+  user+quiz+kind); bell copy for everyone, email only if the student has an address and
+  `users.notify_by_email`. Capped per run; a failing mailbox is logged and never retried forever.
+  Emails never contain a score.
+- **Self-service password reset** (`PasswordResetController`, `/password/forgot`): the link goes only
+  to the address already on the account, the response is identical for unknown / no-email /
+  suspended accounts, IP-throttled; a reset drops sessions + remember tokens and applies
+  `User::passwordRule()`.
+- **Question analysis** (`QuestionAnalysisService`, admin `quizzes.analysis`, perm `results.view`):
+  each student's best finished official attempt; uses stored `is_correct`, so it follows regrades.
+- **Per-student order** (`quizzes.shuffle_per_student`, official attempts only): derived from the
+  attempt id in `ExamAttemptPresenter` (nothing stored, stable across reloads). Scoring is by option
+  id; review/answer sheets always use the authored order. The flag is frozen once official attempts
+  exist.

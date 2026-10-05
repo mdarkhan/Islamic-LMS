@@ -2,6 +2,7 @@
     'group',        // 'fajr' | 'zuhr' | 'asr' | 'maghrib' | 'isha'
     'items',        // Collection<array{amol:Amol, is_done:bool}> — this prayer's sub-items
     'editable' => false,
+    'time' => null,   // CarbonImmutable: the prayer's time today, when known
 ])
 
 @php
@@ -16,6 +17,7 @@
         <span class="font-semibold text-ink flex items-center gap-2">
             <x-ui.icon name="chevron" class="w-4 h-4 text-muted transition-transform group-open:rotate-90" />
             {{ __('amol.group_'.$group) }}
+            @if ($time)<span class="text-xs font-normal text-muted tabular-nums">{{ bn($time->format('h:i')) }}</span>@endif
         </span>
         <span class="amol-group-progress text-sm font-semibold text-muted tabular-nums">
             {{ __('amol.group_progress', ['done' => bn($done), 'total' => bn($total)]) }}

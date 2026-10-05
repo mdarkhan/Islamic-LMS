@@ -10,6 +10,9 @@
 
     <div class="flex flex-wrap items-center gap-2 mb-5">
         <x-ui.button :href="route('admin.quizzes.preview', $quiz)" variant="secondary" size="sm"><x-ui.icon name="exam" class="w-4 h-4" /> {{ __('quizzes.preview') }}</x-ui.button>
+        @if (auth()->user()->hasPermission('results.view'))
+            <x-ui.button :href="route('admin.quizzes.analysis', $quiz)" variant="secondary" size="sm"><x-ui.icon name="trend-up" class="w-4 h-4" /> {{ __('results_admin.analysis_action') }}</x-ui.button>
+        @endif
     </div>
 
     @if ($scoringLocked)
