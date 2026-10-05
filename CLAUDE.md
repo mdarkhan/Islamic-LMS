@@ -119,7 +119,7 @@ Databases: `masudalimi` (dev), `masudalimi_test` (tests, configured in
 creation depend on `lockForUpdate`, and the schema uses `ENUM` and `utf8mb4`.
 
 Dev accounts (from `DevAccountsSeeder`, never runs in production):
-`admin@masudalimi.test` / `password` (super_admin), students roll `১০১`–`১০৬` /
+`admin` / `password` (super_admin), students roll `১০১`–`১০৬` /
 `password`. Test helpers `makeStudent()` / `makeAdmin()` / `makeSuperAdmin()` live
 on the base `TestCase`.
 

@@ -23,8 +23,11 @@ class DevAccountsSeeder extends Seeder
 
         $points = app(PointService::class);
 
+        // Clean up legacy admin email if present
+        User::query()->where('email', 'admin@masudalimi.test')->update(['email' => 'admin']);
+
         $admin = User::query()->updateOrCreate(
-            ['email' => 'admin@masudalimi.test'],
+            ['email' => 'admin'],
             [
                 'name' => 'সুপার অ্যাডমিন',
                 'password' => Hash::make('password'),
@@ -59,6 +62,6 @@ class DevAccountsSeeder extends Seeder
             }
         }
 
-        $this->command?->info('Dev accounts: admin@masudalimi.test / password, students roll ১০১–১০৬ / password.');
+        $this->command?->info('Dev accounts: admin / password, students roll ১০১–১০৬ / password.');
     }
 }

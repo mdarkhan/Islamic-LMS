@@ -104,11 +104,18 @@ class LoginController extends Controller
 
     private function resolveUser(string $identifier): ?User
     {
-        if (str_contains($identifier, '@')) {
-            return User::query()->where('email', $identifier)->first();
+        $trimmed = trim($identifier);
+
+        // Matches staff email or username directly (e.g. 'admin' or email addresses)
+        $user = User::query()->where('email', $trimmed)->first();
+        if ($user) {
+            return $user;
         }
 
-        return User::query()->where('roll', User::normaliseRoll($identifier))->first();
+        // Otherwise resolve student roll (handles Bengali digits and Latin digits)
+        $roll = User::normaliseRoll($trimmed);
+
+        return $roll !== null ? User::query()->where('roll', $roll)->first() : null;
     }
 
     private function homeFor(User $user): string
@@ -184,8 +191,12 @@ class LoginController extends Controller
 
     private function canonicalIdentifier(string $identifier): string
     {
-        return str_contains($identifier, '@')
-            ? mb_strtolower(trim($identifier))
-            : (User::normaliseRoll($identifier) ?? trim($identifier));
+        $trimmed = trim($identifier);
+
+        if (str_contains($trimmed, '@') || mb_strtolower($trimmed) === 'admin') {
+            return mb_strtolower($trimmed);
+        }
+
+        return User::normaliseRoll($trimmed) ?? $trimmed;
     }
 }

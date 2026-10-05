@@ -72,7 +72,7 @@ cp .env.example .env
 "C:/Users/mdark/tools/php83/php.exe" artisan migrate:fresh --seed
 ```
 
-Dev logins (local only): `admin@masudalimi.test` / `password`, or student roll
+Dev logins (local only): `admin` / `password`, or student roll
 `১০১`–`১০৬` / `password`.
 
 Build assets and run the app / tests:
